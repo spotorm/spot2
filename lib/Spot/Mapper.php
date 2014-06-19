@@ -16,7 +16,7 @@ class Mapper
 
     // Entity manager
     protected static $_entityManager = [];
-    protected static $_eventEmitter;
+    protected $_eventEmitter;
 
     // Class Names for required classes - Here so they can be easily overridden
     protected $_collectionClass = '\\Spot\\Entity\\Collection';
@@ -45,20 +45,13 @@ class Mapper
     }
 
     /**
-     * Get config class mapper was instantiated with
+     * Get name of the Entity class mapper was instantiated with
      *
-     * @return Spot\Config
+     * @return string $entityName
      */
-    public function entity($entityName = null)
+    public function entity()
     {
-        if($entityName === null) {
-            if($this->_entityName === null) {
-                throw new Exception("Entity must be set with \$mapper->entity('<entityName>') first!");
-            }
-            return $this->_entityName;
-        }
-        $this->_entityName = $entityName;
-        return $this;
+        return $this->_entityName;
     }
 
     /**
@@ -178,7 +171,7 @@ class Mapper
      */
     public function fieldExists($field)
     {
-        return array_key_exists($field, $this->fields($this->entity()));
+        return array_key_exists($field, $this->fields());
     }
 
     /**
@@ -189,8 +182,8 @@ class Mapper
      */
     public function fieldType($field)
     {
-        $fields = $this->fields($this->entity());
-        return $this->fieldExists($this->entity(), $field) ? $fields[$field]['type'] : false;
+        $fields = $this->fields();
+        return $this->fieldExists($field) ? $fields[$field]['type'] : false;
     }
 
     /**
@@ -479,8 +472,11 @@ class Mapper
      */
     public function save(Entity $entity)
     {
-        // Set entity name
-        $this->entity(get_class($entity));
+        // Check entity name
+        $entityName = $this->entity();
+        if (!($entity instanceof $entityName)) {
+            throw new InvalidArgumentException("Provided entity must be instance of " . $entityName . ", instance of " . get_class($entity) . " given.");
+        }
 
         // Run beforeSave to know whether or not we can continue
         if (false === $this->triggerInstanceHook($entity, 'beforeSave', $this)) {

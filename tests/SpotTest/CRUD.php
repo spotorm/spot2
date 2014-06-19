@@ -71,7 +71,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $result = $mapper->insert($post); // returns an id
 
         // Read Post from database
-        $post = $mapper->entity('SpotTest\Entity\Post')->get($result);
+        $post = $mapper->get($result);
 
         // Strict equality
         $this->assertSame(1, $post->status);

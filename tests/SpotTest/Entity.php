@@ -188,14 +188,14 @@ class Entity extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $mapper->save($post);
 
-        $post = $mapper->entity('SpotTest\Entity\Post')->get($post->id);
+        $post = $mapper->get($post->id);
         $this->assertEquals($post->data, ['posts' => 'are cool', 'another field' => 'to serialize']);
 
         $post->data = 'asdf';
         $this->assertEquals($post->data, 'asdf');
 
         $mapper->save($post);
-        $post = $mapper->entity('SpotTest\Entity\Post')->get($post->id);
+        $post = $mapper->get($post->id);
         $this->assertEquals($post->data, 'asdf');
     }
 

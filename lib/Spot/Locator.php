@@ -37,7 +37,7 @@ class Locator
     {
         if (!isset($this->mapper[$entityName])) {
             // Get custom mapper, if set
-            $mapper = $this->entityManager($entityName)->mapper();
+            $mapper = $entityName::mapper();
             // Fallback to generic mapper
             if ($mapper === false) {
                 $mapper = 'Spot\Mapper';
@@ -45,16 +45,5 @@ class Locator
             $this->mapper[$entityName] = new $mapper($this->config(), $entityName);
         }
         return $this->mapper[$entityName];
-    }
-
-    /**
-     * Entity manager class for storing information and meta-data about entities
-     */
-    public function entityManager($entityName)
-    {
-        if (!isset($this->entityManager[$entityName])) {
-            $this->entityManager[$entityName] = new Entity\Manager($entityName);
-        }
-        return $this->entityManager[$entityName];
     }
 }

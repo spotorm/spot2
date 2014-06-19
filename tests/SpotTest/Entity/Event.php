@@ -40,12 +40,15 @@ class Event extends \Spot\Entity
         ];
     }
 
-    public function hookGenerateToken(\Spot\Mapper $mapper) {
+    public function hookGenerateToken(\Spot\Mapper $mapper)
+    {
         $this->token = uniqid();
     }
 
-    public function hookUpdateSearchIndex(\Spot\Mapper $mapper) {
-        $result = $mapper->entity('SpotTest\Entity\Event\Search')->upsert([
+    public function hookUpdateSearchIndex(\Spot\Mapper $mapper)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $result = $mapper->upsert([
             'event_id' => $this->id,
             'body'     => $this->title . ' ' . $this->description
         ], [
