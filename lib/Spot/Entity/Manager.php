@@ -21,7 +21,8 @@ class Manager
 
     // Table info
     protected $table;
-    protected $tableOptions = [];
+    protected $tableOptions;
+    protected $mapper;
 
     /**
      * Entity to get information for
@@ -62,7 +63,10 @@ class Manager
 
             // Table Options
             $entityTableOptions = $entityName::tableOptions();
-            $this->tableOptions = $entityTableOptions;
+            $this->tableOptions = (array) $entityTableOptions;
+
+            // Custom Mapper
+            $this->mapper = $entityName::mapper();
 
             // Default settings for all fields
             $fieldDefaults = array(
@@ -286,7 +290,7 @@ class Manager
      */
     public function table()
     {
-        if(!isset($this->table)) {
+        if($this->table === null) {
             $this->fields();
         }
         return $this->table;
@@ -295,14 +299,26 @@ class Manager
     /**
      * Get table options for given entity class
      *
-     * @param array Options to pass
      * @return string
      */
     public function tableOptions()
     {
-        if(!isset($this->tableOptions)) {
+        if($this->tableOptions === null) {
             $this->fields();
         }
         return $this->tableOptions;
+    }
+
+    /**
+     * Get name of custom mapper for given entity class
+     *
+     * @return string
+     */
+    public function mapper()
+    {
+        if($this->mapper === null) {
+            $this->fields();
+        }
+        return $this->mapper;
     }
 }

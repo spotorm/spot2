@@ -53,12 +53,12 @@ class Config implements \Serializable
      */
     public function connection($name = null)
     {
-        if(null === $name) {
+        if ($name === null) {
             return $this->defaultConnection();
         }
 
         // Connection name must be unique
-        if(!isset($this->_connections[$name])) {
+        if (!isset($this->_connections[$name])) {
             return false;
         }
 
@@ -73,6 +73,9 @@ class Config implements \Serializable
      */
     public function defaultConnection()
     {
+        if (!isset($this->_connections[$this->_defaultConnection])) {
+            throw new Exception("No database connection specified! Please add at least one database connection!");
+        }
         return $this->_connections[$this->_defaultConnection];
     }
 

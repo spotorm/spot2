@@ -36,7 +36,13 @@ class Locator
     public function mapper($entityName)
     {
         if (!isset($this->mapper[$entityName])) {
-            $this->mapper[$entityName] = (new Mapper($this->config()))->entity($entityName);
+            // Get custom mapper, if set
+            $mapper = $this->entityManager($entityName)->mapper();
+            // Fallback to generic mapper
+            if ($mapper === false) {
+                $mapper = 'Spot\Mapper';
+            }
+            $this->mapper[$entityName] = new $mapper($this->config(), $entityName);
         }
         return $this->mapper[$entityName];
     }

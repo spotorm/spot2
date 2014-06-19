@@ -21,7 +21,6 @@ class Mapper
     // Class Names for required classes - Here so they can be easily overridden
     protected $_collectionClass = '\\Spot\\Entity\\Collection';
     protected $_queryClass = '\\Spot\\Query';
-    protected $_exceptionClass = '\\Spot\\Exception';
 
     // Array of hooks
     protected $_hooks = [];
@@ -29,13 +28,10 @@ class Mapper
     /**
      *  Constructor Method
      */
-    public function __construct(Config $config)
+    public function __construct(Config $config, $entityName)
     {
         $this->_config = $config;
-
-        if (!class_exists($this->_exceptionClass)) {
-            throw new Exception("The exception class of '".$this->_exceptionClass."' defined in '".get_class($this)."' does not exist.");
-        }
+        $this->_entityName = $entityName;
     }
 
     /**
@@ -517,7 +513,7 @@ class Mapper
             $entityName = $this->entity();
             $entity = $this->get()->data($entity);
         } else {
-            throw new $this->_exceptionClass(__METHOD__ . " Accepts either an entity object or entity data array");
+            throw new Exception(__METHOD__ . " Accepts either an entity object or entity data array");
         }
 
         // Run beforeInsert to know whether or not we can continue
@@ -576,7 +572,7 @@ class Mapper
         if(is_object($entity)) {
             $entityName = get_class($entity);
         } else {
-            throw new $this->_exceptionClass(__METHOD__ . " Requires an entity object as the first parameter");
+            throw new Exception(__METHOD__ . " Requires an entity object as the first parameter");
         }
 
         // Run beforeUpdate to know whether or not we can continue

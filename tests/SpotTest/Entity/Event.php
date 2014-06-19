@@ -10,6 +10,9 @@ class Event extends \Spot\Entity
 {
     protected static $table = 'test_events';
 
+    // Use a custom mapper for this object
+    protected static $mapper = 'SpotTest\Mapper\Event';
+
     public static function fields()
     {
         return [

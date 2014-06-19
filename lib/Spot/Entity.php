@@ -10,6 +10,7 @@ abstract class Entity
 {
     protected static $table;
     protected static $tableOptions = [];
+    protected static $mapper = false;
 
     // Entity data storage
     protected $_data = array();
@@ -69,6 +70,14 @@ abstract class Entity
             return $this;
         }
         return static::$tableOptions;
+    }
+
+    /**
+     * Mapper name getter
+     */
+    public static function mapper()
+    {
+        return static::$mapper;
     }
 
     /**
