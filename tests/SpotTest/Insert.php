@@ -10,25 +10,22 @@ class Insert extends \PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        $mapper = test_spot_mapper();
-
         foreach(self::$entities as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->migrate();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        $mapper = test_spot_mapper();
         foreach(self::$entities as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->dropTable();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testInsertPostEntity()
     {
         $post = new \SpotTest\Entity\Post();
-        $mapper = test_spot_mapper();
+        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
         $post->title = "Test Post";
         $post->body = "<p>This is a really awesome super-duper post.</p><p>It's really quite lovely.</p>";
         $post->date_created = new \DateTime();

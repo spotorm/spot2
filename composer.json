@@ -16,7 +16,8 @@
     "require": {
         "php": ">=5.3.2",
         "vlucas/valitron": "1.x",
-        "doctrine/dbal": "~2.4"
+        "doctrine/dbal": "~2.4",
+        "sabre/event": "~1.0.1"
     },
     "autoload": {
         "psr-0": {

@@ -10,24 +10,21 @@ class Entity extends \PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        $mapper = test_spot_mapper();
-
         foreach(self::$entities as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->migrate();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        $mapper = test_spot_mapper();
         foreach(self::$entities as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->dropTable();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testEntitySetDataProperties()
     {
-        $mapper = test_spot_mapper();
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post();
 
         // Set data
@@ -56,7 +53,7 @@ class Entity extends \PHPUnit_Framework_TestCase
 
     public function testEntitySetDataConstruct()
     {
-        $mapper = test_spot_mapper();
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post([
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
@@ -128,29 +125,18 @@ class Entity extends \PHPUnit_Framework_TestCase
         $post = new \SpotTest\Entity\Post($testData);
 
         $this->assertEquals($testData, $post->dataUnmodified());
-
         $this->assertEquals([], $post->dataModified());
-
         $this->assertFalse($post->isModified());
 
         $post->data($data);
-
         $this->assertEquals($data, $post->dataModified());
-
         $this->assertTrue($post->isModified('title'));
-
         $this->assertFalse($post->isModified('id'));
-
         $this->assertNull($post->isModified('asdf'));
-
         $this->assertTrue($post->isModified());
-
         $this->assertEquals($data['title'], $post->dataModified('title'));
-
         $this->assertEquals($testData['title'], $post->dataUnmodified('title'));
-
         $this->assertNull($post->dataModified('id'));
-
         $this->assertNull($post->dataModified('status'));
     }
 
@@ -186,7 +172,7 @@ class Entity extends \PHPUnit_Framework_TestCase
         $this->assertTrue($post->isModified('title'));
     }
 
-    public function testSerialized()
+    public function testJsonArray()
     {
         $data = [
             'title' => 'A Post',
@@ -199,7 +185,7 @@ class Entity extends \PHPUnit_Framework_TestCase
         $post = new \SpotTest\Entity\Post($data);
         $this->assertEquals($post->data, ['posts' => 'are cool', 'another field' => 'to serialize']);
 
-        $mapper = test_spot_mapper();
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $mapper->save($post);
 
         $post = $mapper->entity('SpotTest\Entity\Post')->get($post->id);

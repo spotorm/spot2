@@ -1,6 +1,8 @@
 <?php
 namespace Spot;
-use \Doctrine\DBAL\Types\Type;
+
+use Doctrine\DBAL\Types\Type;
+use Sabre\Event\EventEmitter;
 
 /**
  * Base DataMapper
@@ -14,6 +16,7 @@ class Mapper
 
     // Entity manager
     protected static $_entityManager = [];
+    protected static $_eventEmitter;
 
     // Class Names for required classes - Here so they can be easily overridden
     protected $_collectionClass = '\\Spot\\Entity\\Collection';
@@ -88,10 +91,21 @@ class Mapper
     public function entityManager()
     {
         $entityName = $this->entity();
-        if(!isset(self::$_entityManager[$entityName])) {
+        if (!isset(self::$_entityManager[$entityName])) {
             self::$_entityManager[$entityName] = new Entity\Manager($entityName);
         }
         return self::$_entityManager[$entityName];
+    }
+
+    /**
+     * Event emitter for this mapper
+     */
+    public function eventEmitter()
+    {
+        if (self::$_eventEmitter === null) {
+            self::$_eventEmitter = new EventEmitter();
+        }
+        return self::$_eventEmitter;
     }
 
     /**
@@ -730,16 +744,16 @@ class Mapper
     }
 
     /**
-     * Truncate data source
-     * Should delete all rows and reset serial/auto_increment keys to 0
+     * Truncate table
+     * Should delete all rows and reset serial/auto_increment keys
      */
-    public function truncate()
+    public function truncateTable()
     {
         return $this->resolver()->truncate($this->table());
     }
 
     /**
-     * Drop/delete data source
+     * Drop/delete table
      * Destructive and dangerous - drops entire data source and all data
      *
      * @param string $entityName Name of the entity class

@@ -8,25 +8,22 @@ class CRUD extends \PHPUnit_Framework_TestCase
 {
     public static function setupBeforeClass()
     {
-        $mapper = test_spot_mapper();
-
         foreach(['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->migrate();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        $mapper = test_spot_mapper();
         foreach(['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->dropTable();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testSampleNewsInsert()
     {
-        $mapper = test_spot_mapper();
-        $post = $mapper->entity('SpotTest\Entity\Post')->get();
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->get();
         $post->title = "Test Post";
         $post->body = "<p>This is a really awesome super-duper post.</p><p>It's really quite lovely.</p>";
         $post->author_id = 1;
@@ -38,8 +35,8 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testSampleNewsInsertWithEmptyNonRequiredFields()
     {
-        $mapper = test_spot_mapper();
-        $post = $mapper->entity('SpotTest\Entity\Post')->get();
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->get();
         $post->title = "Test Post With Empty Values";
         $post->body = "<p>Test post here.</p>";
         $post->author_id = 1;
@@ -55,8 +52,8 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testSelect()
     {
-        $mapper = test_spot_mapper();
-        $post = $mapper->entity('SpotTest\Entity\Post')->first(['title' => "Test Post"]);
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->first(['title' => "Test Post"]);
 
         $this->assertTrue($post instanceof Entity\Post);
     }
@@ -64,8 +61,8 @@ class CRUD extends \PHPUnit_Framework_TestCase
     public function testInsertThenSelectReturnsProperTypes()
     {
         // Insert Post into database
-        $mapper = test_spot_mapper();
-        $post = $mapper->entity('SpotTest\Entity\Post')->get();
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->get();
         $post->title = "Types Test";
         $post->body = "<p>This is a really awesome super-duper post.</p><p>It's really quite lovely.</p>";
         $post->status = 1;
@@ -84,21 +81,21 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testSampleNewsUpdate()
     {
-        $mapper = test_spot_mapper();
-        $post = $mapper->entity('SpotTest\Entity\Post')->first(['title' => "Test Post"]);
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->first(['title' => "Test Post"]);
         $this->assertTrue($post instanceof Entity\Post);
 
         $post->title = "Test Post Modified";
         $result = $mapper->update($post); // returns boolean
 
-        $postu = $mapper->entity('SpotTest\Entity\Post')->first(['title' => "Test Post Modified"]);
+        $postu = $mapper->first(['title' => "Test Post Modified"]);
         $this->assertInstanceOf('SpotTest\Entity\Post', $postu);
     }
 
     public function testSampleNewsDelete()
     {
-        $mapper = test_spot_mapper();
-        $post = $mapper->entity('SpotTest\Entity\Post')->first(['title' => "Test Post Modified"]);
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->first(['title' => "Test Post Modified"]);
         $result = $mapper->delete($post);
 
         $this->assertTrue((boolean) $result);
@@ -106,8 +103,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testMultipleConditionDelete()
     {
-        $mapper = test_spot_mapper();
-        $postMapper = $mapper->entity('SpotTest\Entity\Post');
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
         for( $i = 1; $i <= 10; $i++ ) {
             $postMapper->insert([
                 'title' => ($i % 2 ? 'odd' : 'even' ). '_title',
@@ -126,7 +122,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testPostTagUpsert()
     {
-        $mapper = test_spot_mapper();
+        $postMapper = test_spot_mapper('SpotTest\Entity\PostTag');
         $data = [
             'tag_id' => 2145,
             'post_id' => 1295
@@ -136,7 +132,6 @@ class CRUD extends \PHPUnit_Framework_TestCase
         ];
 
         // Posttags has unique constraint on tag+post, so insert will fail the second time
-        $postMapper = $mapper->entity('SpotTest\Entity\PostTag');
         $result = $postMapper->upsert($data, $where);
         $result2 = $postMapper->upsert(array_merge($data, ['random' => 'blah blah']), $where);
         $postTag = $postMapper->first($where);
@@ -148,7 +143,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testUniqueConstraintUpsert()
     {
-        $mapper = test_spot_mapper();
+        $mapper = test_spot_mapper('SpotTest\Entity\Setting');
         $data = [
             'skey' => 'my_setting',
             'svalue' => 'abc123'
@@ -158,7 +153,6 @@ class CRUD extends \PHPUnit_Framework_TestCase
         ];
 
         // Posttags has unique constraint on tag+post, so insert will fail the second time
-        $mapper->entity('SpotTest\Entity\Setting');
         $result = $mapper->upsert($data, $where);
         $result2 = $mapper->upsert(['svalue' => 'abcdef123456'], $where);
         $entity = $mapper->first($where);

@@ -10,17 +10,15 @@ class Transactions extends \PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        $mapper = test_spot_mapper();
         foreach(self::$entities as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->migrate();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        $mapper = test_spot_mapper();
         foreach(self::$entities as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->dropTable();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 

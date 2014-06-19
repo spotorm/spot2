@@ -8,24 +8,22 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        $mapper = test_spot_mapper();
         foreach(self::$entities as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->migrate();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        $mapper = test_spot_mapper();
         foreach(self::$entities as $entity) {
-            $mapper->entity('\SpotTest\Entity\\' . $entity)->dropTable();
+            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function tearDown()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Author');
-        $mapper->entity('SpotTest\Entity\Author')->truncate();
+        $mapper->truncateTable();
     }
 
     public function testRequiredField()
@@ -68,7 +66,7 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testEmail()
     {
-        $mapper = test_spot_mapper();
+        $mapper = test_spot_mapper('SpotTest\Entity\Author');
 
         $entity = new SpotTest\Entity\Author([
             'email' => 'test',
@@ -82,7 +80,7 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testLength()
     {
-        $mapper = test_spot_mapper();
+        $mapper = test_spot_mapper('SpotTest\Entity\Author');
 
         $entity = new SpotTest\Entity\Author([
             'email' => 't@t',
