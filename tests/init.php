@@ -28,8 +28,7 @@ $spot = new \Spot\Locator($cfg);
 function test_spot_mapper($entityName)
 {
     global $spot; // you should never do this in real code :)
-    $mapper = $spot->mapper($entityName);
-    return $mapper;
+    return $spot->mapper($entityName);
 }
 
 /**

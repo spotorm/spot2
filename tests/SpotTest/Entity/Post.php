@@ -11,7 +11,7 @@ class Post extends \Spot\Entity
     protected static $table = 'test_posts';
 
     // For testing purposes only
-    public static $hooks = [];
+    public static $events = [];
 
     public static function fields()
     {
@@ -53,9 +53,18 @@ class Post extends \Spot\Entity
         ];
     }
 
-    public static function hooks()
+    public static function events(\Spot\EventEmitter $eventEmitter)
     {
-        return static::$hooks;
+        // This is done only to allow events to be set dynamically in a very
+        // specific way for testing purposes. You probably don't want to do
+        // this in your code...
+        foreach(static::$events as $eventName => $methods) {
+            $eventEmitter->on($eventName, function($entity, $mapper) use($methods) {
+                foreach($methods as $method) {
+                    $entity->$method();
+                }
+            });
+        }
     }
 
     public function mock_save_hook()

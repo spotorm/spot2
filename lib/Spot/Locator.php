@@ -8,7 +8,6 @@ class Locator
 {
     protected $config;
     protected $mapper = [];
-    protected $entityManager = [];
 
     /**
      *  Constructor Method

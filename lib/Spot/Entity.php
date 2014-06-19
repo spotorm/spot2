@@ -89,12 +89,9 @@ abstract class Entity
     }
 
     /**
-     * Return defined hooks of the entity
+     * Add events to this entity
      */
-    public static function hooks()
-    {
-        return [];
-    }
+    public static function events(EventEmitter $eventEmitter) { }
 
     /**
      * Return defined fields of the entity

@@ -1,6 +1,8 @@
 <?php
 namespace SpotTest\Entity;
 
+use Spot\EventEmitter;
+
 /**
  * Post
  *
@@ -32,27 +34,20 @@ class Event extends \Spot\Entity
         ];
     }
 
-    public static function hooks()
+    public static function events(EventEmitter $eventEmitter)
     {
-        return [
-            'beforeInsert' => ['hookGenerateToken'],
-            'afterSave' => ['hookUpdateSearchIndex']
-        ];
-    }
+        $eventEmitter->on('beforeInsert', function($entity, $mapper) {
+            $entity->token = uniqid();
+        });
 
-    public function hookGenerateToken(\Spot\Mapper $mapper)
-    {
-        $this->token = uniqid();
-    }
-
-    public function hookUpdateSearchIndex(\Spot\Mapper $mapper)
-    {
-        $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
-        $result = $mapper->upsert([
-            'event_id' => $this->id,
-            'body'     => $this->title . ' ' . $this->description
-        ], [
-            'event_id' => $this->id
-        ]);
+        $eventEmitter->on('afterSave', function($entity, $mapper) {
+            $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+            $result = $mapper->upsert([
+                'event_id' => $entity->id,
+                'body'     => $entity->title . ' ' . $entity->description
+            ], [
+                'event_id' => $entity->id
+            ]);
+        });
     }
 }
