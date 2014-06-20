@@ -277,6 +277,21 @@ abstract class Entity
     }
 
     /**
+     * Relation: HasOne
+     *
+     * HasOne assumes that the foreignKey will be on the foreignEntity.
+     */
+    protected function hasOne($foreignEntity, $foreignKey)
+    {
+        $localMapper = Locator::getInstance()->mapper(get_class($this));
+        $localKey = $localMapper->primaryKeyField();
+
+        $foreignMapper = Locator::getInstance()->mapper($foreignEntity);
+        $query = $foreignMapper->where([$foreignKey => $this->$localKey])->first();
+        return $query;
+    }
+
+    /**
      * Relation: BelongsTo
      *
      * BelongsTo assumes that the localKey will reference the foreignEntity's
@@ -288,7 +303,7 @@ abstract class Entity
         $foreignMapper = Locator::getInstance()->mapper($foreignEntity);
         $foreignKey = $foreignMapper->primaryKeyField();
 
-        $query = $foreignMapper->where([$foreignKey => $this->$localKey]);
+        $query = $foreignMapper->where([$foreignKey => $this->$localKey])->first();
         return $query;
     }
 

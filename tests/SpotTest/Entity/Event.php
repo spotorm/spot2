@@ -28,10 +28,15 @@ class Event extends \Spot\Entity
             ]],
             'token' => ['type' => 'string', 'required' => true],
             'date_start' => ['type' => 'datetime', 'required' => true, 'validation' => [
-                'dateAfter' => new \DateTime()
+                'dateAfter' => new \DateTime('-1 second')
             ]],
             'date_created' => ['type' => 'datetime']
         ];
+    }
+
+    public function search()
+    {
+        return $this->hasOne('SpotTest\Entity\Event\Search', 'event_id');
     }
 
     public static function events(EventEmitter $eventEmitter)
@@ -48,6 +53,10 @@ class Event extends \Spot\Entity
             ], [
                 'event_id' => $entity->id
             ]);
+
+            if(!$result) {
+                throw new \Spot\Exception("Event search index entity failed to save!");
+            }
         });
     }
 }

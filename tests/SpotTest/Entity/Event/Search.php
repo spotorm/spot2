@@ -35,4 +35,9 @@ class Search extends \Spot\Entity
           ]
       ];
     }
+
+    public function event()
+    {
+        return $this->belongsTo('SpotTest\Entity\Event', 'event_id');
+    }
 }

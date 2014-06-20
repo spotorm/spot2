@@ -29,13 +29,6 @@ class Post extends \Spot\Entity
     public static function relations()
     {
         return [
-            // Each post entity 'hasMany' comment entites
-            'comments' => [
-                'type' => 'HasMany',
-                'entity' => 'SpotTest\Entity\Post\Comment',
-                'where' => ['post_id' => ':entity.id'],
-                'order' => ['date_created' => 'ASC']
-            ],
             // Each post entity 'hasManyThrough' tag entities
             'tags' => [
                 'type' => 'HasManyThrough',
@@ -43,19 +36,18 @@ class Post extends \Spot\Entity
                 'throughEntity' => 'SpotTest\Entity\PostTag',
                 'throughWhere' => ['post_id' => ':entity.id'],
                 'where' => ['id' => ':throughEntity.tag_id'],
-            ],
-            // Each post entity 'hasOne' author entites
-            'author' => [
-                'type' => 'HasOne',
-                'entity' => 'SpotTest\Entity\Author',
-                'where' => ['id' => ':entity.author_id']
-            ],
+            ]
         ];
     }
 
     public function comments()
     {
         return $this->hasMany('SpotTest\Entity\Post\Comment', 'post_id')->order(['date_created' => 'ASC']);
+    }
+
+    public function author()
+    {
+        return $this->belongsTo('SpotTest\Entity\Author', 'author_id');
     }
 
     public static function events(\Spot\EventEmitter $eventEmitter)
