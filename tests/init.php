@@ -24,7 +24,8 @@ if (!empty($dbDsn)) {
 /**
 * Return Spot mapper for use
 */
-$spot = new \Spot\Locator($cfg);
+$spot = Spot\Locator::getInstance();
+$spot->config($cfg);
 function test_spot_mapper($entityName)
 {
     global $spot; // you should never do this in real code :)

@@ -10,11 +10,20 @@ class Locator
     protected $mapper = [];
 
     /**
-     *  Constructor Method
+     * Constructor Method - private to enforce singleton with getInstance()
      */
-    public function __construct(Config $config)
+    private function __construct() { }
+
+    /**
+     * Singleton instance
+     */
+    public static function getInstance()
     {
-        $this->config = $config;
+        static $self;
+        if (empty($self)) {
+            $self = new static();
+        }
+        return $self;
     }
 
     /**
@@ -22,8 +31,14 @@ class Locator
      *
      * @return Spot\Config
      */
-    public function config()
+    public function config($cfg = null)
     {
+        if ($cfg !== null) {
+            $this->config = $cfg;
+        }
+        if (empty($this->config)) {
+            throw new Exception("Config object must be set with \$spot->config(<\Spot\Config object>)");
+        }
         return $this->config;
     }
 

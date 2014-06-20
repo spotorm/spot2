@@ -261,6 +261,38 @@ abstract class Entity
     }
 
     /**
+     * Relation: HasMany
+     */
+    protected function hasMany($entityName, $foreignKey, $localValue = null)
+    {
+        $foreignMapper = Locator::getInstance()->mapper($entityName);
+
+        if ($localValue === null) {
+            $localMapper = Locator::getInstance()->mapper(get_class($this));
+            $localValue = $localMapper->primaryKey($this);
+        }
+
+        $query = $foreignMapper->where([$foreignKey => $localValue]);
+        return $query;
+    }
+
+    /**
+     * Relation: BelongsTo
+     *
+     * BelongsTo assumes that the localKey will reference the foreignEntity's
+     * primary key. If this is not the case, you probably want to use the
+     * 'hasOne' relationship instead.
+     */
+    protected function belongsTo($foreignEntity, $localKey)
+    {
+        $foreignMapper = Locator::getInstance()->mapper($foreignEntity);
+        $foreignKey = $foreignMapper->primaryKeyField();
+
+        $query = $foreignMapper->where([$foreignKey => $this->$localKey]);
+        return $query;
+    }
+
+    /**
      * Enable isset() for object properties
      */
     public function __isset($key)

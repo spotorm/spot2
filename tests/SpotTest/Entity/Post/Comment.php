@@ -23,15 +23,8 @@ class Comment extends \Spot\Entity
         ];
     }
 
-    public static function relations()
+    public function post()
     {
-        return [
-            // Each post entity 'hasMany' comment entites
-            'post' => [
-                'type' => 'HasOne',
-                'entity' => 'SpotTest\Entity\Post',
-                'where' => ['id' => ':entity.post_id']
-            ]
-        ];
+        return $this->belongsTo('SpotTest\Entity\Post', 'post_id');
     }
 }

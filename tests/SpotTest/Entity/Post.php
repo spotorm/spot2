@@ -53,6 +53,11 @@ class Post extends \Spot\Entity
         ];
     }
 
+    public function comments()
+    {
+        return $this->hasMany('SpotTest\Entity\Post\Comment', 'post_id')->order(['date_created' => 'ASC']);
+    }
+
     public static function events(\Spot\EventEmitter $eventEmitter)
     {
         // This is done only to allow events to be set dynamically in a very

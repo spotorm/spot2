@@ -5,7 +5,6 @@ namespace Spot\Entity;
  * Collection of Spot_Entity objects
  *
  * @package Spot
- * @link http://spot.os.ly
  */
 class Collection implements \Iterator, \Countable, \ArrayAccess
 {

@@ -197,7 +197,7 @@ class Query implements \Countable, \IteratorAggregate
 
             // Prefix column name with alias
             if ($useAlias === true) {
-                $col = $this->_tableName . '.' . $col;
+                $col = $this->fieldWithAlias($col);
             }
 
             // Determine which operator to use based on custom and standard syntax
@@ -231,10 +231,10 @@ class Query implements \Countable, \IteratorAggregate
                 // FULLTEXT search
                 // MATCH(col) AGAINST(search)
                 case ':fulltext':
-                    $whereClause = "MATCH(" . $this->escapeField($col) . ") AGAINST(" . $builder->createPositionalParameter($value) . ")";
+                    $whereClause = "MATCH(" . $col . ") AGAINST(" . $builder->createPositionalParameter($value) . ")";
                 break;
                 case ':fulltext_boolean':
-                    $whereClause = "MATCH(" . $this->escapeField($col) . ") AGAINST(" . $builder->createPositionalParameter($value) . " IN BOOLEAN MODE)";
+                    $whereClause = "MATCH(" . $col . ") AGAINST(" . $builder->createPositionalParameter($value) . " IN BOOLEAN MODE)";
                 break;
                 // In
                 case 'in':
@@ -276,23 +276,23 @@ class Query implements \Countable, \IteratorAggregate
             if(empty($whereClause)) {
                 if(is_array($value)) {
                     if(empty($value)) {
-                        $whereClause = $this->escapeField($col) . " IS NULL";
+                        $whereClause = $col . " IS NULL";
                     } else {
                         $valueIn = "";
                         foreach($value as $val) {
                             $valueIn .= $builder->createPositionalParameter($val) . ",";
                         }
                         $value = "(" . trim($valueIn, ',') . ")";
-                        $whereClause = $this->escapeField($col) . " " . $operator . " " . $value;
+                        $whereClause = $col . " " . $operator . " " . $value;
                     }
                 } elseif(is_null($value)) {
-                    $whereClause = $this->escapeField($col) . " " . $operator;
+                    $whereClause = $col . " " . $operator;
                 }
             }
 
             if(empty($whereClause)) {
                 // Add to binds array and add to WHERE clause
-                $whereClause = $this->escapeField($col) . " " . $operator . " " . $builder->createPositionalParameter($value) . "";
+                $whereClause = $col . " " . $operator . " " . $builder->createPositionalParameter($value) . "";
             }
 
             $sqlFragments[] = $whereClause;
@@ -385,22 +385,10 @@ class Query implements \Countable, \IteratorAggregate
      * @param array $fields Array of field names to use for sorting
      * @return $this
      */
-    public function order($fields = [])
+    public function order(array $order)
     {
-        $orderBy = [];
-        $defaultSort = "ASC";
-        if (is_array($fields)) {
-            foreach($fields as $field => $sort) {
-                // Numeric index - field as array entry, not key/value pair
-                if(is_numeric($field)) {
-                    $field = $sort;
-                    $sort = $defaultSort;
-                }
-
-                $this->order[$field] = strtoupper($sort);
-            }
-        } else {
-            $this->order[$fields] = $defaultSort;
+        foreach($order as $field => $order) {
+            $this->builder()->addOrderBy($this->fieldWithAlias($field), $order);
         }
         return $this;
     }
@@ -414,7 +402,7 @@ class Query implements \Countable, \IteratorAggregate
     public function group(array $fields = [])
     {
         foreach($fields as $field) {
-            $this->group[] = $field;
+            $this->builder()->addGroupBy($this->fieldWithAlias($field));
         }
         return $this;
     }
@@ -553,5 +541,14 @@ class Query implements \Countable, \IteratorAggregate
             return $field;
         }
         return $this->mapper()->connection()->quoteIdentifier($field);
+    }
+
+    /**
+     * Get field name with table alias appended
+     */
+    public function fieldWithAlias($field, $escaped = true)
+    {
+        $field = $this->_tableName . '.' . $field;
+        return $escaped ? $this->escapeField($field) : $field;
     }
 }

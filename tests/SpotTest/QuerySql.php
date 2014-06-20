@@ -130,6 +130,24 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertEquals(6, $mapper->where(['status :gte' => 5])->count());
     }
 
+    // Ordering
+    public function testOrderBy()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $query = $mapper->select()->noQuote()->where(['status' => 2])->order(['date_created' => 'ASC']);
+        $this->assertEquals("SELECT * FROM test_posts test_posts WHERE test_posts.status = ? ORDER BY test_posts.date_created ASC", $query->toSql());
+        $this->assertEquals(count($query), 1);
+    }
+
+    // Grouping
+    public function testGroupBy()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $query = $mapper->select()->noQuote()->where(['status' => 2])->group(['id']);
+        $this->assertEquals("SELECT * FROM test_posts test_posts WHERE test_posts.status = ? GROUP BY test_posts.id", $query->toSql());
+        $this->assertEquals(count($query), 1);
+    }
+
     // Use same column name more than once
     public function testFieldMultipleUsage()
     {
