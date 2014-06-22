@@ -103,6 +103,7 @@ class Mapper
     public function loadEvents()
     {
         $entityName = $this->entity();
+        $this->eventEmitter()->removeAllListeners();
         $entityName::events($this->eventEmitter());
     }
 
