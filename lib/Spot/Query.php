@@ -49,11 +49,22 @@ class Query implements \Countable, \IteratorAggregate
     }
 
     /**
-     * Set field and value quoting on/off - maily used for testing output SQL since quoting is different per platform
+     * Set field and value quoting on/off - maily used for testing output SQL
+     * since quoting is different per platform
      */
     public function noQuote($noQuote = true)
     {
         $this->_noQuote = $noQuote;
+        return $this;
+    }
+
+    /**
+     * Select based on the resulting rows of another entity object. Primarily
+     * used for relations.
+     */
+    public function through($throughEntity, $whereField)
+    {
+        // @todo: Everything
         return $this;
     }
 

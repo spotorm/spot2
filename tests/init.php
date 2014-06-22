@@ -6,7 +6,11 @@
 error_reporting(-1);
 ini_set('display_errors', 1);
 
+/**
+* Autoload test fixtures
+*/
 $autoload = require dirname(dirname(__FILE__)) . '/vendor/autoload.php';
+$autoload->add('SpotTest', __DIR__);
 
 // Date setup
 date_default_timezone_set('America/Chicago');
@@ -31,9 +35,4 @@ function test_spot_mapper($entityName)
     global $spot; // you should never do this in real code :)
     return $spot->mapper($entityName);
 }
-
-/**
-* Autoload test fixtures
-*/
-$autoload->add('SpotTest', __DIR__);
 

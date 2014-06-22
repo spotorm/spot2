@@ -12,7 +12,6 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     protected $_resultsIdentities = array();
     protected $_entityName = null;
 
-
     /**
      * Constructor function
      *
@@ -32,7 +31,6 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
         return $this->_entityName;
     }
 
-
     /**
      * Returns first result in set
      *
@@ -45,13 +43,23 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     }
 
     /**
-    * Add a single entity to the collection
-    *
-    * @param object $entity to add
-    */
+     * Add a single entity to the collection
+     *
+     * @param object $entity to add
+     */
     public function add($entity)
     {
         $this->_results[] = $entity;
+    }
+
+    /**
+     * Return array of raw entity objects represented in collection
+     *
+     * @param array Array of Entity objects in collection
+     */
+    public function entities()
+    {
+        return $this->_results;
     }
 
     /**
@@ -75,7 +83,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
 
     /**
      * Return an array representation of the Collection.
-     *  
+     *
      * @param mixed $keyColumn
      * @param mixed $valueColumn
      * @return array    If $keyColumn and $valueColumn are not set, or are both null
@@ -85,7 +93,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      * @returns array   If $keyColumn and $valueColumn are both defined and not null
      *                      then this will return an array where the key is defined by each entities value in $keyColumn
      *                      and the value will be the value of the each entity in $valueColumn
-     * 
+     *
      * @todo Write unit tests for this function
      */
     public function toArray($keyColumn = null, $valueColumn = null)
@@ -124,12 +132,11 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     {
          return call_user_func_array($callback, array($this->_results));
     }
-    
 
 
     /**
      * Runs a function on every object in the query, returning the resulting array
-     * 
+     *
      * @param function The function to run
      * @return mixed An array containing the result of running the passed function
      *  on each member of the collect
@@ -142,7 +149,6 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
         }
         return $ret;
     }
-
 
     /**
      * Runs a function on every object in the query, returning an array containing every
@@ -161,7 +167,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
         }
         return $ret;
     }
-    
+
     /**
     * Provides a string representation of the class
     * Brackets contain the number of elements contained

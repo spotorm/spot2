@@ -35,9 +35,14 @@ class Post extends \Spot\Entity
                 'entity' => 'SpotTest\Entity\Tag',
                 'throughEntity' => 'SpotTest\Entity\PostTag',
                 'throughWhere' => ['post_id' => ':entity.id'],
-                'where' => ['id' => ':throughEntity.tag_id'],
+                'where' => ['id' => ':throughEntity.tag_id']
             ]
         ];
+    }
+
+    public function tags()
+    {
+        return $this->hasManyThrough('SpotTest\Entity\Tag', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id');
     }
 
     public function comments()

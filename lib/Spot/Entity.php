@@ -277,6 +277,30 @@ abstract class Entity
     }
 
     /**
+     * Relation: HasManyThrough
+     */
+    protected function hasManyThrough($hasManyEntity, $throughEntity, $selectField, $whereField)
+    {
+        $locator = Locator::getInstance();
+
+        $localMapper = Locator::getInstance()->mapper(get_class($this));
+        $localPkField = $localMapper->primaryKeyField();
+
+        $hasManyMapper = $locator->mapper($hasManyEntity);
+        $hasManyPkField = $hasManyMapper->primaryKeyField();
+
+        $throughEntityIds = [];
+        $throughMapper = $locator->mapper($throughEntity);
+        $throughEntityIds = $throughMapper->where([$whereField => $this->$localPkField])->toArray($selectField);
+
+        /**
+         * SELECT * FROM tags WHERE id IN(SELECT tag_id FROM post_tags WHERE post_id = ?)
+         */
+        $query = $hasManyMapper->where([$hasManyPkField => $throughEntityIds]);
+        return $query;
+    }
+
+    /**
      * Relation: HasOne
      *
      * HasOne assumes that the foreignKey will be on the foreignEntity.
