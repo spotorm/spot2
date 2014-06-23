@@ -401,28 +401,28 @@ class Events extends \PHPUnit_Framework_TestCase
         $eventEmitter->removeAllListeners('afterSave');
     }
 
-    // public function testAfterSaveEvent()
-    // {
-    //     $mapper = test_spot_mapper('SpotTest\Entity\Post');
-    //     $eventEmitter = $mapper->eventEmitter();
-    //     $post = new \SpotTest\Entity\Post(array(
-    //         'title' => 'A title',
-    //         'body' => '<p>body</p>',
-    //         'status' => 1,
-    //         'author_id' => 1,
-    //         'date_created' => new \DateTime()
-    //     ));
+    public function testAfterSaveEvent()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $eventEmitter = $mapper->eventEmitter();
+        $post = new \SpotTest\Entity\Post(array(
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1,
+            'date_created' => new \DateTime()
+        ));
 
-    //     $eventEmitter->removeAllListeners('afterSave');
-    //     \SpotTest\Entity\Post::$events = [
-    //         'afterSave' => ['mock_save_hook']
-    //     ];
-    //     $mapper->loadEvents();
+        $eventEmitter->removeAllListeners('afterSave');
+        \SpotTest\Entity\Post::$events = [
+            'afterSave' => ['mock_save_hook']
+        ];
+        $mapper->loadEvents();
 
-    //     $result = $mapper->save($post);
+        $result = $mapper->save($post);
 
-    //     $this->assertEquals(2, $post->status);
+        $this->assertEquals(2, $post->status);
 
-    //     $eventEmitter->removeAllListeners('afterSave');
-    // }
+        $eventEmitter->removeAllListeners('afterSave');
+    }
 }
