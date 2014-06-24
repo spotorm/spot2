@@ -15,7 +15,6 @@ matrix:
 # optionally specify a list of environments, for example to test different RDBMS
 env:
   - SPOT_DB=mysql
-  - SPOT_DB=sqlite
 
 # execute any number of scripts before the test run, custom env's are available as variables
 before_script:

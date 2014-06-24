@@ -31,6 +31,8 @@ class Mapper
     {
         $this->_config = $config;
         $this->_entityName = $entityName;
+
+        $this->loadEvents();
     }
 
     /**
@@ -41,6 +43,22 @@ class Mapper
     public function config()
     {
         return $this->_config;
+    }
+
+    /**
+     * Get mapper for specified entity
+     *
+     * @param string $entityName Name of Entity object to load mapper for
+     * @return Spot\Mapper
+     */
+    public function getMapper($entityName)
+    {
+        $mapper = $entityName::mapper();
+        // Fallback to generic mapper
+        if ($mapper === false) {
+            $mapper = 'Spot\Mapper';
+        }
+        return new $mapper($this->config(), $entityName);
     }
 
     /**
@@ -91,6 +109,7 @@ class Mapper
      */
     public function eventEmitter()
     {
+        $entityName = $this->entity();
         if (empty($this->eventEmitter)) {
             $this->eventEmitter = new EventEmitter();
         }
@@ -98,13 +117,101 @@ class Mapper
     }
 
     /**
-     * Load Events for mapped entity
+     * Reset and load Events for mapped entity
      */
     public function loadEvents()
     {
         $entityName = $this->entity();
         $this->eventEmitter()->removeAllListeners();
         $entityName::events($this->eventEmitter());
+    }
+
+    /**
+     * Load Relations for mapped entity
+     */
+    public function loadRelations(Entity $entity)
+    {
+        $entityName = $this->entity();
+        $relations = $entityName::relations($this, $entity);
+        foreach($relations as $relation => $query) {
+            $entity->setRelation($relation, $query);
+        }
+    }
+
+    /**
+     * Relation: HasMany
+     */
+    public function hasMany(Entity $entity, $entityName, $foreignKey, $localValue = null)
+    {
+        $foreignMapper = $this->getMapper($entityName);
+
+        if ($localValue === null) {
+            $localValue = $this->primaryKey($entity);
+        }
+
+        $query = $foreignMapper->where([$foreignKey => $localValue]);
+        return $query;
+    }
+
+    /**
+     * Relation: HasManyThrough
+     */
+    public function hasManyThrough(Entity $entity, $hasManyEntity, $throughEntity, $selectField, $whereField)
+    {
+        $localPkField = $this->primaryKeyField();
+        $localValue = $entity->$localPkField;
+
+        $hasManyMapper = $this->getMapper($hasManyEntity);
+        $hasManyPkField = $hasManyMapper->primaryKeyField();
+
+        $throughMapper = $this->getMapper($throughEntity);
+        $throughQuery = $throughMapper->select($selectField)->where([$whereField => $localValue]);
+
+        /**
+         * SELECT * FROM tags WHERE id IN(SELECT tag_id FROM post_tags WHERE post_id = ?)
+         */
+        $query = $hasManyMapper->select()->whereFieldSql($hasManyPkField, 'IN(' . $throughQuery->toSql() . ')', [$localValue]);
+        return $query;
+    }
+
+    /**
+     * Relation: HasOne
+     *
+     * HasOne assumes that the foreignKey will be on the foreignEntity.
+     */
+    public function hasOne(Entity $entity, $foreignEntity, $foreignKey)
+    {
+        $localKey = $this->primaryKeyField();
+
+        $foreignMapper = $this->getMapper($foreignEntity);
+        $query = $foreignMapper->where([$foreignKey => $entity->$localKey]);
+
+        // Return relation object so query can be lazy-loaded
+        return new Relation\Single($query);
+    }
+
+    /**
+     * Relation: BelongsTo
+     *
+     * BelongsTo assumes that the localKey will reference the foreignEntity's
+     * primary key. If this is not the case, you probably want to use the
+     * 'hasOne' relationship instead.
+     */
+    public function belongsTo(Entity $entity, $foreignEntity, $localKey)
+    {
+        $foreignMapper = $this->getMapper($foreignEntity);
+        $foreignKey = $foreignMapper->primaryKeyField();
+
+        $query = $foreignMapper->where([$foreignKey => $entity->$localKey]);
+        return new Relation\Single($query);
+    }
+
+    /**
+     * Prepare entity and load necessary objects on it
+     */
+    public function prepareEntity(Entity $entity)
+    {
+        $this->loadRelations($entity);
     }
 
     /**
@@ -242,6 +349,8 @@ class Mapper
             $entity = new $entityName($data);
             $entity->isNew(false);
 
+            $this->prepareEntity($entity);
+
             // Store in array for Collection
             $results[] = $entity;
 
@@ -310,20 +419,6 @@ class Mapper
 
         $this->eventEmitter()->emit('afterWith', [$collection, $with, $this]);
         return $collection;
-    }
-
-    /**
-     * Get array of entity data
-     */
-    public function data(Entity $entity, array $data = [])
-    {
-        // SET data
-        if(count($data) > 0) {
-            return $entity->data($data);
-        }
-
-        // GET data
-        return $entity->data();
     }
 
     /**
@@ -512,7 +607,7 @@ class Mapper
      * Insert record
      *
      * @param mixed $entity Entity object or array of field => value pairs
-     * @params array $options Array of adapter-specific options
+     * @param array $options Array of adapter-specific options
      */
     public function insert($entity, array $options = [])
     {
@@ -561,6 +656,10 @@ class Mapper
             $entity->$pkField = $result;
             $entity->isNew(false);
 
+            if($result) {
+                $this->prepareEntity($entity);
+            }
+
             // Run afterInsert
             if (false === $this->eventEmitter()->emit('afterInsert', [$entity, $this, &$result])) {
                 $result = false;
@@ -578,14 +677,8 @@ class Mapper
      * @param object $entity Entity object
      * @params array $options Array of adapter-specific options
      */
-    public function update($entity, array $options = [])
+    public function update(Entity $entity, array $options = [])
     {
-        if (is_object($entity)) {
-            $entityName = get_class($entity);
-        } else {
-            throw new Exception(__METHOD__ . " Requires an entity object as the first parameter");
-        }
-
         // Run beforeUpdate to know whether or not we can continue
         if (false === $this->eventEmitter()->emit('beforeUpdate', [$entity, $this])) {
             return false;
@@ -600,6 +693,7 @@ class Mapper
         $data = $entity->dataModified();
         // Save only known, defined fields
         $entityFields = $this->fields();
+        $entityName = $this->entity();
         $data = array_intersect_key($data, $entityFields);
 
         // Do type conversion

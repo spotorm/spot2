@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class Entity extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post'];
+    private static $entities = ['Post', 'Author'];
 
     public static function setupBeforeClass()
     {
@@ -40,7 +40,7 @@ class Entity extends \PHPUnit_Framework_TestCase
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'status' => 0,
-            'date_created' => null,
+            'date_created' => new \DateTime(),
             'data' => null,
             'author_id' => 1
         ];

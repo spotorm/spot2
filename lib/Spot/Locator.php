@@ -12,18 +12,9 @@ class Locator
     /**
      * Constructor Method - private to enforce singleton with getInstance()
      */
-    private function __construct() { }
-
-    /**
-     * Singleton instance
-     */
-    public static function getInstance()
+    public function __construct(Config $config)
     {
-        static $self;
-        if (empty($self)) {
-            $self = new static();
-        }
-        return $self;
+        $this->config = $config;
     }
 
     /**
@@ -45,6 +36,7 @@ class Locator
     /**
      * Get mapper for specified entity
      *
+     * @param string $entityName Name of Entity object to load mapper for
      * @return Spot\Mapper
      */
     public function mapper($entityName)

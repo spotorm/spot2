@@ -239,4 +239,25 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertContains('IS NULL', $posts->toSql());
         $this->assertEquals(0, count($posts));
     }
+
+    public function testWhereSqlSubqueryInClause()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $postsSub = $mapper->where(['status !=' => [3,4,5]]);
+        $posts = $mapper->select()->whereSql('id IN(' . $postsSub->toSql() . ')');
+
+        $this->assertContains('IN', $posts->toSql());
+    }
+
+    public function testWhereFieldSqlSubqueryInClause()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $params = [3,4,5];
+
+        $postsSub = $mapper->where(['status !=' => $params]);
+        $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', $params);
+
+        $this->assertContains('IN', $posts->toSql());
+    }
 }

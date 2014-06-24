@@ -1,12 +1,15 @@
 <?php
 namespace SpotTest\Entity\Event;
 
+use Spot\Mapper;
+use Spot\Entity;
+
 /**
  * Event Search Index
  *
  * @package Spot
  */
-class Search extends \Spot\Entity
+class Search extends Entity
 {
     protected static $table = 'test_events_search';
 
@@ -25,19 +28,10 @@ class Search extends \Spot\Entity
         ];
     }
 
-    public static function relations() {
-      return [
-          // Reference back to event
-          'event' => [
-              'type'   => 'HasOne',
-              'entity' => 'SpotTest\Entity\Event',
-              'where'  => ['id' => ':entity.event_id']
-          ]
-      ];
-    }
-
-    public function event()
+    public static function relations(Mapper $mapper, Entity $entity)
     {
-        return $this->belongsTo('SpotTest\Entity\Event', 'event_id');
+        return [
+            'event' => $mapper->belongsTo($entity, 'SpotTest\Entity\Event', 'event_id')
+        ];
     }
 }

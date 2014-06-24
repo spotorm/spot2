@@ -139,16 +139,6 @@ class Manager
                 $returnFields[$fieldName] = $fieldOpts;
             }
             $this->fields = $returnFields;
-
-            // Relations
-            $entityRelations = array();
-            $entityRelations = $entityName::relations();
-            if(!is_array($entityRelations)) {
-                throw new \InvalidArgumentException($entityName . " Relation definitons must be formatted as an array.");
-            }
-            foreach($entityRelations as $relationAlias => $relationOpts) {
-                $this->relations[$relationAlias] = $relationOpts;
-            }
         }
         return $returnFields;
     }

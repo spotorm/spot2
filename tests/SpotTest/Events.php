@@ -60,10 +60,52 @@ class Events extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        Entity\Post::$events = array();
+        Entity\Post::$events = [];
     }
 
     public function testSaveHooks()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $testcase = $this;
+
+        $post = new \SpotTest\Entity\Post([
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1
+        ]);
+
+        $hooks = [];
+
+        $eventEmitter = $mapper->eventEmitter();
+        $eventEmitter->on('beforeSave', function($post, $mapper) use (&$hooks, &$testcase) {
+            $testcase->assertEquals($hooks, []);
+            $hooks[] = 'called beforeSave';
+        });
+
+        $eventEmitter->on('afterSave', function($post, $mapper, $result) use (&$hooks, &$testcase) {
+            $testcase->assertEquals($hooks, ['called beforeSave']);
+            $testcase->assertInstanceOf('SpotTest\Entity\Post', $post);
+            $testcase->assertInstanceOf('Spot\Mapper', $mapper);
+            $hooks[] = 'called afterSave';
+        });
+
+        $this->assertEquals($hooks, []);
+
+        $result = $mapper->save($post);
+
+        $this->assertEquals(['called beforeSave', 'called afterSave'], $hooks);
+
+        $eventEmitter->removeAllListeners('afterSave');
+        $eventEmitter->removeAllListeners('beforeSave');
+
+        $mapper->save($post);
+
+        // Verify that hooks were deregistered (not called again)
+        $this->assertEquals(['called beforeSave', 'called afterSave'], $hooks);
+    }
+
+    public function testInsertHooks()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $testcase = $this;
@@ -76,67 +118,24 @@ class Events extends \PHPUnit_Framework_TestCase
             'date_created' => new \DateTime()
         ]);
 
-        $hooks = array();
-
-        $eventEmitter = $mapper->eventEmitter();
-        $eventEmitter->on('beforeSave', function($post, $mapper) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, array());
-            $hooks[] = 'called beforeSave';
-        });
-
-        $eventEmitter->on('afterSave', function($post, $mapper, $result) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, array('called beforeSave'));
-            $testcase->assertInstanceOf('\SpotTest\Entity\Post', $post);
-            $testcase->assertInstanceOf('\\Spot\\Mapper', $mapper);
-            $hooks[] = 'called afterSave';
-        });
-
-        $this->assertEquals($hooks, array());
-
-        $mapper->save($post);
-
-        $this->assertEquals(['called beforeSave', 'called afterSave'], $hooks);
-
-        $eventEmitter->removeAllListeners('afterSave');
-        $eventEmitter->removeAllListeners('beforeSave');
-
-        $mapper->save($post);
-
-        // Verify that hooks were deregistered
-        $this->assertEquals(['called beforeSave', 'called afterSave'], $hooks);
-    }
-
-    public function testInsertHooks()
-    {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $testcase = $this;
-
-        $post = new \SpotTest\Entity\Post(array(
-            'title' => 'A title',
-            'body' => '<p>body</p>',
-            'status' => 1,
-            'author_id' => 1,
-            'date_created' => new \DateTime()
-        ));
-
-        $hooks = array();
+        $hooks = [];
 
         $eventEmitter = $mapper->eventEmitter();
         $eventEmitter->on('beforeInsert', function($post, $mapper) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, array());
+            $testcase->assertEquals($hooks, []);
             $hooks[] = 'called beforeInsert';
         });
 
         $eventEmitter->on('afterInsert', function($post, $mapper, $result) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, array('called beforeInsert'));
+            $testcase->assertEquals($hooks, ['called beforeInsert']);
             $hooks[] = 'called afterInsert';
         });
 
-        $this->assertEquals($hooks, array());
+        $this->assertEquals($hooks, []);
 
         $mapper->save($post);
 
-        $this->assertEquals($hooks, array('called beforeInsert', 'called afterInsert'));
+        $this->assertEquals($hooks, ['called beforeInsert', 'called afterInsert']);
 
         $eventEmitter->removeAllListeners('beforeInsert');
         $eventEmitter->removeAllListeners('afterInsert');
@@ -145,20 +144,20 @@ class Events extends \PHPUnit_Framework_TestCase
     public function testInsertHooksUpdatesProperty()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $post = new \SpotTest\Entity\Post(array(
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
             'author_id' => 1234,
             'date_created' => new \DateTime()
-        ));
+        ]);
 
         $eventEmitter = $mapper->eventEmitter();
         $eventEmitter->on('beforeInsert', function($post, $mapper) {
             $post->status = 2;
         });
         $mapper->save($post);
-        $post = $mapper->first(array('author_id' => 1234));
+        $post = $mapper->first(['author_id' => 1234]);
         $this->assertEquals(2, $post->status);
 
         $eventEmitter->removeAllListeners('beforeInsert');
@@ -169,16 +168,16 @@ class Events extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $testcase = $this;
 
-        $post = new \SpotTest\Entity\Post(array(
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
             'author_id' => 1,
             'date_created' => new \DateTime()
-        ));
+        ]);
         $mapper->save($post);
 
-        $hooks = array();
+        $hooks = [];
 
         $eventEmitter = $mapper->eventEmitter();
         $eventEmitter->on('beforeInsert', function($post, $mapper) use (&$testcase) {
@@ -186,20 +185,20 @@ class Events extends \PHPUnit_Framework_TestCase
         });
 
         $eventEmitter->on('beforeUpdate', function($post, $mapper) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, array());
+            $testcase->assertEquals($hooks, []);
             $hooks[] = 'called beforeUpdate';
         });
 
         $eventEmitter->on('afterUpdate', function($post, $mapper, $result) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, array('called beforeUpdate'));
+            $testcase->assertEquals($hooks, ['called beforeUpdate']);
             $hooks[] = 'called afterUpdate';
         });
 
-        $this->assertEquals($hooks, array());
+        $this->assertEquals($hooks, []);
 
         $mapper->save($post);
 
-        $this->assertEquals($hooks, array('called beforeUpdate', 'called afterUpdate'));
+        $this->assertEquals($hooks, ['called beforeUpdate', 'called afterUpdate']);
 
         $eventEmitter->removeAllListeners('beforeInsert');
         $eventEmitter->removeAllListeners('beforeUpdate');
@@ -212,13 +211,13 @@ class Events extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $testcase = $this;
 
-        $post = new \SpotTest\Entity\Post(array(
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
             'author_id' => $author_id,
             'date_created' => new \DateTime()
-        ));
+        ]);
         $mapper->save($post);
         $this->assertEquals(1, $post->status);
 
@@ -238,33 +237,33 @@ class Events extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $testcase = $this;
 
-        $post = new \SpotTest\Entity\Post(array(
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
             'author_id' => 1,
             'date_created' => new \DateTime()
-        ));
+        ]);
         $mapper->save($post);
 
-        $hooks = array();
+        $hooks = [];
 
         $eventEmitter = $mapper->eventEmitter();
         $eventEmitter->on('beforeDelete', function($post, $mapper) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, array());
+            $testcase->assertEquals($hooks, []);
             $hooks[] = 'called beforeDelete';
         });
 
         $eventEmitter->on('afterDelete', function($post, $mapper, $result) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, array('called beforeDelete'));
+            $testcase->assertEquals($hooks, ['called beforeDelete']);
             $hooks[] = 'called afterDelete';
         });
 
-        $this->assertEquals($hooks, array());
+        $this->assertEquals($hooks, []);
 
         $mapper->delete($post);
 
-        $this->assertEquals($hooks, array('called beforeDelete', 'called afterDelete'));
+        $this->assertEquals($hooks, ['called beforeDelete', 'called afterDelete']);
 
         $eventEmitter->removeAllListeners('beforeDelete');
         $eventEmitter->removeAllListeners('afterDelete');
@@ -275,19 +274,19 @@ class Events extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
-        $post = new \SpotTest\Entity\Post(array(
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
             'author_id' => 1,
             'date_created' => new \DateTime()
-        ));
+        ]);
 
         $i = $post->status;
 
-        \SpotTest\Entity\Post::$events = array(
-            'beforeSave' => array('mock_save_hook')
-        );
+        \SpotTest\Entity\Post::$events = [
+            'beforeSave' => ['mock_save_hook']
+        ];
         $mapper->loadEvents();
 
         $mapper->save($post);
@@ -295,9 +294,9 @@ class Events extends \PHPUnit_Framework_TestCase
         $this->assertEquals($i + 1, $post->status);
         $eventEmitter->removeAllListeners('beforeSave');
 
-        \SpotTest\Entity\Post::$events = array(
-            'beforeSave' => array('mock_save_hook', 'mock_save_hook')
-        );
+        \SpotTest\Entity\Post::$events = [
+            'beforeSave' => ['mock_save_hook', 'mock_save_hook']
+        ];
         $mapper->loadEvents();
 
         $i = $post->status;
@@ -315,12 +314,12 @@ class Events extends \PHPUnit_Framework_TestCase
     //     $mapper = test_spot_mapper('SpotTest\Entity\Post');
     //     $testcase = $this;
 
-    //     $hooks = array();
+    //     $hooks = [];
 
     //     $eventEmitter->on('\SpotTest\Entity\Post', 'beforeWith', function($entityClass, $collection, $with, $mapper) use (&$hooks, &$testcase) {
     //         $testcase->assertEquals('\SpotTest\Entity\Post', $entityClass);
     //         $testcase->assertInstanceOf('\\Spot\\Entity\\Collection', $collection);
-    //         $testcase->assertEquals(array('comments'), $with);
+    //         $testcase->assertEquals(['comments'], $with);
     //         $testcase->assertInstanceOf('\\Spot\\Mapper', $mapper);
     //         $hooks[] = 'Called beforeWith';
     //     });
@@ -336,14 +335,14 @@ class Events extends \PHPUnit_Framework_TestCase
     //     $eventEmitter->on('\SpotTest\Entity\Post', 'afterWith', function($entityClass, $collection, $with, $mapper) use (&$hooks, &$testcase) {
     //         $testcase->assertEquals('\SpotTest\Entity\Post', $entityClass);
     //         $testcase->assertInstanceOf('\\Spot\\Entity\\Collection', $collection);
-    //         $testcase->assertEquals(array('comments'), $with);
+    //         $testcase->assertEquals(['comments'], $with);
     //         $testcase->assertInstanceOf('\\Spot\\Mapper', $mapper);
     //         $hooks[] = 'Called afterWith';
     //     });
 
-    //     $mapper->all('\SpotTest\Entity\Post', array('id' => array(1,2)))->with('comments')->execute();
+    //     $mapper->all('\SpotTest\Entity\Post', ['id' => [1,2]])->with('comments')->execute();
 
-    //     $this->assertEquals(array('Called beforeWith', 'Called loadWith', 'Called afterWith'), $hooks);
+    //     $this->assertEquals(['Called beforeWith', 'Called loadWith', 'Called afterWith'], $hooks);
     // }
 
 
@@ -374,15 +373,15 @@ class Events extends \PHPUnit_Framework_TestCase
     public function testHookReturnsFalse()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $post = new \SpotTest\Entity\Post(array(
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
             'author_id' => 1,
             'date_created' => new \DateTime()
-        ));
+        ]);
 
-        $hooks = array();
+        $hooks = [];
 
         $eventEmitter = $mapper->eventEmitter();
         $eventEmitter->on('beforeSave', function($post, $mapper) use (&$hooks) {
@@ -396,7 +395,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
         $mapper->save($post);
 
-        $this->assertEquals($hooks, array('called beforeSave'));
+        $this->assertEquals($hooks, ['called beforeSave']);
 
         $eventEmitter->removeAllListeners('afterSave');
     }
@@ -405,13 +404,13 @@ class Events extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
-        $post = new \SpotTest\Entity\Post(array(
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
             'author_id' => 1,
             'date_created' => new \DateTime()
-        ));
+        ]);
 
         $eventEmitter->removeAllListeners('afterSave');
         \SpotTest\Entity\Post::$events = [

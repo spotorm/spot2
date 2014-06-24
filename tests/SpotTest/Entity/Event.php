@@ -1,6 +1,8 @@
 <?php
 namespace SpotTest\Entity;
 
+use Spot\Entity;
+use Spot\Mapper;
 use Spot\EventEmitter;
 
 /**
@@ -34,9 +36,11 @@ class Event extends \Spot\Entity
         ];
     }
 
-    public function search()
+    public static function relations(Mapper $mapper, Entity $entity)
     {
-        return $this->hasOne('SpotTest\Entity\Event\Search', 'event_id');
+        return [
+            'search' => $mapper->hasOne($entity, 'SpotTest\Entity\Event\Search', 'event_id')
+        ];
     }
 
     public static function events(EventEmitter $eventEmitter)

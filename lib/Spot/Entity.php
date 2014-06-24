@@ -13,14 +13,15 @@ abstract class Entity
     protected static $mapper = false;
 
     // Entity data storage
-    protected $_data = array();
-    protected $_dataModified = array();
+    protected $_data = [];
+    protected $_dataModified = [];
+    protected $_relations = [];
 
     // Entity state
     protected $_isNew = true;
 
     // Entity error messages (may be present after save attempt)
-    protected $_errors = array();
+    protected $_errors = [];
 
     /**
      * Constructor - allows setting of object properties with array on construct
@@ -43,7 +44,7 @@ abstract class Entity
         $fields = static::fields();
         foreach($fields as $field => $opts) {
             if(!isset($this->_data[$field])) {
-                $this->_data[$field] = isset($opts['default']) ? $opts['default'] : null;
+                $this->_data[$field] = isset($opts['value']) ? $opts['value'] : null;
             }
         }
     }
@@ -96,7 +97,7 @@ abstract class Entity
     /**
      * Return defined fields of the entity
      */
-    public static function relations()
+    public static function relations(Mapper $mapper, self $entity)
     {
         return [];
     }
@@ -108,7 +109,7 @@ abstract class Entity
     {
         // GET
         if(null === $data || !$data) {
-            return array_diff_key(array_merge($this->_data, $this->_dataModified), self::relations());
+            return array_merge($this->_data, $this->_dataModified);
         }
 
         // SET
@@ -261,77 +262,6 @@ abstract class Entity
     }
 
     /**
-     * Relation: HasMany
-     */
-    protected function hasMany($entityName, $foreignKey, $localValue = null)
-    {
-        $foreignMapper = Locator::getInstance()->mapper($entityName);
-
-        if ($localValue === null) {
-            $localMapper = Locator::getInstance()->mapper(get_class($this));
-            $localValue = $localMapper->primaryKey($this);
-        }
-
-        $query = $foreignMapper->where([$foreignKey => $localValue]);
-        return $query;
-    }
-
-    /**
-     * Relation: HasManyThrough
-     */
-    protected function hasManyThrough($hasManyEntity, $throughEntity, $selectField, $whereField)
-    {
-        $locator = Locator::getInstance();
-
-        $localMapper = Locator::getInstance()->mapper(get_class($this));
-        $localPkField = $localMapper->primaryKeyField();
-
-        $hasManyMapper = $locator->mapper($hasManyEntity);
-        $hasManyPkField = $hasManyMapper->primaryKeyField();
-
-        $throughEntityIds = [];
-        $throughMapper = $locator->mapper($throughEntity);
-        $throughEntityIds = $throughMapper->where([$whereField => $this->$localPkField])->toArray($selectField);
-
-        /**
-         * SELECT * FROM tags WHERE id IN(SELECT tag_id FROM post_tags WHERE post_id = ?)
-         */
-        $query = $hasManyMapper->where([$hasManyPkField => $throughEntityIds]);
-        return $query;
-    }
-
-    /**
-     * Relation: HasOne
-     *
-     * HasOne assumes that the foreignKey will be on the foreignEntity.
-     */
-    protected function hasOne($foreignEntity, $foreignKey)
-    {
-        $localMapper = Locator::getInstance()->mapper(get_class($this));
-        $localKey = $localMapper->primaryKeyField();
-
-        $foreignMapper = Locator::getInstance()->mapper($foreignEntity);
-        $query = $foreignMapper->where([$foreignKey => $this->$localKey])->first();
-        return $query;
-    }
-
-    /**
-     * Relation: BelongsTo
-     *
-     * BelongsTo assumes that the localKey will reference the foreignEntity's
-     * primary key. If this is not the case, you probably want to use the
-     * 'hasOne' relationship instead.
-     */
-    protected function belongsTo($foreignEntity, $localKey)
-    {
-        $foreignMapper = Locator::getInstance()->mapper($foreignEntity);
-        $foreignKey = $foreignMapper->primaryKeyField();
-
-        $query = $foreignMapper->where([$foreignKey => $this->$localKey])->first();
-        return $query;
-    }
-
-    /**
      * Enable isset() for object properties
      */
     public function __isset($key)
@@ -346,11 +276,13 @@ abstract class Entity
     {
         $v = null;
 
+        if (isset($this->_relations[$field])) {
+            $v =& $this->_relations[$field];
         // We can't use isset for _dataModified because it returns
         // false for NULL values
-        if(array_key_exists($field, $this->_dataModified)) {
+        } elseif (array_key_exists($field, $this->_dataModified)) {
             $v =&  $this->_dataModified[$field];
-        } elseif(isset($this->_data[$field])) {
+        } elseif (isset($this->_data[$field])) {
             $v =& $this->_data[$field];
         }
 
@@ -362,11 +294,15 @@ abstract class Entity
      */
     public function __set($field, $value)
     {
-        if (array_key_exists($field, self::relations())) {
-            $this->_loadedRelations[$field] = $value;
-            return;
-        }
         $this->_dataModified[$field] = $value;
+    }
+
+    /**
+     * Set relation
+     */
+    public function setRelation($relationName, $relationObj)
+    {
+        return $this->_relations[$relationName] = $relationObj;
     }
 
     /**

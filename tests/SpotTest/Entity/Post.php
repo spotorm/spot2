@@ -1,12 +1,16 @@
 <?php
 namespace SpotTest\Entity;
 
+use Spot\Entity;
+use Spot\Mapper;
+use Spot\EventEmitter;
+
 /**
  * Post
  *
  * @package Spot
  */
-class Post extends \Spot\Entity
+class Post extends Entity
 {
     protected static $table = 'test_posts';
 
@@ -26,36 +30,16 @@ class Post extends \Spot\Entity
         ];
     }
 
-    public static function relations()
+    public static function relations(Mapper $mapper, Entity $entity)
     {
         return [
-            // Each post entity 'hasManyThrough' tag entities
-            'tags' => [
-                'type' => 'HasManyThrough',
-                'entity' => 'SpotTest\Entity\Tag',
-                'throughEntity' => 'SpotTest\Entity\PostTag',
-                'throughWhere' => ['post_id' => ':entity.id'],
-                'where' => ['id' => ':throughEntity.tag_id']
-            ]
+            'tags' => $mapper->hasManyThrough($entity, 'SpotTest\Entity\Tag', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id'),
+            'comments' => $mapper->hasMany($entity, 'SpotTest\Entity\Post\Comment', 'post_id')->order(['date_created' => 'ASC']),
+            'author' => $mapper->belongsTo($entity, 'SpotTest\Entity\Author', 'author_id')
         ];
     }
 
-    public function tags()
-    {
-        return $this->hasManyThrough('SpotTest\Entity\Tag', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id');
-    }
-
-    public function comments()
-    {
-        return $this->hasMany('SpotTest\Entity\Post\Comment', 'post_id')->order(['date_created' => 'ASC']);
-    }
-
-    public function author()
-    {
-        return $this->belongsTo('SpotTest\Entity\Author', 'author_id');
-    }
-
-    public static function events(\Spot\EventEmitter $eventEmitter)
+    public static function events(EventEmitter $eventEmitter)
     {
         // This is done only to allow events to be set dynamically in a very
         // specific way for testing purposes. You probably don't want to do

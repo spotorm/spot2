@@ -1,12 +1,15 @@
 <?php
 namespace SpotTest\Entity;
 
+use Spot\Entity;
+use Spot\Mapper;
+
 /**
  * PostTag
  *
  * @package Spot
  */
-class PostTag extends \Spot\Entity
+class PostTag extends Entity
 {
     protected static $table = 'test_posttags';
 
@@ -20,20 +23,11 @@ class PostTag extends \Spot\Entity
         ];
     }
 
-    public static function relations()
+    public static function relations(Mapper $mapper, Entity $entity)
     {
         return [
-            // Each post tag entity 'HasOne' post and tag entity
-            'post' => [
-                'type' => 'HasOne',
-                'entity' => 'SpotTest\Entity\Post',
-                'where' => ['post_id' => ':entity.id'],
-            ],
-            'tag' => [
-                'type' => 'HasOne',
-                'entity' => 'SpotTest\Entity\Tag',
-                'where' => ['tag_id' => ':entity.id'],
-            ]
+            'post' => $mapper->belongsTo($entity, 'SpotTest\Entity\Post', 'post_id'),
+            'tag'  => $mapper->belongsTo($entity, 'SpotTest\Entity\Tag', 'tag_id')
         ];
     }
 }

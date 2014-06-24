@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class Insert extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post', 'Event', 'Event\Search'];
+    private static $entities = ['Post', 'Author', 'Event', 'Event\Search'];
 
     public static function setupBeforeClass()
     {
@@ -134,6 +134,7 @@ class Insert extends \PHPUnit_Framework_TestCase
             'type' => 'free',
             'date_start' => new \DateTime('+1 day')
         ]);
+
         $result = $mapper->save($event);
 
         $this->assertTrue($result !== false);

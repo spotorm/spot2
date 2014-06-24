@@ -1,6 +1,9 @@
 <?php
 namespace SpotTest\Entity;
 
+use Spot\Entity;
+use Spot\Mapper;
+
 /**
  * Post
  *
@@ -18,17 +21,10 @@ class Tag extends \Spot\Entity
         ];
     }
 
-    public static function relations()
+    public static function relations(Mapper $mapper, Entity $entity)
     {
         return [
-            // Each tag entity 'hasManyThrough' post entities
-            'posts' => [
-                'type' => 'HasManyThrough',
-                'entity' => 'SpotTest\Entity\Post',
-                'throughEntity' => 'SpotTest\Entity\PostTag',
-                'throughWhere' => ['tag_id' => ':entity.id'],
-                'where' => ['id' => ':throughEntity.post_id'],
-            ]
+            'posts' => $mapper->hasManyThrough($entity, 'SpotTest\Entity\Post', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id')
         ];
     }
 }

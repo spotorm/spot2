@@ -59,13 +59,11 @@ class Query implements \Countable, \IteratorAggregate
     }
 
     /**
-     * Select based on the resulting rows of another entity object. Primarily
-     * used for relations.
+     * Return DBAL Query builder expression
      */
-    public function through($throughEntity, $whereField)
+    public function expr()
     {
-        // @todo: Everything
-        return $this;
+        return $this->builder()->expr();
     }
 
     /**
@@ -148,6 +146,23 @@ class Query implements \Countable, \IteratorAggregate
     }
 
     /**
+     * Get all bound query parameters (passthrough to DBAL QueryBuilder)
+     */
+    public function getParameters()
+    {
+        return call_user_func_array([$this->builder(), __FUNCTION__], func_get_args());
+    }
+
+    /**
+     * Set query parameters (passthrough to DBAL QueryBuilder)
+     */
+    public function setParameters()
+    {
+        call_user_func_array([$this->builder(), __FUNCTION__], func_get_args());
+        return $this;
+    }
+
+    /**
      * WHERE conditions
      *
      * @param array $conditions Array of conditions for this clause
@@ -182,6 +197,40 @@ class Query implements \Countable, \IteratorAggregate
     public function andWhere(array $where, $type = 'AND')
     {
         return $this->where($where, $type);
+    }
+
+    /**
+     * WHERE field + raw SQL
+     *
+     * @param string $field Field name for SQL statement (will be quoted)
+     * @param string $sql SQL string to put in WHERE clause
+     */
+    public function whereFieldSql($field, $sql, array $params = [])
+    {
+        $builder = $this->builder();
+        $placeholderCount = substr_count($sql, '?');
+        $paramCount = count($params);
+        if ($placeholderCount !== $paramCount) {
+            throw new Exception("Number of supplied parameters (" . $paramCount . ") does not match the number of provided placeholders (" . $placeholderCount . ")");
+        }
+
+        $sql = preg_replace_callback('/\?/', function($match) use($builder, $params) {
+            $param = array_shift($params);
+            return $builder->createPositionalParameter($param);
+        }, $sql);
+        $builder->andWhere($this->escapeField($field) . ' ' . $sql);
+        return $this;
+    }
+
+    /**
+     * WHERE conditions
+     *
+     * @param string $sql SQL string to put in WHERE clause
+     */
+    public function whereSql($sql)
+    {
+        $this->builder()->andWhere($sql);
+        return $this;
     }
 
     /**
@@ -468,7 +517,8 @@ class Query implements \Countable, \IteratorAggregate
      */
     public function count()
     {
-        $stmt = $this->builder()->select('COUNT(*)')->execute();
+        $countCopy = clone $this->builder();
+        $stmt = $countCopy->select('COUNT(*)')->execute();
         return $stmt->fetchColumn(0);
     }
 
