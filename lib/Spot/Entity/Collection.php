@@ -1,6 +1,8 @@
 <?php
 namespace Spot\Entity;
 
+use Spot\Entity;
+
 /**
  * Collection of Spot_Entity objects
  *
@@ -8,9 +10,9 @@ namespace Spot\Entity;
  */
 class Collection implements \Iterator, \Countable, \ArrayAccess
 {
-    protected $_results = array();
-    protected $_resultsIdentities = array();
-    protected $_entityName = null;
+    protected $results = [];
+    protected $resultsIdentities = [];
+    protected $entityName = null;
 
     /**
      * Constructor function
@@ -18,23 +20,37 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      * @param array $results Array of pre-loaded Spot_Entity objects or Iterator that will fetch them lazily
      * @param array $resultsIdentities Array of key values for given result set primary key
      */
-    public function __construct(array $results = array(), array $resultsIdentities = array(), $entityName = null)
+    public function __construct(array $results = [], array $resultsIdentities = [], $entityName = null)
     {
-        $this->_results = $results;
-        $this->_resultsIdentities = $resultsIdentities;
-        $this->_entityName = $entityName;
+        $this->results = $results;
+        $this->resultsIdentities = $resultsIdentities;
+        $this->entityName = $entityName;
     }
 
+    /**
+     * Results identities (values for all primary keys of entities in collection)
+     *
+     * @return array
+     */
+    public function resultsIdentities()
+    {
+        return $this->resultsIdentities;
+    }
 
+    /**
+     * Entity name
+     *
+     * @return string Entity class name
+     */
     public function entityName()
     {
-        return $this->_entityName;
+        return $this->entityName;
     }
 
     /**
      * Returns first result in set
      *
-     * @return The first result in the set
+     * @return Spot\Entity The first result in the set
      */
     public function first()
     {
@@ -47,9 +63,9 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      *
      * @param object $entity to add
      */
-    public function add($entity)
+    public function add(Entity $entity)
     {
-        $this->_results[] = $entity;
+        $this->results[] = $entity;
     }
 
     /**
@@ -59,7 +75,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      */
     public function entities()
     {
-        return $this->_results;
+        return $this->results;
     }
 
     /**
@@ -67,13 +83,13 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     * This will only add entitys that don't already exist in the current
     * collection
     *
-    * @param Spot_Entity_Collection $collection
+    * @param Spot\Entity\Collection $collection
     * @todo Implement faster uniqueness checking by hash, entity manager, primary key field, etc.
     */
-    public function merge(\Spot\Entity\Collection $collection, $onlyUnique = true)
+    public function merge(Collection $collection, $onlyUnique = true)
     {
         foreach($collection as $entity) {
-            if($onlyUnique && in_array($entity, $this->_results)) {
+            if($onlyUnique && in_array($entity, $this->results)) {
                 continue; // Skip - entity already exists in collection
             }
             $this->add($entity);
@@ -100,22 +116,22 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     {
         // Both empty
         if(null === $keyColumn && null === $valueColumn) {
-            $return = array();
-            foreach($this->_results as $row) {
+            $return = [];
+            foreach($this->results as $row) {
                 $return[] = $row->toArray();
             }
 
         // Key column name
         } elseif(null !== $keyColumn && null === $valueColumn) {
-            $return = array();
-            foreach($this->_results as $row) {
+            $return = [];
+            foreach($this->results as $row) {
                 $return[] = $row->$keyColumn;
             }
 
         // Both key and valud columns filled in
         } else {
-            $return = array();
-            foreach($this->_results as $row) {
+            $return = [];
+            foreach($this->results as $row) {
                 $return[$row->$keyColumn] = $row->$valueColumn;
             }
         }
@@ -130,9 +146,8 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     */
     public function run($callback)
     {
-         return call_user_func_array($callback, array($this->_results));
+         return call_user_func_array($callback, [$this->results]);
     }
-
 
     /**
      * Runs a function on every object in the query, returning the resulting array
@@ -143,7 +158,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      */
     public function map($func)
     {
-        $ret = array();
+        $ret = [];
         foreach ($this as $obj) {
             $ret[] = $func($obj);
         }
@@ -179,7 +194,6 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
         return __CLASS__ . "[".$this->count()."]";
     }
 
-
     // SPL - Countable functions
     // ----------------------------------------------
     /**
@@ -187,64 +201,63 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      */
     public function count()
     {
-        return count($this->_results);
+        return count($this->results);
     }
-    // ----------------------------------------------
-
 
     // SPL - Iterator functions
     // ----------------------------------------------
     public function current()
     {
-        return current($this->_results);
+        return current($this->results);
     }
 
     public function key()
     {
-        return key($this->_results);
+        return key($this->results);
     }
 
     public function next()
     {
-        next($this->_results);
+        next($this->results);
     }
 
     public function rewind()
     {
-        reset($this->_results);
+        reset($this->results);
     }
 
     public function valid()
     {
-        return (current($this->_results) !== FALSE);
+        return (current($this->results) !== FALSE);
     }
-    // ----------------------------------------------
-
 
     // SPL - ArrayAccess functions
     // ----------------------------------------------
-    public function offsetExists($key) {
-        return isset($this->_results[$key]);
+    public function offsetExists($key)
+    {
+        return isset($this->results[$key]);
     }
 
-    public function &offsetGet($key) {
-        return $this->_results[$key];
+    public function &offsetGet($key)
+    {
+        return $this->results[$key];
     }
 
-    public function offsetSet($key, $value) {
+    public function offsetSet($key, $value)
+    {
         if($key === null) {
-            return $this->_results[] = $value;
+            return $this->results[] = $value;
         } else {
-            return $this->_results[$key] = $value;
+            return $this->results[$key] = $value;
         }
     }
 
-    public function offsetUnset($key) {
+    public function offsetUnset($key)
+    {
         if(is_int($key)) {
-            array_splice($this->_results, $key, 1);
+            array_splice($this->results, $key, 1);
         } else {
-            unset($this->_results[$key]);
+            unset($this->results[$key]);
         }
     }
-    // ----------------------------------------------
 }

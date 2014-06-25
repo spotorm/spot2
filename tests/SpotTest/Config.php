@@ -6,6 +6,23 @@ namespace SpotTest;
  */
 class Config extends \PHPUnit_Framework_TestCase
 {
+    public function testAddConnectionSqlite()
+    {
+        $cfg = new \Spot\Config();
+        $dsnp = $cfg->parseDsn('sqlite::memory:');
+        $this->assertEquals('pdo_sqlite', $dsnp['driver']);
+
+        $adapter = $cfg->addConnection('test_sqlite', 'sqlite::memory:');
+        $this->assertInstanceOf('Doctrine\DBAL\Connection', $adapter);
+    }
+
+    public function testAddSqliteConnectionWithDSNString()
+    {
+        $cfg = new \Spot\Config();
+        $adapter = $cfg->addConnection('test_sqlite', 'sqlite::memory:');
+        $this->assertInstanceOf('Doctrine\DBAL\Connection', $adapter);
+    }
+
     public function testAddConnectionWithDSNString()
     {
         $cfg = new \Spot\Config();

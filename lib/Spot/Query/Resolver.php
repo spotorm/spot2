@@ -110,14 +110,7 @@ class Resolver
     public function read(\Spot\Query $query)
     {
         $stmt = $query->builder()->execute();
-        return $this->toCollection($query, $stmt);
-    }
 
-    /**
-     * Return result set for current query
-     */
-    public function toCollection(\Spot\Query $query, \PDOStatement $stmt)
-    {
         // Set PDO fetch mode
         $stmt->setFetchMode(\PDO::FETCH_ASSOC);
 
@@ -175,8 +168,16 @@ class Resolver
     public function truncate($table)
     {
         $connection = $this->mapper->connection();
-        return $connection->transactional(function($conn) use($table) {
-            $conn->exec("TRUNCATE TABLE " . $table);
+
+        // SQLite doesn't support TRUNCATE
+        if(strpos(strtolower(get_class($connection->getDriver())), "sqlite") !== false) {
+            $sql = "DELETE FROM " . $table;
+        } else {
+            $sql = "TRUNCATE TABLE " . $table;
+        }
+
+        return $connection->transactional(function($conn) use($sql) {
+            $conn->exec($sql);
         });
     }
 

@@ -306,6 +306,16 @@ abstract class Entity
     }
 
     /**
+     * Has relation
+     *
+     * @return boolean
+     */
+    public function hasRelation($relationName)
+    {
+        return isset($this->_relations[$relationName]);
+    }
+
+    /**
      * String representation of the class
      */
     public function __toString()

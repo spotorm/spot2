@@ -17,6 +17,9 @@ class Mapper
     protected static $_entityManager = [];
     protected $eventEmitter;
 
+    // Temporary relations
+    protected $withRelations = [];
+
     // Class Names for required classes - Here so they can be easily overridden
     protected $_collectionClass = '\\Spot\\Entity\\Collection';
     protected $_queryClass = '\\Spot\\Query';
@@ -143,14 +146,11 @@ class Mapper
      */
     public function hasMany(Entity $entity, $entityName, $foreignKey, $localValue = null)
     {
-        $foreignMapper = $this->getMapper($entityName);
-
         if ($localValue === null) {
             $localValue = $this->primaryKey($entity);
         }
 
-        $query = $foreignMapper->where([$foreignKey => $localValue]);
-        return $query;
+        return new Relation\HasMany($this, $entity, $entityName, $foreignKey, $localValue);
     }
 
     /**
@@ -325,7 +325,7 @@ class Mapper
     }
 
     /**
-     * Create collection
+     * Create collection from Spot\Query object
      */
     public function collection($cursor, $with = [])
     {
@@ -363,13 +363,20 @@ class Mapper
 
         $collectionClass = $this->collectionClass();
         $collection = new $collectionClass($results, $resultsIdentities, $entityName);
+
+        if (empty($with)) {
+            return $collection;
+        }
+
         return $this->with($collection, $entityName, $with);
     }
 
     /**
      * Pre-emtively load associations for an entire collection
+     *
+     * @internal Implementation may change... for internal use only
      */
-    public function with($collection, $entityName, $with = [])
+    protected function with($collection, $entityName, $with = [])
     {
         $return = $this->eventEmitter()->emit('beforeWith', [$collection, $with, $this]);
         if (false === $return) {
@@ -377,43 +384,36 @@ class Mapper
         }
 
         foreach($with as $relationName) {
-            $return = $this->eventEmitter()->emit('loadWith', [$collection, $relationName, $this]);
-            if (false === $return) {
-                continue;
+            // We only need a single entity from the collection, because we're
+            // going to modify the query to pass in an array of all the
+            // identity keys from the collection instead of just that single entity
+            $singleEntity = $collection->first();
+
+            // Ensure we have a valid relation name
+            if (!$singleEntity->hasRelation($relationName)) {
+                throw new Exception("Invalid relation name eager-loaded in 'with' clause: No relation on $entityName with name '$relationName'");
             }
 
-            $relationObj = $this->loadRelation($collection, $relationName);
+            // Get relation object and change the 'identityValue' to an array
+            // of all the identities in the current collection
+            $relationObject = $singleEntity->$relationName;
+            if ($relationObject instanceof Relation\RelationAbstract) {
 
-            // double execute() to make sure we get the
-            // \Spot\Entity\Collection back (and not just the \Spot\Query)
-            $related_entities = $relationObj->execute()->limit(null)->execute();
+            }
+            $relationObject->identityValue($collection->resultsIdentities());
+            $relationForeignKey = $relationObject->foreignKey();
+            $collectionRelations = $relationObject->execute();
 
-            // Load all entities related to the collection
-            foreach ($collection as $entity) {
-                $collectedEntities = [];
-                $collectedIdentities = [];
-                foreach ($related_entities as $related_entity) {
-                    $resolvedConditions = $relationObj->resolveEntityConditions($entity, $relationObj->unresolvedConditions());
+            // Divvy up related objects for each entity by foreign key value
+            // ex. comment foreignKey 'post_id' will == entity primaryKey value
+            $entityRelations = [];
+            foreach($collectionRelations as $relatedEntity) {
+                $entityRelations[$relatedEntity->$relationForeignKey] = $relatedEntity;
+            }
 
-                    // @todo this is awkward, but $resolvedConditions['where'] is returned as an array
-                    foreach ($resolvedConditions as $key => $value) {
-                        if ($related_entity->$key == $value) {
-                            $pk = $this->primaryKey($related_entity);
-                            if(!in_array($pk, $collectedIdentities) && !empty($pk)) {
-                                $collectedIdentities[] = $pk;
-                            }
-                            $collectedEntities[] = $related_entity;
-                        }
-                    }
-                }
-                if ($relationObj instanceof \Spot\Relation\HasOne) {
-                    $relation_collection = array_shift($collectedEntities);
-                } else {
-                    $relation_collection = new \Spot\Entity\Collection(
-                        $collectedEntities, $collectedIdentities, $entity->$relationName->entityName()
-                    );
-                }
-                $entity->$relationName->assignCollection($relation_collection);
+            // Set relation collections back on each entity object
+            foreach($collection as $entity) {
+                $entity->setRelation($relationName, $entityRelations[$this->primaryKey($entity)]);
             }
         }
 
