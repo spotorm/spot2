@@ -1,15 +1,53 @@
 <?php
 namespace Spot\Relation;
 
+use Spot\Mapper;
+use Spot\Entity\Collection;
+
 /**
- * Relation for single entity
+ * HasOne Relation
  *
  * Only used so that the query can be lazy-loaded on demand
  *
  * @package Spot
  */
-class Single extends RelationAbstract implements \ArrayAccess
+class HasOne extends RelationAbstract implements \ArrayAccess
 {
+    /**
+     * Constructor function
+     */
+    public function __construct(Mapper $mapper, $entityName, $foreignKey, $localKey, $identityValue)
+    {
+        $this->mapper = $mapper;
+
+        $this->entityName = $entityName;
+        $this->foreignKey = $foreignKey;
+        $this->localKey = $localKey;
+
+        $this->identityValue = $identityValue;
+    }
+
+    /**
+     * Set identity values from given collection
+     *
+     * @param \Spot\Entity\Collection
+     */
+    public function identityValuesFromCollection(Collection $collection)
+    {
+        $this->identityValue($collection->resultsIdentities());
+    }
+
+    /**
+     * Build query object
+     *
+     * @return \Spot\Query
+     */
+    protected function buildQuery()
+    {
+        $foreignMapper = $this->mapper()->getMapper($this->entityName());
+        return $foreignMapper->where([$this->foreignKey() => $this->identityValue()]);
+    }
+
     /**
      * Find first entity in the set
      *
@@ -17,7 +55,10 @@ class Single extends RelationAbstract implements \ArrayAccess
      */
     public function execute()
     {
-        return $this->query()->first();
+        if ($this->result === null) {
+            $this->result = $this->queryObject()->execute()->first();
+        }
+        return $this->result;
     }
 
     // Magic getter/setter passthru

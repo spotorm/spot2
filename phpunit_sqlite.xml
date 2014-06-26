@@ -12,12 +12,12 @@
 >
   <php>
     <env name="SPOT_DB_TYPE" value="sqlite" />
-    <env name="SPOT_DB_DSN" value="sqlite:tests/spot_test.sqlite" />
+    <env name="SPOT_DB_DSN" value="sqlite::memory:" />
   </php>
 
   <testsuites>
     <testsuite name="Spot">
-      <directory suffix=".php">./tests/Test</directory>
+      <directory suffix=".php">./tests/SpotTest</directory>
     </testsuite>
   </testsuites>
 </phpunit>

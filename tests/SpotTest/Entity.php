@@ -229,4 +229,40 @@ class Entity extends \PHPUnit_Framework_TestCase
         $data['posts'] = 'are still cool';
         $this->assertEquals($post->data, ['posts' => 'are still cool', 'another field' => 'to serialize']);
     }
+
+    public function testLocalVariablesAreNotByReference()
+    {
+        $data = [
+            'title' => 'A Post',
+            'body' => 'A Body',
+            'status' => 0,
+            'data' => ['posts' => 'are cool', 'another field' => 'to serialize'],
+            'date_created' => new \DateTime()
+        ];
+
+        $post = new \SpotTest\Entity\Post($data);
+
+        $title = $post->title;
+        $title = 'A Post Title';
+
+        $this->assertNotEquals($title, $post->title);
+    }
+
+    public function testLocalArrayVariablesAreNotByReference()
+    {
+        $data = [
+            'title' => 'A Post',
+            'body' => 'A Body',
+            'status' => 0,
+            'data' => ['posts' => 'are cool', 'another field' => 'to serialize'],
+            'date_created' => new \DateTime()
+        ];
+
+        $post = new \SpotTest\Entity\Post($data);
+
+        $data = $post->data;
+        $data['posts'] = 'are not by reference';
+
+        $this->assertNotEquals($data, $post->data);
+    }
 }

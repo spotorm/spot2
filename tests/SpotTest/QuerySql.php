@@ -222,7 +222,8 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
 
-        if (false /* @TODO: If SQLite connection */) {
+        // "HAVING" caluse Not supported in SQLite
+        if (strpos(strtolower(get_class($mapper->connection()->getDriver())), "sqlite") !== false) {
             $this->markTestSkipped('Not support in Sqlite - requires group by');
         }
 

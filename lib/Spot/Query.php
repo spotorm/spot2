@@ -16,7 +16,7 @@ class Query implements \Countable, \IteratorAggregate
     protected $_noQuote;
 
     // Storage for query properties
-    public $with = [];
+    protected $with = [];
     protected $_data = [];
 
     // Custom methods added by extensions or plugins
@@ -362,35 +362,17 @@ class Query implements \Countable, \IteratorAggregate
     }
 
     /**
-     * Relations to be loaded non-lazily
+     * Relations to be eager-loaded
      *
-     * @param mixed $relations Array/string of relation(s) to be loaded.  False to erase all withs.  Null to return existing $with value
+     * @param mixed $relations Array/string of relation(s) to be loaded.
      */
     public function with($relations = null)
     {
-        if (is_null($relations)) {
+        if($relations === null) {
             return $this->with;
-        } else if (is_bool($relations) && !$relations) {
-            $this->with = [];
         }
 
-        $entityName = $this->entityName();
-        $entityRelations = array_keys($entityName::relations());
-        foreach((array)$relations as $idx => $relation) {
-            $add = true;
-            if (!is_numeric($idx) && isset($this->with[$idx])) {
-                $add = $relation;
-                $relation = $idx;
-            }
-            if ($add && in_array($relation, $entityRelations)) {
-                $this->with[] = $relation;
-            } else if (!$add) {
-                foreach (array_keys($this->with, $relation, true) as $key) {
-                    unset($this->with[$key]);
-                }
-            }
-        }
-        $this->with = array_unique($this->with);
+        $this->with = array_unique(array_merge((array) $relations, $this->with));
         return $this;
     }
 

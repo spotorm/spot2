@@ -1,6 +1,8 @@
 <?php
 namespace Spot;
 
+use Spot\Relation\RelationAbstract;
+
 /**
 * Entity object
 *
@@ -11,6 +13,8 @@ abstract class Entity
     protected static $table;
     protected static $tableOptions = [];
     protected static $mapper = false;
+
+    protected $_objectId;
 
     // Entity data storage
     protected $_data = [];
@@ -28,6 +32,9 @@ abstract class Entity
      */
     public function __construct(array $data = array())
     {
+        // Generate Unique object ID
+        $this->_objectId = uniqid() . spl_object_hash($this);
+
         $this->initFields();
 
         // Set given data
@@ -276,14 +283,13 @@ abstract class Entity
     {
         $v = null;
 
-        if (isset($this->_relations[$field])) {
-            $v =& $this->_relations[$field];
-        // We can't use isset for _dataModified because it returns
-        // false for NULL values
-        } elseif (array_key_exists($field, $this->_dataModified)) {
+        // We can't use isset because it returns false for NULL values
+        if (array_key_exists($field, $this->_dataModified)) {
             $v =&  $this->_dataModified[$field];
-        } elseif (isset($this->_data[$field])) {
+        } elseif (array_key_exists($field, $this->_data)) {
             $v =& $this->_data[$field];
+        } elseif ($relation = $this->relation($field)) {
+            $v =& $relation;
         }
 
         return $v;
@@ -298,11 +304,28 @@ abstract class Entity
     }
 
     /**
-     * Set relation
+     * Get/Set relation
      */
-    public function setRelation($relationName, $relationObj)
+    public function relation($relationName, $relationObj = null)
     {
-        return $this->_relations[$relationName] = $relationObj;
+        // Local static property instead of class variable prevents the
+        // relation object, mapper, and connection info
+        // from being printed with a var_dump() of the entity
+        static $relations = [];
+        $objectId = $this->_objectId;
+
+        // Get relation
+        if ($relationObj === null) {
+            if (isset($relations[$objectId][$relationName])) {
+                return $relations[$objectId][$relationName];
+            }
+            return false;
+        } else {
+            // Set relation
+            $relations[$objectId][$relationName] = $relationObj;
+        }
+
+        return $relations[$objectId][$relationName];
     }
 
     /**

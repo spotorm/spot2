@@ -26,6 +26,7 @@ class Relations extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get();
+        $post->id = 50;
         $post->title = "My Awesome Blog Post";
         $post->body = "<p>This is a really awesome super-duper post.</p><p>It's testing the relationship functions.</p>";
         $post->date_created = new \DateTime();
@@ -105,7 +106,7 @@ class Relations extends \PHPUnit_Framework_TestCase
 
         // Testing that we can iterate over an empty set
         foreach($post->comments as $comment) {
-            $this->assertTrue($comment instanceOf \SpotTest\Entity\Post_Comment);
+            $this->assertTrue($comment instanceOf \SpotTest\Entity\Post\Comment);
         }
     }
 
@@ -124,8 +125,9 @@ class Relations extends \PHPUnit_Framework_TestCase
      */
     public function testBlogCommentsRelationCountOne($postId)
     {
-        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = $mapper->get($postId);
+
         $this->assertTrue(count($post->comments) == 1);
     }
 
@@ -134,8 +136,9 @@ class Relations extends \PHPUnit_Framework_TestCase
      */
     public function testBlogCommentsRelationCanBeModified($postId)
     {
-        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = $mapper->get($postId);
+
         $sortedComments = $post->comments->order(['date_created' => 'DESC']);
         $this->assertTrue($sortedComments instanceof \Spot\Query);
     }
@@ -145,7 +148,7 @@ class Relations extends \PHPUnit_Framework_TestCase
      */
     public function testRelationshipQueryNotReset($postId)
     {
-        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = $mapper->get($postId);
 
         $before_count = $post->comments->count();
@@ -178,17 +181,21 @@ class Relations extends \PHPUnit_Framework_TestCase
 
         // Create some tags
         $tags = array();
+        $startId = rand(100, 150);
         $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
         for( $i = 1; $i <= $tagCount; $i++ ) {
             $tags[] = $tagMapper->create([
-                'name' => "Title {$i}"
+                'id'    => $startId++,
+                'name'  => "Title {$i}"
             ]);
         }
 
         // Insert all tags for current post
         $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
+        $startId = rand(1000, 1050);
         foreach($tags as $tag) {
             $posttag_id = $postTagMapper->create([
+                'id'    => $startId++,
                 'post_id' => $post->id,
                 'tag_id' => $tag->id
             ]);
@@ -202,38 +209,38 @@ class Relations extends \PHPUnit_Framework_TestCase
         $this->assertEquals($tagData, $post->tags->map(function($tag) { return $tag->data(); }));
     }
 
-    // public function testEventInsert()
-    // {
-    //     $mapper = test_spot_mapper('SpotTest\Entity\Event');
-    //     $event = $mapper->get();
-    //     $event->title = "My Awesome Event";
-    //     $event->description = "Some equally awesome event description here.";
-    //     $event->type = 'free';
-    //     $event->date_start = new \DateTime();
-    //     $eventId = $mapper->save($event);
+    public function testEventInsert()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $event = $mapper->get();
+        $event->title = "My Awesome Event";
+        $event->description = "Some equally awesome event description here.";
+        $event->type = 'free';
+        $event->date_start = new \DateTime();
+        $eventId = $mapper->save($event);
 
-    //     $this->assertTrue($eventId !== false);
+        $this->assertTrue($eventId !== false);
 
-    //     return $event->id;
-    // }
+        return $event->id;
+    }
 
-    // /**
-    //  * @depends testEventInsert
-    //  */
-    // public function testEventHasOneSearchIndex($eventId)
-    // {
-    //     $mapper = test_spot_mapper('SpotTest\Entity\Event');
-    //     $event = $mapper->get($eventId);
-    //     $this->assertInstanceOf('SpotTest\Entity\Event\Search', $event->search);
-    // }
+    /**
+     * @depends testEventInsert
+     */
+    public function testEventHasOneSearchIndex($eventId)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $event = $mapper->get($eventId);
+        $this->assertInstanceOf('SpotTest\Entity\Event\Search', $event->search->execute());
+    }
 
-    // /**
-    //  * @depends testEventInsert
-    //  */
-    // public function testEventSearchBelongsToEvent($eventId)
-    // {
-    //     $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
-    //     $eventSearch = $mapper->first(['event_id' => $eventId]);
-    //     $this->assertInstanceOf('SpotTest\Entity\Event', $eventSearch->event);
-    // }
+    /**
+     * @depends testEventInsert
+     */
+    public function testEventSearchBelongsToEvent($eventId)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $eventSearch = $mapper->first(['event_id' => $eventId]);
+        $this->assertInstanceOf('SpotTest\Entity\Event', $eventSearch->event->execute());
+    }
 }

@@ -15,7 +15,10 @@ class Mapper
 
     // Entity manager
     protected static $_entityManager = [];
-    protected $eventEmitter;
+    protected static $_eventEmitter;
+
+    // Temporary relations
+    protected $withRelations = [];
 
     // Class Names for required classes - Here so they can be easily overridden
     protected $_collectionClass = '\\Spot\\Entity\\Collection';
@@ -99,7 +102,6 @@ class Mapper
         $entityName = $this->entity();
         if (!isset(self::$_entityManager[$entityName])) {
             self::$_entityManager[$entityName] = new Entity\Manager($entityName);
-            $this->loadEvents();
         }
         return self::$_entityManager[$entityName];
     }
@@ -110,10 +112,10 @@ class Mapper
     public function eventEmitter()
     {
         $entityName = $this->entity();
-        if (empty($this->eventEmitter)) {
-            $this->eventEmitter = new EventEmitter();
+        if (empty(self::$_eventEmitter[$entityName])) {
+            self::$_eventEmitter[$entityName] = new EventEmitter();
         }
-        return $this->eventEmitter;
+        return self::$_eventEmitter[$entityName];
     }
 
     /**
@@ -134,7 +136,7 @@ class Mapper
         $entityName = $this->entity();
         $relations = $entityName::relations($this, $entity);
         foreach($relations as $relation => $query) {
-            $entity->setRelation($relation, $query);
+            $entity->relation($relation, $query);
         }
     }
 
@@ -143,14 +145,11 @@ class Mapper
      */
     public function hasMany(Entity $entity, $entityName, $foreignKey, $localValue = null)
     {
-        $foreignMapper = $this->getMapper($entityName);
-
         if ($localValue === null) {
             $localValue = $this->primaryKey($entity);
         }
 
-        $query = $foreignMapper->where([$foreignKey => $localValue]);
-        return $query;
+        return new Relation\HasMany($this, $entityName, $foreignKey, $this->primaryKeyField(), $localValue);
     }
 
     /**
@@ -161,17 +160,7 @@ class Mapper
         $localPkField = $this->primaryKeyField();
         $localValue = $entity->$localPkField;
 
-        $hasManyMapper = $this->getMapper($hasManyEntity);
-        $hasManyPkField = $hasManyMapper->primaryKeyField();
-
-        $throughMapper = $this->getMapper($throughEntity);
-        $throughQuery = $throughMapper->select($selectField)->where([$whereField => $localValue]);
-
-        /**
-         * SELECT * FROM tags WHERE id IN(SELECT tag_id FROM post_tags WHERE post_id = ?)
-         */
-        $query = $hasManyMapper->select()->whereFieldSql($hasManyPkField, 'IN(' . $throughQuery->toSql() . ')', [$localValue]);
-        return $query;
+        return new Relation\HasManyThrough($this, $hasManyEntity, $throughEntity, $selectField, $whereField, $localValue);
     }
 
     /**
@@ -183,11 +172,8 @@ class Mapper
     {
         $localKey = $this->primaryKeyField();
 
-        $foreignMapper = $this->getMapper($foreignEntity);
-        $query = $foreignMapper->where([$foreignKey => $entity->$localKey]);
-
         // Return relation object so query can be lazy-loaded
-        return new Relation\Single($query);
+        return new Relation\HasOne($this, $foreignEntity, $foreignKey, $localKey, $entity->$localKey);
     }
 
     /**
@@ -202,8 +188,8 @@ class Mapper
         $foreignMapper = $this->getMapper($foreignEntity);
         $foreignKey = $foreignMapper->primaryKeyField();
 
-        $query = $foreignMapper->where([$foreignKey => $entity->$localKey]);
-        return new Relation\Single($query);
+        // Return relation object so query can be lazy-loaded
+        return new Relation\BelongsTo($this, $foreignEntity, $foreignKey, $localKey, $entity->$foreignKey);
     }
 
     /**
@@ -325,7 +311,7 @@ class Mapper
     }
 
     /**
-     * Create collection
+     * Create collection from Spot\Query object
      */
     public function collection($cursor, $with = [])
     {
@@ -363,13 +349,20 @@ class Mapper
 
         $collectionClass = $this->collectionClass();
         $collection = new $collectionClass($results, $resultsIdentities, $entityName);
+
+        if (empty($with) || count($collection) === 0) {
+            return $collection;
+        }
+
         return $this->with($collection, $entityName, $with);
     }
 
     /**
-     * Pre-emtively load associations for an entire collection
+     * Eager-load associations for an entire collection
+     *
+     * @internal Implementation may change... for internal use only
      */
-    public function with($collection, $entityName, $with = [])
+    protected function with($collection, $entityName, $with = [])
     {
         $return = $this->eventEmitter()->emit('beforeWith', [$collection, $with, $this]);
         if (false === $return) {
@@ -377,44 +370,30 @@ class Mapper
         }
 
         foreach($with as $relationName) {
-            $return = $this->eventEmitter()->emit('loadWith', [$collection, $relationName, $this]);
-            if (false === $return) {
-                continue;
+            // We only need a single entity from the collection, because we're
+            // going to modify the query to pass in an array of all the
+            // identity keys from the collection instead of just that single entity
+            $singleEntity = $collection->first();
+
+            // Ensure we have a valid entity object
+            if (!($singleEntity instanceof Entity)) {
+                throw new Exception("Relation object must be instance of 'Spot\Entity', given '" . get_class($singleEntity) . "'");
             }
 
-            $relationObj = $this->loadRelation($collection, $relationName);
+            $relationObject = $singleEntity->relation($relationName);
 
-            // double execute() to make sure we get the
-            // \Spot\Entity\Collection back (and not just the \Spot\Query)
-            $related_entities = $relationObj->execute()->limit(null)->execute();
-
-            // Load all entities related to the collection
-            foreach ($collection as $entity) {
-                $collectedEntities = [];
-                $collectedIdentities = [];
-                foreach ($related_entities as $related_entity) {
-                    $resolvedConditions = $relationObj->resolveEntityConditions($entity, $relationObj->unresolvedConditions());
-
-                    // @todo this is awkward, but $resolvedConditions['where'] is returned as an array
-                    foreach ($resolvedConditions as $key => $value) {
-                        if ($related_entity->$key == $value) {
-                            $pk = $this->primaryKey($related_entity);
-                            if(!in_array($pk, $collectedIdentities) && !empty($pk)) {
-                                $collectedIdentities[] = $pk;
-                            }
-                            $collectedEntities[] = $related_entity;
-                        }
-                    }
-                }
-                if ($relationObj instanceof \Spot\Relation\HasOne) {
-                    $relation_collection = array_shift($collectedEntities);
-                } else {
-                    $relation_collection = new \Spot\Entity\Collection(
-                        $collectedEntities, $collectedIdentities, $entity->$relationName->entityName()
-                    );
-                }
-                $entity->$relationName->assignCollection($relation_collection);
+            // Ensure we have a valid relation name
+            if ($relationObject === false) {
+                throw new Exception("Invalid relation name eager-loaded in 'with' clause: No relation on $entityName with name '$relationName'");
             }
+
+            // Ensure we have a valid relation object
+            if (!($relationObject instanceof Relation\RelationAbstract)) {
+                throw new Exception("Relation object must be instance of 'Spot\Relation\RelationAbstract', given '" . get_class($relationObject) . "'");
+            }
+
+            // Eager-load relation results back to collection
+            $collection = $relationObject->eagerLoadOnCollection($relationName, $collection);
         }
 
         $this->eventEmitter()->emit('afterWith', [$collection, $with, $this]);
