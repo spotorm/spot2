@@ -49,13 +49,11 @@ class Event extends \Spot\Entity
             $entity->token = uniqid();
         });
 
-        $eventEmitter->on('afterSave', function($entity, $mapper) {
+        $eventEmitter->on('afterInsert', function($entity, $mapper) {
             $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
-            $result = $mapper->upsert([
+            $result = $mapper->create([
                 'event_id' => $entity->id,
                 'body'     => $entity->title . ' ' . $entity->description
-            ], [
-                'event_id' => $entity->id
             ]);
 
             if(!$result) {

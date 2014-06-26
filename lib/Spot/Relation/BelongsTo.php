@@ -2,15 +2,16 @@
 namespace Spot\Relation;
 
 use Spot\Mapper;
-use Spot\Entity;
 use Spot\Entity\Collection;
 
 /**
- * Relation object for HasMany relation
+ * BelongsTo Relation
+ *
+ * Only used so that the query can be lazy-loaded on demand
  *
  * @package Spot
  */
-class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate, \ArrayAccess
+class BelongsTo extends RelationAbstract implements \ArrayAccess
 {
     /**
      * Constructor function
@@ -33,7 +34,18 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
      */
     public function identityValuesFromCollection(Collection $collection)
     {
-        $this->identityValue($collection->resultsIdentities());
+        $this->identityValue($collection->toArray($this->localKey()));
+    }
+
+    /**
+     * Get entity key field - for BelongsTo, this will be the local key instead
+     * of the primary key.
+     *
+     * @return string
+     */
+    public function entityKey()
+    {
+        return $this->localKey();
     }
 
     /**
@@ -48,58 +60,58 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
     }
 
     /**
-     * SPL Countable function
-     * Called automatically when attribute is used in a 'count()' function call
+     * Find first entity in the set
      *
-     * @return integer
+     * @return \Spot\Entity
      */
-    public function count()
+    public function execute()
     {
-        $results = $this->execute();
-        return $results ? count($results) : 0;
+        if ($this->result === null) {
+            $this->result = $this->queryObject()->execute()->first();
+        }
+        return $this->result;
     }
 
-    /**
-     * SPL IteratorAggregate function
-     * Called automatically when attribute is used in a 'foreach' loop
-     *
-     * @return \Spot\Entity\Collection
-     */
-    public function getIterator()
+    // Magic getter/setter passthru
+    // ----------------------------------------------
+    public function __get($key)
     {
-        // Load related records for current row
-        $data = $this->execute();
-        return $data ? $data : [];
+        $this->execute()->$key;
+    }
+
+    public function __set($key, $val)
+    {
+        $this->execute()->$key = $val;
     }
 
     // SPL - ArrayAccess functions
     // ----------------------------------------------
     public function offsetExists($key)
     {
-        $this->execute();
-        return isset($this->result[$key]);
+        $entity = $this->execute();
+        return isset($entity[$key]);
     }
 
     public function offsetGet($key)
     {
-        $this->execute();
-        return $this->result[$key];
+        $entity = $this->execute();
+        return $entity[$key];
     }
 
     public function offsetSet($key, $value)
     {
-        $this->execute();
+        $entity = $this->execute();
 
-        if ($key === null) {
-            return $this->result[] = $value;
+        if($key === null) {
+            return $entity[] = $value;
         } else {
-            return $this->result[$key] = $value;
+            return $entity[$key] = $value;
         }
     }
 
     public function offsetUnset($key)
     {
-        $this->execute();
-        unset($this->result[$key]);
+        $entity = $this->execute();
+        unset($entity[$key]);
     }
 }
