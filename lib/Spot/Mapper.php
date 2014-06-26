@@ -136,7 +136,7 @@ class Mapper
         $entityName = $this->entity();
         $relations = $entityName::relations($this, $entity);
         foreach($relations as $relation => $query) {
-            $entity->setRelation($relation, $query);
+            $entity->relation($relation, $query);
         }
     }
 
@@ -160,17 +160,7 @@ class Mapper
         $localPkField = $this->primaryKeyField();
         $localValue = $entity->$localPkField;
 
-        $hasManyMapper = $this->getMapper($hasManyEntity);
-        $hasManyPkField = $hasManyMapper->primaryKeyField();
-
-        $throughMapper = $this->getMapper($throughEntity);
-        $throughQuery = $throughMapper->select($selectField)->where([$whereField => $localValue]);
-
-        /**
-         * SELECT * FROM tags WHERE id IN(SELECT tag_id FROM post_tags WHERE post_id = ?)
-         */
-        $query = $hasManyMapper->select()->whereFieldSql($hasManyPkField, 'IN(' . $throughQuery->toSql() . ')', [$localValue]);
-        return $query;
+        return new Relation\HasManyThrough($this, $hasManyEntity, $throughEntity, $selectField, $whereField, $localValue);
     }
 
     /**
@@ -368,7 +358,7 @@ class Mapper
     }
 
     /**
-     * Pre-emtively load associations for an entire collection
+     * Eager-load associations for an entire collection
      *
      * @internal Implementation may change... for internal use only
      */
@@ -390,38 +380,20 @@ class Mapper
                 throw new Exception("Relation object must be instance of 'Spot\Entity', given '" . get_class($singleEntity) . "'");
             }
 
+            $relationObject = $singleEntity->relation($relationName);
+
             // Ensure we have a valid relation name
-            if (!$singleEntity->hasRelation($relationName)) {
+            if ($relationObject === false) {
                 throw new Exception("Invalid relation name eager-loaded in 'with' clause: No relation on $entityName with name '$relationName'");
             }
 
             // Ensure we have a valid relation object
-            $relationObject = $singleEntity->$relationName;
             if (!($relationObject instanceof Relation\RelationAbstract)) {
                 throw new Exception("Relation object must be instance of 'Spot\Relation\RelationAbstract', given '" . get_class($relationObject) . "'");
             }
 
-            // Get relation object and change the 'identityValue' to an array
-            // of all the identities in the current collection
-            $relationObject->identityValuesFromCollection($collection);
-            $relationForeignKey = $relationObject->foreignKey();
-            $relationEntityKey = $relationObject->entityKey();
-            $collectionRelations = $relationObject->queryObject();
-
-            // Divvy up related objects for each entity by foreign key value
-            // ex. comment foreignKey 'post_id' will == entity primaryKey value
-            $entityRelations = [];
-            foreach($collectionRelations as $relatedEntity) {
-                // @todo Does this need to be an array?
-                $entityRelations[$relatedEntity->$relationForeignKey] = $relatedEntity;
-            }
-
-            // Set relation collections back on each entity object
-            foreach($collection as $entity) {
-                if (isset($entityRelations[$entity->$relationEntityKey])) {
-                    $entity->setRelation($relationName, $entityRelations[$entity->$relationEntityKey]);
-                }
-            }
+            // Eager-load relation results back to collection
+            $collection = $relationObject->eagerLoadOnCollection($relationName, $collection);
         }
 
         $this->eventEmitter()->emit('afterWith', [$collection, $with, $this]);

@@ -23,7 +23,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         // Author
         $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
         $author = $authorMapper->create([
-            'id'       => rand(501, 600),
+            'id'       => rand(501, 550),
             'email'    => 'test@test.com',
             'password' => 'password',
             'is_admin' => false
@@ -32,7 +32,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         // Posts
         $posts = [];
         $postsCount = 3;
-        $startId = rand(601, 700);
+        $startId = rand(601, 650);
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         for ($i = 1; $i <= $postsCount; $i++) {
             $posts[] = $mapper->create([
@@ -56,6 +56,31 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
                     'name'    => 'Testy McTester',
                     'email'   => 'test@test.com',
                     'body'    => "This is a test comment $i. Yay!"
+                ]);
+            }
+        }
+
+        // Create some tags
+        $tags = array();
+        $tagCount = 3;
+        $startId = rand(801, 850);
+        $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
+        for( $i = 1; $i <= $tagCount; $i++ ) {
+            $tags[] = $tagMapper->create([
+                'id'   => ++$startId,
+                'name' => "Tag {$i}"
+            ]);
+        }
+
+        // Insert all tags for current post
+        $startId = rand(901, 950);
+        $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
+        foreach($posts as $post) {
+            foreach($tags as $tag) {
+                $posttag_id = $postTagMapper->create([
+                    'id'      => ++$startId,
+                    'post_id' => $post->id,
+                    'tag_id'  => $tag->id
                 ]);
             }
         }
@@ -146,5 +171,29 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
         // Eager-loaded relation should be only 2 queries
         $this->assertEquals($startCount+2, $endCount);
+    }
+
+    public function testEagerLoadHasManyThrough()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        // Set SQL logger
+        $logger = new \Doctrine\DBAL\Logging\DebugStack();
+        $mapper->connection()->getConfiguration()->setSQLLogger($logger);
+
+        $startCount = count($logger->queries);
+
+        $posts = $mapper->all()->with('tags');
+        foreach($posts as $post) {
+            foreach($post->tags as $tags) {
+                // Do nothing - just had to iterate to execute the queries
+            }
+            $this->assertEquals(3, count($post->tags));
+        }
+        $endCount = count($logger->queries);
+
+        // Eager-loaded HasManyThrough relation should be only 3 queries
+        // (1 query more than other relations, for the join table)
+        $this->assertEquals($startCount+3, $endCount);
     }
 }
