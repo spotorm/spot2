@@ -70,7 +70,7 @@ class Manager
             $this->mapper = $entityName::mapper();
 
             // Default settings for all fields
-            $fieldDefaults = array(
+            $fieldDefaults = [
                 'type' => 'string',
                 'default' => null,
                 'value' => null,
@@ -84,21 +84,21 @@ class Manager
                 'index' => false,
                 'unique' => false,
                 'autoincrement' => false
-            );
+            ];
 
             // Type default overrides for specific field types
-            $fieldTypeDefaults = array(
-                'string' => array(
+            $fieldTypeDefaults = [
+                'string' => [
                     'length' => 255
-                ),
-                'float' => array(
-                    'length' => array(10,2)
-                ),
-                'integer' => array(
+                ],
+                'float' => [
+                    'length' => [10,2]
+                ],
+                'integer' => [
                     'length' => 10,
                     'unsigned' => true
-                )
-            );
+                ]
+            ];
 
             // Get entity fields from entity class
             $entityFields = false;

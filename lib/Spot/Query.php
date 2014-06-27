@@ -474,12 +474,15 @@ class Query implements \Countable, \IteratorAggregate
      * SPL Countable function
      * Called automatically when attribute is used in a 'count()' function call
      *
+     * Executes separate query with COUNT(*), and drops and ordering (not
+     * important for counting)
+     *
      * @return int
      */
     public function count()
     {
         $countCopy = clone $this->builder();
-        $stmt = $countCopy->select('COUNT(*)')->execute();
+        $stmt = $countCopy->select('COUNT(*)')->resetQueryPart('orderBy')->execute();
         return $stmt->fetchColumn(0);
     }
 

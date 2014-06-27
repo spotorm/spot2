@@ -15,15 +15,10 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         }
 
         // Fixtures for this test suite
-        //
-        // 'id' is randomized in different groups of ranges to prevent
-        // predicatable ids within the same range 1, 2, 3, etc. that can cause
-        // subtle errors
 
         // Author
         $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
         $author = $authorMapper->create([
-            'id'       => rand(501, 550),
             'email'    => 'test@test.com',
             'password' => 'password',
             'is_admin' => false
@@ -32,11 +27,9 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         // Posts
         $posts = [];
         $postsCount = 3;
-        $startId = rand(601, 650);
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         for ($i = 1; $i <= $postsCount; $i++) {
             $posts[] = $mapper->create([
-                'id'        => ++$startId,
                 'title'     => "Eager Loading Test Post $i",
                 'body'      => "Eager Loading Test Post Content Here $i",
                 'author_id' => $author->id
@@ -44,14 +37,12 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         }
 
         // 3 comments for each post
-        $startId = rand(701, 750);
         foreach($posts as $post) {
             $comments = [];
             $commentCount = 3;
             $commentMapper = test_spot_mapper('SpotTest\Entity\Post\Comment');
             for ($i = 1; $i <= $commentCount; $i++) {
                 $comments[] = $commentMapper->create([
-                    'id'      => ++$startId,
                     'post_id' => $post->id,
                     'name'    => 'Testy McTester',
                     'email'   => 'test@test.com',
@@ -63,22 +54,18 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         // Create some tags
         $tags = array();
         $tagCount = 3;
-        $startId = rand(801, 850);
         $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
         for( $i = 1; $i <= $tagCount; $i++ ) {
             $tags[] = $tagMapper->create([
-                'id'   => ++$startId,
                 'name' => "Tag {$i}"
             ]);
         }
 
         // Insert all tags for current post
-        $startId = rand(901, 950);
         $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
         foreach($posts as $post) {
             foreach($tags as $tag) {
                 $posttag_id = $postTagMapper->create([
-                    'id'      => ++$startId,
                     'post_id' => $post->id,
                     'tag_id'  => $tag->id
                 ]);
@@ -87,16 +74,13 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
         // Event
         $eventMapper = test_spot_mapper('SpotTest\Entity\Event');
-        $startId = rand(1001, 1100);
         $event = $eventMapper->create([
-            'id'            => $startId,
             'title'         => 'Eager Load Test Event',
             'description'   => 'some test eager loading description',
             'type'          => 'free',
             'date_start'    => new \DateTime('+1 second')
         ]);
         $event2 = $eventMapper->create([
-            'id'            => ++$startId,
             'title'         => 'Eager Load Test Event 2',
             'description'   => 'some test eager loading description 2',
             'type'          => 'free',

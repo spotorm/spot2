@@ -26,7 +26,6 @@ class Relations extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get();
-        $post->id = 50;
         $post->title = "My Awesome Blog Post";
         $post->body = "<p>This is a really awesome super-duper post.</p><p>It's testing the relationship functions.</p>";
         $post->date_created = new \DateTime();
@@ -181,21 +180,17 @@ class Relations extends \PHPUnit_Framework_TestCase
 
         // Create some tags
         $tags = array();
-        $startId = rand(100, 150);
         $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
         for( $i = 1; $i <= $tagCount; $i++ ) {
             $tags[] = $tagMapper->create([
-                'id'    => $startId++,
                 'name'  => "Title {$i}"
             ]);
         }
 
         // Insert all tags for current post
         $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
-        $startId = rand(1000, 1050);
         foreach($tags as $tag) {
             $posttag_id = $postTagMapper->create([
-                'id'    => $startId++,
                 'post_id' => $post->id,
                 'tag_id' => $tag->id
             ]);

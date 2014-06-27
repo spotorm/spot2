@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="false"
+         bootstrap="./tests/init.php"
+>
+  <php>
+    <env name="SPOT_DB_TYPE" value="pgsql" />
+    <env name="SPOT_DB_DSN" value="pgsql://vlucas@localhost/spot_test" />
+  </php>
+
+  <testsuites>
+    <testsuite name="Spot">
+      <directory suffix=".php">./tests/SpotTest</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

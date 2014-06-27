@@ -319,6 +319,17 @@ class Mapper
     }
 
     /**
+     * Test to see if collection is of the given type
+     *
+     * @param string Database type, something like "mysql", "sqlite", "pgsql", etc.
+     * @return boolean
+     */
+    public function connectionIs($type)
+    {
+        return strpos(strtolower(get_class($this->connection()->getDriver())), $type) !== false;
+    }
+
+    /**
      * Create collection from Spot\Query object
      */
     public function collection($cursor, $with = [])
@@ -644,7 +655,17 @@ class Mapper
             }
 
             // Send to adapter via named connection
-            $result = $this->resolver()->create($this->table(), $data);
+            $table = $this->table();
+            $result = $this->resolver()->create($table, $data);
+
+            if($result) {
+                $connection = $this->connection();
+                if ($this->connectionIs('pgsql')) {
+                    $result = $connection->lastInsertId($table . '_' . $pkField . '_seq');
+                } else {
+                    $result = $connection->lastInsertId();
+                }
+            }
 
             // Update primary key on entity object
             $pkField = $this->primaryKeyField();

@@ -31,9 +31,32 @@ class Insert extends \PHPUnit_Framework_TestCase
         $post->date_created = new \DateTime();
         $post->author_id = 1;
 
-        $result = $mapper->insert($post); // returns inserted id
+        $result = $mapper->insert($post);
 
         $this->assertTrue($result !== false);
+        $this->assertTrue($post->id !== null);
+    }
+
+    public function testInsertPostEntitySequencesAreCorrect()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $post = new Entity\Post();
+        $post->title = "Test Post";
+        $post->body = "<p>This is a really awesome super-duper post.</p><p>It's really quite lovely.</p>";
+        $post->date_created = new \DateTime();
+        $post->author_id = 1;
+        $result = $mapper->insert($post);
+
+        $post2 = new Entity\Post();
+        $post2->title = "Test Post";
+        $post2->body = "<p>This is a really awesome super-duper post.</p><p>It's really quite lovely.</p>";
+        $post2->date_created = new \DateTime();
+        $post2->author_id = 1;
+        $result = $mapper->insert($post2);
+
+        // Ensure sequence is incrementing number
+        $this->assertNotEquals($post->id, $post2->id);
     }
 
     public function testInsertPostArray()

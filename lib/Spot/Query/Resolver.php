@@ -36,7 +36,8 @@ class Resolver
         $tableObjects[] = $tableObject;
         $schema = new \Doctrine\DBAL\Schema\Schema($tableObjects);
 
-        $tableExists = !empty($tableObject->getColumns());
+        $tableColumns = $tableObject->getColumns();
+        $tableExists = !empty($tableColumns);
         if($tableExists) {
             // Update existing table
             $existingTable = $schema->getTable($table);
@@ -136,7 +137,7 @@ class Resolver
     {
         $connection = $this->mapper->connection();
         $result = $connection->insert($table, $data);
-        return $result ? $connection->lastInsertId() : false;
+        return $result;
     }
 
     /**
