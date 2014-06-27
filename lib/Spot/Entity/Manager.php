@@ -17,6 +17,7 @@ class Manager
     protected $fieldsDefined = [];
     protected $fieldDefaultValues = [];
     protected $relations = [];
+    protected $scopes = [];
     protected $primaryKeyField;
 
     // Table info
@@ -110,9 +111,7 @@ class Manager
             $this->fieldDefaultValues = [];
             foreach($entityFields as $fieldName => $fieldOpts) {
                 // Store field definition exactly how it is defined before modifying it below
-                if ($fieldOpts['type'] != 'relation') {
-                    $this->fieldsDefined[$fieldName] = $fieldOpts;
-                }
+                $this->fieldsDefined[$fieldName] = $fieldOpts;
 
                 // Format field will full set of default options
                 if (isset($fieldOpts['type']) && isset($fieldTypeDefaults[$fieldOpts['type']])) {
@@ -123,15 +122,30 @@ class Manager
                     $fieldOpts = array_merge($fieldDefaults, $fieldOpts);
                 }
 
+                // Required = 'notnull' for DBAL
+                if (true === $fieldOpts['required']) {
+                    $fieldOpts['notnull'] = true;
+                }
+
+                // Old Spot used 'serial' field to describe auto-increment
+                // fields, so accomodate that here
+                if (isset($fieldOpts['serial']) && $fieldOpts['serial'] === true) {
+                    $fieldOpts['primary'] = true;
+                    $fieldOpts['autoincrement'] = true;
+                }
+
                 // Store primary key
                 if (true === $fieldOpts['primary']) {
                     $this->primaryKeyField = $fieldName;
                 } elseif (true === $fieldOpts['autoincrement']) {
                     $this->primaryKeyField = $fieldName;
                 }
+
                 // Store default value
                 if (null !== $fieldOpts['value']) {
                     $this->fieldDefaultValues[$fieldName] = $fieldOpts['value'];
+                } elseif (null !== $fieldOpts['default']) {
+                    $this->fieldDefaultValues[$fieldName] = $fieldOpts['default'];
                 } else {
                     $this->fieldDefaultValues[$fieldName] = null;
                 }
@@ -238,6 +252,18 @@ class Manager
             return [];
         }
         return $this->relations;
+    }
+
+    /**
+     * Get defined scopes
+     */
+    public function scopes()
+    {
+        if(empty($this->scopes)) {
+            $entityName = $this->entityName;
+            $this->scopes = $entityName::scopes();
+        }
+        return $this->scopes;
     }
 
     /**

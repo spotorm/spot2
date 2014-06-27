@@ -110,6 +110,15 @@ abstract class Entity
     }
 
     /**
+     * Return scopes defined by this entity. Scopes are called from the
+     * Spot\Query object as a sort of in-context dynamic query method
+     */
+    public static function scopes()
+    {
+        return [];
+    }
+
+    /**
      * Gets and sets data on the current entity
      */
     public function data($data = null, $modified = true)

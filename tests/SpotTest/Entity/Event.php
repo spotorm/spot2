@@ -32,6 +32,11 @@ class Event extends \Spot\Entity
             'date_start' => ['type' => 'datetime', 'required' => true, 'validation' => [
                 'dateAfter' => new \DateTime('-1 second')
             ]],
+            'status' => ['type' => 'string', 'default' => 1, 'options' => [
+                0 => 'Inactive',
+                1 => 'Active',
+                2 => 'Archived'
+            ]],
             'date_created' => ['type' => 'datetime']
         ];
     }
@@ -40,6 +45,18 @@ class Event extends \Spot\Entity
     {
         return [
             'search' => $mapper->hasOne($entity, 'SpotTest\Entity\Event\Search', 'event_id')
+        ];
+    }
+
+    public static function scopes()
+    {
+        return [
+            'free' => function($query) {
+                return $query->where(['type' => 'free']);
+            },
+            'active' => function($query) {
+                return $query->where(['status' => 1]);
+            }
         ];
     }
 
