@@ -249,6 +249,14 @@ class Mapper
     }
 
     /**
+     * Get defined scopes
+     */
+    public function scopes()
+    {
+        return $this->entityManager()->scopes();
+    }
+
+    /**
      * Get value of primary key for given row result
      *
      * @param object $entity Instance of an entity to find the primary key of
@@ -857,21 +865,19 @@ class Mapper
      */
     public function validate(\Spot\Entity $entity)
     {
-        $entityName = get_class($entity);
-
         $v = new \Valitron\Validator($entity->data());
 
         // Check validation rules on each feild
         $uniqueWhere = [];
-        foreach($this->fields($entityName) as $field => $fieldAttrs) {
+        foreach($this->fields() as $field => $fieldAttrs) {
             // Required field
-            if(isset($fieldAttrs['required']) && true === $fieldAttrs['required']) {
+            if (isset($fieldAttrs['required']) && true === $fieldAttrs['required']) {
                 $v->rule('required', $field);
             }
 
             // Unique field
-            if($entity->isNew() && isset($fieldAttrs['unique']) && !empty($fieldAttrs['unique'])) {
-                if(is_string($fieldAttrs['unique'])) {
+            if ($entity->isNew() && isset($fieldAttrs['unique']) && !empty($fieldAttrs['unique'])) {
+                if (is_string($fieldAttrs['unique'])) {
                     // Named group
                     $fieldKeyName = $fieldAttrs['unique'];
                     $uniqueWhere[$fieldKeyName][$field] = $entity->$field;
@@ -880,21 +886,24 @@ class Mapper
                 }
             }
 
-            // Field with 'options'
-            if(isset($fieldAttrs['options']) && is_array($fieldAttrs['options'])) {
-                $v->rule('in', $field, $fieldAttrs['options']);
-            }
+            // Run only if field required
+            if ($entity->$field !== null && $fieldAttrs['required'] === true) {
+                // Field with 'options'
+                if (isset($fieldAttrs['options']) && is_array($fieldAttrs['options'])) {
+                    $v->rule('in', $field, $fieldAttrs['options']);
+                }
 
-            // Valitron validation rules
-            if(isset($fieldAttrs['validation']) && is_array($fieldAttrs['validation'])) {
-                foreach($fieldAttrs['validation'] as $rule => $ruleName) {
-                    $params = [];
-                    if(is_string($rule)) {
-                        $params = (array) $ruleName;
-                        $ruleName = $rule;
+                // Valitron validation rules
+                if (isset($fieldAttrs['validation']) && is_array($fieldAttrs['validation'])) {
+                    foreach($fieldAttrs['validation'] as $rule => $ruleName) {
+                        $params = [];
+                        if (is_string($rule)) {
+                            $params = (array) $ruleName;
+                            $ruleName = $rule;
+                        }
+                        $params = array_merge(array($ruleName, $field), $params);
+                        call_user_func_array(array($v, 'rule'), $params);
                     }
-                    $params = array_merge(array($ruleName, $field), $params);
-                    call_user_func_array(array($v, 'rule'), $params);
                 }
             }
         }

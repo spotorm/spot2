@@ -82,27 +82,6 @@ class Query implements \Countable, \IteratorAggregate
     }
 
     /**
-     * Run user-added callback
-     *
-     * @param string $method Method name called
-     * @param array $args Array of arguments used in missing method call
-     * @throws BadMethodCallException
-     */
-    public function __call($method, $args)
-    {
-        if(isset(self::$_customMethods[$method]) && is_callable(self::$_customMethods[$method])) {
-            $callback = self::$_customMethods[$method];
-            // Pass the current query object as the first parameter
-            array_unshift($args, $this);
-            return call_user_func_array($callback, $args);
-        } else if (method_exists('\\Spot\\Entity\\Collection', $method)) {
-            return $this->execute()->$method($args[0]);
-        } else {
-            throw new \BadMethodCallException("Method '" . __CLASS__ . "::" . $method . "' not found");
-        }
-    }
-
-    /**
      * Get current adapter object
      */
     public function mapper()
@@ -593,5 +572,39 @@ class Query implements \Countable, \IteratorAggregate
     {
         $field = $this->_tableName . '.' . $field;
         return $escaped ? $this->escapeField($field) : $field;
+    }
+
+    /**
+     * Run user-added callback
+     *
+     * @param string $method Method name called
+     * @param array $args Array of arguments used in missing method call
+     * @throws BadMethodCallException
+     */
+    public function __call($method, $args)
+    {
+        $scopes = $this->mapper()->scopes();
+
+        // Custom methods
+        if(isset(self::$_customMethods[$method]) && is_callable(self::$_customMethods[$method])) {
+            $callback = self::$_customMethods[$method];
+            // Pass the current query object as the first parameter
+            array_unshift($args, $this);
+            return call_user_func_array($callback, $args);
+
+        // Scopes
+        } elseif(isset($scopes[$method])) {
+            // Pass the current query object as the first parameter
+            array_unshift($args, $this);
+            return call_user_func_array($scopes[$method], $args);
+
+        // Methods on Collection
+        } else if (method_exists('\\Spot\\Entity\\Collection', $method)) {
+            return $this->execute()->$method($args[0]);
+
+        // Error
+        } else {
+            throw new \BadMethodCallException("Method '" . __CLASS__ . "::" . $method . "' not found");
+        }
     }
 }
