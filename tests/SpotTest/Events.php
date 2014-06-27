@@ -26,25 +26,33 @@ class Events extends \PHPUnit_Framework_TestCase
                 'password' => 'securepassword'
             ]);
         }
+
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
         for( $i = 1; $i <= 10; $i++ ) {
-            $post_id = test_spot_mapper('\SpotTest\Entity\Post')->insert([
+            $post = $postMapper->build([
                 'title' => ($i % 2 ? 'odd' : 'even' ). '_title',
                 'body' => '<p>' . $i  . '_body</p>',
                 'status' => $i ,
                 'date_created' => new \DateTime(),
                 'author_id' => rand(1,3)
             ]);
+            $result = $postMapper->insert($post);
+
+            if (!$result) {
+                throw new \Exception("Unable to create post: " . var_export($post->data(), true));
+            }
+
             for( $j = 1; $j <= 2; $j++ ) {
-                test_spot_mapper('\SpotTest\Entity\Post\Comment')->insert([
-                    'post_id' => $post_id,
+                test_spot_mapper('SpotTest\Entity\Post\Comment')->insert([
+                    'post_id' => $post->id,
                     'name' => ($j % 2 ? 'odd' : 'even' ). '_title',
                     'email' => 'bob@somewhere.com',
                     'body' => ($j % 2 ? 'odd' : 'even' ). '_comment_body',
                 ]);
             }
             for( $j = 1; $j <= $i % 3; $j++ ) {
-                $posttag_id = test_spot_mapper('\SpotTest\Entity\PostTag')->insert([
-                    'post_id' => $post_id,
+                $posttag_id = test_spot_mapper('SpotTest\Entity\PostTag')->insert([
+                    'post_id' => $post->id,
                     'tag_id' => $j
                 ]);
             }
@@ -309,66 +317,72 @@ class Events extends \PHPUnit_Framework_TestCase
     }
 
 
-    // public function testWithHooks()
-    // {
-    //     $mapper = test_spot_mapper('SpotTest\Entity\Post');
-    //     $testcase = $this;
+    public function testWithHooks()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $eventEmitter = $mapper->eventEmitter();
+        $testcase = $this;
 
-    //     $hooks = [];
+        $hooks = [];
 
-    //     $eventEmitter->on('\SpotTest\Entity\Post', 'beforeWith', function($entityClass, $collection, $with, $mapper) use (&$hooks, &$testcase) {
-    //         $testcase->assertEquals('\SpotTest\Entity\Post', $entityClass);
-    //         $testcase->assertInstanceOf('\\Spot\\Entity\\Collection', $collection);
-    //         $testcase->assertEquals(['comments'], $with);
-    //         $testcase->assertInstanceOf('\\Spot\\Mapper', $mapper);
-    //         $hooks[] = 'Called beforeWith';
-    //     });
+        $eventEmitter->on('beforeWith', function($mapper, $collection, $with) use (&$hooks, &$testcase) {
+            $testcase->assertEquals('SpotTest\Entity\Post', $mapper->entity());
+            $testcase->assertInstanceOf('Spot\Entity\Collection', $collection);
+            $testcase->assertEquals(['comments'], $with);
+            $testcase->assertInstanceOf('Spot\Mapper', $mapper);
+            $hooks[] = 'Called beforeWith';
+        });
 
-    //     $eventEmitter->on('\SpotTest\Entity\Post', 'loadWith', function($entityClass, $collection, $relationName, $mapper) use (&$hooks, &$testcase) {
-    //         $testcase->assertEquals('\SpotTest\Entity\Post', $entityClass);
-    //         $testcase->assertInstanceOf('\\Spot\\Entity\\Collection', $collection);
-    //         $testcase->assertInstanceOf('\\Spot\\Mapper', $mapper);
-    //         $testcase->assertEquals('comments', $relationName);
-    //         $hooks[] = 'Called loadWith';
-    //     });
+        $eventEmitter->on('loadWith', function($mapper, $collection, $relationName) use (&$hooks, &$testcase) {
+            $testcase->assertEquals('SpotTest\Entity\Post', $mapper->entity());
+            $testcase->assertInstanceOf('Spot\Entity\Collection', $collection);
+            $testcase->assertInstanceOf('Spot\Mapper', $mapper);
+            $testcase->assertEquals('comments', $relationName);
+            $hooks[] = 'Called loadWith';
+        });
 
-    //     $eventEmitter->on('\SpotTest\Entity\Post', 'afterWith', function($entityClass, $collection, $with, $mapper) use (&$hooks, &$testcase) {
-    //         $testcase->assertEquals('\SpotTest\Entity\Post', $entityClass);
-    //         $testcase->assertInstanceOf('\\Spot\\Entity\\Collection', $collection);
-    //         $testcase->assertEquals(['comments'], $with);
-    //         $testcase->assertInstanceOf('\\Spot\\Mapper', $mapper);
-    //         $hooks[] = 'Called afterWith';
-    //     });
+        $eventEmitter->on('afterWith', function($mapper, $collection, $with) use (&$hooks, &$testcase) {
+            $testcase->assertEquals('SpotTest\Entity\Post', $mapper->entity());
+            $testcase->assertInstanceOf('Spot\Entity\Collection', $collection);
+            $testcase->assertEquals(['comments'], $with);
+            $testcase->assertInstanceOf('Spot\Mapper', $mapper);
+            $hooks[] = 'Called afterWith';
+        });
 
-    //     $mapper->all('\SpotTest\Entity\Post', ['id' => [1,2]])->with('comments')->execute();
+        $mapper->all('\SpotTest\Entity\Post', ['id' => [1,2]])->with('comments')->execute();
 
-    //     $this->assertEquals(['Called beforeWith', 'Called loadWith', 'Called afterWith'], $hooks);
-    // }
+        $this->assertEquals(['Called beforeWith', 'Called loadWith', 'Called afterWith'], $hooks);
+        $eventEmitter->removeAllListeners();
+    }
 
 
-    // public function testWithAssignmentHooks()
-    // {
-    //     $mapper = test_spot_mapper('SpotTest\Entity\Post');
-    //     $testcase = $this;
+    public function testWithAssignmentHooks()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $eventEmitter = $mapper->eventEmitter();
 
-    //     $eventEmitter->on('\SpotTest\Entity\Post', 'loadWith', function($entityClass, $collection, $relationName, $mapper) use (&$testcase) {
-    //         $relationObj = $mapper->loadRelation($collection, $relationName);
-    //         $query = $relationObj->execute()->limit(1)->snapshot();
+        $eventEmitter->on('loadWith', function($mapper, $collection, $relationName) {
+            foreach($collection as $post) {
+                $comments = [];
+                $comments[] = new \SpotTest\Entity\Post\Comment([
+                    'post_id' => $post->id,
+                    'name'    => 'Chester Tester',
+                    'email'   => 'chester@tester.com',
+                    'body'    => 'Some body content here that Chester made!'
+                ]);
 
-    //         foreach($collection as $post) {
-    //             $one_comment = $query->execute();
+                $post->relation($relationName, new \Spot\Entity\Collection($comments));
+            }
+            return false;
+        });
 
-    //             $post->comments->assignCollection($one_comment);
-    //             $testcase->assertEquals(1, $post->comments->count());
-    //         }
-    //         return false;
-    //     });
+        $posts = $mapper->all()->with('comments')->execute();
+        foreach($posts as $post) {
+            $this->assertEquals(1, $post->comments->count());
+        }
 
-    //     $posts = $mapper->all('\SpotTest\Entity\Post')->with('comments')->execute();
-    //     foreach($posts as $post) {
-    //         $this->assertEquals(1, $post->comments->count());
-    //     }
-    // }
+        $eventEmitter->removeAllListeners();
+    }
 
     public function testHookReturnsFalse()
     {

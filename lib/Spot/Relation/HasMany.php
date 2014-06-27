@@ -48,6 +48,41 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
     }
 
     /**
+     * Map relation results to original collection of entities
+     *
+     * @param string Relation name
+     * @param Spot\Collection Collection of original entities to map results of query back to
+     *
+     * @return Spot\Collection
+     */
+    public function eagerLoadOnCollection($relationName, Collection $collection)
+    {
+        // Get relation object and change the 'identityValue' to an array
+        // of all the identities in the current collection
+        $this->identityValuesFromCollection($collection);
+        $relationForeignKey = $this->foreignKey();
+        $relationEntityKey = $this->entityKey();
+        $collectionRelations = $this->queryObject();
+
+        // Divvy up related objects for each entity by foreign key value
+        // ex. comment foreignKey 'post_id' will == entity primaryKey value
+        $entityRelations = [];
+        foreach($collectionRelations as $relatedEntity) {
+            $entityRelations[$relatedEntity->$relationForeignKey][] = $relatedEntity;
+        }
+
+        // Set relation collections back on each entity object
+        foreach($collection as $entity) {
+            if (isset($entityRelations[$entity->$relationEntityKey])) {
+                $entityCollection = new Collection($entityRelations[$entity->$relationEntityKey]);
+                $entity->relation($relationName, $entityCollection);
+            }
+        }
+
+        return $collection;
+    }
+
+    /**
      * SPL Countable function
      * Called automatically when attribute is used in a 'count()' function call
      *

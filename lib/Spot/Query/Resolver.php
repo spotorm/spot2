@@ -31,8 +31,12 @@ class Resolver
         $fieldIndexes = $this->mapper->entityManager()->fieldKeys();
         $connection   = $this->mapper->connection();
 
-        $schema = new \Doctrine\DBAL\Schema\Schema();
-        $tableExists = $schema->hasTable($table);
+        $schemaManager = $this->mapper->connection()->getSchemaManager();
+        $tableObject = $schemaManager->listTableDetails($table);
+        $tableObjects[] = $tableObject;
+        $schema = new \Doctrine\DBAL\Schema\Schema($tableObjects);
+
+        $tableExists = !empty($tableObject->getColumns());
         if($tableExists) {
             // Update existing table
             $existingTable = $schema->getTable($table);

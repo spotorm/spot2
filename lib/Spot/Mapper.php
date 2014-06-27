@@ -372,7 +372,7 @@ class Mapper
      */
     protected function with($collection, $entityName, $with = [])
     {
-        $return = $this->eventEmitter()->emit('beforeWith', [$collection, $with, $this]);
+        $return = $this->eventEmitter()->emit('beforeWith', [$this, $collection, $with]);
         if (false === $return) {
             return $collection;
         }
@@ -400,11 +400,19 @@ class Mapper
                 throw new Exception("Relation object must be instance of 'Spot\Relation\RelationAbstract', given '" . get_class($relationObject) . "'");
             }
 
+            // Hook so user can load custom relations their own way if they
+            // want to, and then bypass the normal loading process by returning
+            // false from their event
+            $return = $this->eventEmitter()->emit('loadWith', [$this, $collection, $relationName]);
+            if (false === $return) {
+                continue;
+            }
+
             // Eager-load relation results back to collection
             $collection = $relationObject->eagerLoadOnCollection($relationName, $collection);
         }
 
-        $this->eventEmitter()->emit('afterWith', [$collection, $with, $this]);
+        $this->eventEmitter()->emit('afterWith', [$this, $collection, $with]);
         return $collection;
     }
 
