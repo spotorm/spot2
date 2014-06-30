@@ -12,7 +12,7 @@
 >
   <php>
     <env name="SPOT_DB_TYPE" value="pgsql" />
-    <env name="SPOT_DB_DSN" value="pgsql://vlucas@localhost/spot_test" />
+    <env name="SPOT_DB_DSN" value="pgsql://postgres@localhost/spot_test" />
   </php>
 
   <testsuites>
