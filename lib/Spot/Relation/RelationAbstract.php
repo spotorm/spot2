@@ -19,8 +19,8 @@ abstract class RelationAbstract
     protected $localKey;
     protected $identityValue;
 
-    protected $queryObject;
-    protected $queryClosure;
+    protected $query;
+    protected $queryQueue = [];
 
     protected $result;
 
@@ -107,7 +107,7 @@ abstract class RelationAbstract
         $this->identityValuesFromCollection($collection);
         $relationForeignKey = $this->foreignKey();
         $relationEntityKey = $this->entityKey();
-        $collectionRelations = $this->queryObject();
+        $collectionRelations = $this->query();
 
         // Divvy up related objects for each entity by foreign key value
         // ex. comment foreignKey 'post_id' will == entity primaryKey value
@@ -128,15 +128,6 @@ abstract class RelationAbstract
     }
 
     /**
-     * Closure to alter query on execution
-     */
-    public function query(\Closure $closure)
-    {
-        $this->queryClosure = $closure;
-        return $this;
-    }
-
-    /**
      * Build query object
      *
      * @return \Spot\Query
@@ -146,15 +137,15 @@ abstract class RelationAbstract
     /**
      * Get query object instance
      */
-    public function queryObject()
+    public function query()
     {
-        if ($this->queryObject === null) {
-            $this->queryObject = $this->buildQuery();
-            if ($this->queryClosure) {
-                $this->queryObject = call_user_func($this->queryClosure, $this->queryObject);
+        if ($this->query === null) {
+            $this->query = $this->buildQuery();
+            foreach($this->queryQueue as $closure) {
+                $this->query = call_user_func($closure, $this->query);
             }
         }
-        return $this->queryObject;
+        return $this->query;
     }
 
     /**
@@ -163,7 +154,7 @@ abstract class RelationAbstract
     public function execute()
     {
         if ($this->result === null) {
-            $this->result = $this->queryObject()->execute();
+            $this->result = $this->query()->execute();
         }
         return $this->result;
     }
@@ -173,10 +164,22 @@ abstract class RelationAbstract
      */
     public function __call($func, $args)
     {
-        $obj = $this->queryObject();
-        if (is_object($obj)) {
-            return call_user_func_array([$obj, $func], $args);
+        if (method_exists('Spot\Query', $func)) {
+            // See if method exists on Query object, and if it does, add query
+            // modification to queue to be executed after query is built and
+            // ready so that query is not executed immediately
+            $this->queryQueue[] = function(Query $query) use($func, $args) {
+                return call_user_func_array([$query, $func], $args);
+            };
+            return $this;
         } else {
+            // See if method exists on destination object after execution
+            // (typically either Spot\Entity\Collection or Spot\Entity object)
+            $result = $this->execute();
+            if (method_exists(get_class($result), $func)) {
+                return call_user_func_array([$result, $func], $args);
+            }
+
             throw new \BadMethodCallException("Method " . get_called_class() . "::$func does not exist");
         }
     }

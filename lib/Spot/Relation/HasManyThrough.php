@@ -81,7 +81,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
         $relationForeignKey = $this->foreignKey(); // tag_id
         $relationLocalKey = $this->localKey();     // post_id
         $relationEntityKey = $this->entityKey();
-        $collectionRelations = $this->queryObject()->execute();
+        $collectionRelations = $this->query()->execute();
 
         // HasManyThrough has to map out resulting key to original collection
         // keys since resulting relation objects won't have any reference to

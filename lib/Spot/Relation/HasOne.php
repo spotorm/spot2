@@ -56,7 +56,7 @@ class HasOne extends RelationAbstract implements \ArrayAccess
     public function execute()
     {
         if ($this->result === null) {
-            $this->result = $this->queryObject()->execute()->first();
+            $this->result = $this->query()->execute()->first();
         }
         return $this->result;
     }

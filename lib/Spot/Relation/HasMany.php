@@ -62,7 +62,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
         $this->identityValuesFromCollection($collection);
         $relationForeignKey = $this->foreignKey();
         $relationEntityKey = $this->entityKey();
-        $collectionRelations = $this->queryObject();
+        $collectionRelations = $this->query();
 
         // Divvy up related objects for each entity by foreign key value
         // ex. comment foreignKey 'post_id' will == entity primaryKey value

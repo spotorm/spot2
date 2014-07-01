@@ -34,9 +34,7 @@ class Post extends Entity
     {
         return [
             'tags' => $mapper->hasManyThrough($entity, 'SpotTest\Entity\Tag', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id'),
-            'comments' => $mapper->hasMany($entity, 'SpotTest\Entity\Post\Comment', 'post_id')->query(function($query) {
-                return $query->order(['date_created' => 'ASC']);
-            }),
+            'comments' => $mapper->hasMany($entity, 'SpotTest\Entity\Post\Comment', 'post_id')->order(['date_created' => 'ASC']),
             'author' => $mapper->belongsTo($entity, 'SpotTest\Entity\Author', 'author_id')
         ];
     }
