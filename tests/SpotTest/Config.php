@@ -45,4 +45,18 @@ class Config extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('\Spot\Config', unserialize(serialize($cfg)));
     }
+
+    public function testAddConnectionWithArray()
+    {
+        $cfg = new \Spot\Config();
+        $dbalArray = [
+            'dbname' => 'spot_test',
+            'user' => 'test',
+            'password' => 'password',
+            'host' => 'localhost',
+            'driver' => 'pdo_mysql'
+        ];
+        $adapter = $cfg->addConnection('test_array', $dbalArray);
+        $this->assertInstanceOf('Doctrine\DBAL\Connection', $adapter);
+    }
 }

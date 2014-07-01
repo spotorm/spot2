@@ -26,9 +26,13 @@ class Config implements \Serializable
             throw new Exception("Connection for '" . $name . "' already exists. Connection name must be unique.");
         }
 
-        $connectionParams = $this->parseDsn($dsn);
-        if($connectionParams === false) {
-            throw new Exception("Unable to parse given DSN string");
+        if (is_array($dsn)) {
+            $connectionParams = $dsn;
+        } else {
+            $connectionParams = $this->parseDsn($dsn);
+            if($connectionParams === false) {
+                throw new Exception("Unable to parse given DSN string");
+            }
         }
 
         $config = new \Doctrine\DBAL\Configuration();
