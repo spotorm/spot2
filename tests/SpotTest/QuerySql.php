@@ -9,7 +9,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     public static function setupBeforeClass()
     {
         foreach(['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+            test_spot_mapper('SpotTest\Entity\\' . $entity)->migrate();
         }
 
         // Insert blog dummy data

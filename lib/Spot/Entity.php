@@ -33,7 +33,7 @@ abstract class Entity
     public function __construct(array $data = array())
     {
         // Generate Unique object ID
-        $this->_objectId = uniqid() . spl_object_hash($this);
+        $this->_objectId = uniqid('entity_', true) . spl_object_hash($this);
 
         $this->initFields();
 

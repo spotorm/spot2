@@ -35,6 +35,7 @@ class Post extends Entity
         return [
             'tags' => $mapper->hasManyThrough($entity, 'SpotTest\Entity\Tag', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id'),
             'comments' => $mapper->hasMany($entity, 'SpotTest\Entity\Post\Comment', 'post_id')->order(['date_created' => 'ASC']),
+            'polymorphic_comments' => $mapper->hasMany($entity, 'SpotTest\Entity\PolymorphicComment', 'item_id')->where(['item_type' => 'post']),
             'author' => $mapper->belongsTo($entity, 'SpotTest\Entity\Author', 'author_id')
         ];
     }
