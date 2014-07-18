@@ -48,7 +48,7 @@ class Locator
             if ($mapper === false) {
                 $mapper = 'Spot\Mapper';
             }
-            $this->mapper[$entityName] = new $mapper($this->config(), $entityName);
+            $this->mapper[$entityName] = new $mapper($this, $entityName);
         }
         return $this->mapper[$entityName];
     }

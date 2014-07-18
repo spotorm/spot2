@@ -1,23 +1,24 @@
 <?php
-namespace SpotTest\Entity\Post;
+namespace SpotTest\Entity;
 
 use Spot\Entity;
 use Spot\Mapper;
 
 /**
- * Post Comment
+ * Polymorphic Comment
  *
  * @package Spot
  */
-class Comment extends \Spot\Entity
+class PolymorphicComment extends \Spot\Entity
 {
-    protected static $table = 'test_post_comments';
+    protected static $table = 'test_polymorphic_comments';
 
     public static function fields()
     {
         return [
             'id'            => ['type' => 'integer', 'primary' => true, 'autoincrement' => true],
-            'post_id'       => ['type' => 'integer', 'index' => true, 'required' => true],
+            'item_type'     => ['type' => 'string', 'index' => 'item_type_id', 'required' => true],
+            'item_id'       => ['type' => 'integer', 'index' => 'item_type_id', 'required' => true],
             'name'          => ['type' => 'string', 'required' => true],
             'email'         => ['type' => 'string', 'required' => true],
             'body'          => ['type' => 'text', 'required' => true],
@@ -28,7 +29,7 @@ class Comment extends \Spot\Entity
     public static function relations(Mapper $mapper, Entity $entity)
     {
         return [
-            'post' => $mapper->belongsTo($entity, 'SpotTest\Entity\Post', 'post_id')
+            'item' => $mapper->belongsTo($entity, 'SpotTest\Entity\\' . ucwords($entity->item_type), 'item_id')
         ];
     }
 }

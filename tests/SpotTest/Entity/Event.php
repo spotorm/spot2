@@ -44,7 +44,8 @@ class Event extends \Spot\Entity
     public static function relations(Mapper $mapper, Entity $entity)
     {
         return [
-            'search' => $mapper->hasOne($entity, 'SpotTest\Entity\Event\Search', 'event_id')
+            'search' => $mapper->hasOne($entity, 'SpotTest\Entity\Event\Search', 'event_id'),
+            'polymorphic_comments' => $mapper->hasMany($entity, 'SpotTest\Entity\PolymorphicComment', 'item_id')->where(['item_type' => 'event'])
         ];
     }
 

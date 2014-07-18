@@ -10,12 +10,12 @@ use Doctrine\DBAL\Types\Type;
  */
 class Mapper
 {
-    protected $_config;
-    protected $_entityName;
+    protected $locator;
+    protected $entityName;
 
     // Entity manager
-    protected static $_entityManager = [];
-    protected static $_eventEmitter;
+    protected static $entityManager = [];
+    protected static $eventEmitter;
 
     // Temporary relations
     protected $withRelations = [];
@@ -30,22 +30,22 @@ class Mapper
     /**
      *  Constructor Method
      */
-    public function __construct(Config $config, $entityName)
+    public function __construct(Locator $locator, $entityName)
     {
-        $this->_config = $config;
-        $this->_entityName = $entityName;
+        $this->locator = $locator;
+        $this->entityName = $entityName;
 
         $this->loadEvents();
     }
 
     /**
-     * Get config class mapper was instantiated with
+     * Get config class from locator
      *
      * @return Spot\Config
      */
     public function config()
     {
-        return $this->_config;
+        return $this->locator->config();
     }
 
     /**
@@ -56,12 +56,7 @@ class Mapper
      */
     public function getMapper($entityName)
     {
-        $mapper = $entityName::mapper();
-        // Fallback to generic mapper
-        if ($mapper === false) {
-            $mapper = 'Spot\Mapper';
-        }
-        return new $mapper($this->config(), $entityName);
+        return $this->locator->mapper($entityName);
     }
 
     /**
@@ -71,7 +66,7 @@ class Mapper
      */
     public function entity()
     {
-        return $this->_entityName;
+        return $this->entityName;
     }
 
     /**
@@ -100,10 +95,10 @@ class Mapper
     public function entityManager()
     {
         $entityName = $this->entity();
-        if (!isset(self::$_entityManager[$entityName])) {
-            self::$_entityManager[$entityName] = new Entity\Manager($entityName);
+        if (!isset(self::$entityManager[$entityName])) {
+            self::$entityManager[$entityName] = new Entity\Manager($entityName);
         }
-        return self::$_entityManager[$entityName];
+        return self::$entityManager[$entityName];
     }
 
     /**
@@ -112,10 +107,10 @@ class Mapper
     public function eventEmitter()
     {
         $entityName = $this->entity();
-        if (empty(self::$_eventEmitter[$entityName])) {
-            self::$_eventEmitter[$entityName] = new EventEmitter();
+        if (empty(self::$eventEmitter[$entityName])) {
+            self::$eventEmitter[$entityName] = new EventEmitter();
         }
-        return self::$_eventEmitter[$entityName];
+        return self::$eventEmitter[$entityName];
     }
 
     /**
@@ -315,7 +310,7 @@ class Mapper
             return $connection;
         }
 
-        throw new Exception("Connection '" . $connectionName . "' does not exist. Please setup connection using Spot_Config::addConnection().");
+        throw new Exception("Connection '" . $connectionName . "' does not exist. Please setup connection using Spot\Config::addConnection().");
     }
 
     /**
@@ -383,7 +378,8 @@ class Mapper
      */
     protected function with($collection, $entityName, $with = [])
     {
-        $return = $this->eventEmitter()->emit('beforeWith', [$this, $collection, $with]);
+        $eventEmitter = $this->eventEmitter();
+        $return = $eventEmitter->emit('beforeWith', [$this, $collection, $with]);
         if (false === $return) {
             return $collection;
         }
@@ -414,7 +410,7 @@ class Mapper
             // Hook so user can load custom relations their own way if they
             // want to, and then bypass the normal loading process by returning
             // false from their event
-            $return = $this->eventEmitter()->emit('loadWith', [$this, $collection, $relationName]);
+            $return = $eventEmitter->emit('loadWith', [$this, $collection, $relationName]);
             if (false === $return) {
                 continue;
             }
@@ -423,7 +419,7 @@ class Mapper
             $collection = $relationObject->eagerLoadOnCollection($relationName, $collection);
         }
 
-        $this->eventEmitter()->emit('afterWith', [$this, $collection, $with]);
+        $eventEmitter->emit('afterWith', [$this, $collection, $with]);
         return $collection;
     }
 
@@ -538,9 +534,14 @@ class Mapper
      */
     public function first(array $conditions = [])
     {
-        $query = $this->where($conditions)->limit(1);
+        if (empty($conditions)) {
+            $query = $this->select()->limit(1);
+        } else {
+            $query = $this->where($conditions)->limit(1);
+        }
+
         $collection = $query->execute();
-        if($collection) {
+        if ($collection) {
             return $collection->first();
         } else {
             return false;

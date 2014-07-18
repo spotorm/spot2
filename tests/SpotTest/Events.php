@@ -316,7 +316,6 @@ class Events extends \PHPUnit_Framework_TestCase
         $eventEmitter->removeAllListeners('beforeSave');
     }
 
-
     public function testWithHooks()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
@@ -354,7 +353,6 @@ class Events extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['Called beforeWith', 'Called loadWith', 'Called afterWith'], $hooks);
         $eventEmitter->removeAllListeners();
     }
-
 
     public function testWithAssignmentHooks()
     {
