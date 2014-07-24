@@ -149,8 +149,10 @@ class Query implements \Countable, \IteratorAggregate
      */
     public function where(array $where, $type = 'AND')
     {
-        $whereClause = implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($where));
-        $this->builder()->andWhere($whereClause);
+        if (!empty($where)) {
+            $whereClause = implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($where));
+            $this->builder()->andWhere($whereClause);
+        }
         return $this;
     }
 
@@ -162,8 +164,10 @@ class Query implements \Countable, \IteratorAggregate
      */
     public function orWhere(array $where, $type = 'AND')
     {
-        $whereClause = implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($where));
-        $this->builder()->orWhere($whereClause);
+        if (!empty($where)) {
+            $whereClause = implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($where));
+            $this->builder()->orWhere($whereClause);
+        }
         return $this;
     }
 

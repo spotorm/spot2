@@ -760,15 +760,14 @@ class Mapper
     /**
      * Delete items matching given conditions
      *
-     * @param mixed $entityName Name of the entity class or entity object
-     * @param array $conditions Optional array of conditions in column => value pairs
+     * @param mixed $conditions Optional array of conditions in column => value pairs
      */
-    public function delete($entityName, array $conditions = [])
+    public function delete($conditions = [])
     {
-        if(is_object($entityName)) {
-            $entity = $entityName;
-            $entityName = get_class($entityName);
-            $conditions = array($this->primaryKeyField() => $this->primaryKey($entity));
+        if (is_object($conditions)) {
+            $entity = $conditions;
+            $entityName = get_class($entity);
+            $conditions = [$this->primaryKeyField() => $this->primaryKey($entity)];
 
             // Run beforeDelete to know whether or not we can continue
             if (false === $this->eventEmitter()->emit('beforeDelete', [$entity, $this])) {
@@ -783,16 +782,10 @@ class Mapper
             return $result;
 
         // Passed array of conditions
-        } elseif (is_array($entityName) && empty($conditions)) {
-            $conditions = $entityName;
+        } elseif (is_array($conditions)) {
+            $query = $this->queryBuilder()->delete($this->table())->where($conditions);
+            return $this->resolver()->exec($query);
         }
-
-        $query = $this->queryBuilder()->delete($this->table());
-        if (!empty($conditions)) {
-            $query->where($conditions);
-        }
-
-        return $this->resolver()->exec($query);
     }
 
     /**
@@ -800,7 +793,7 @@ class Mapper
      */
     protected function convertToDatabaseValues($entityName, array $data)
     {
-        $dbData = array();
+        $dbData = [];
         $fields = $entityName::fields();
         $platform = $this->connection()->getDatabasePlatform();
         foreach($data as $field => $value) {
@@ -821,7 +814,7 @@ class Mapper
         $entityData = array_intersect_key($data, $fields);
         foreach($data as $field => $value) {
             // Field is in the Entity definitions
-            if(isset($entityData[$field])) {
+            if (isset($entityData[$field])) {
                 $typeHandler = Type::getType($fields[$field]['type']);
                 $phpData[$field] = $typeHandler->convertToPHPValue($value, $platform);
             // Extra data returned with query (like calculated valeus, etc.)
@@ -864,9 +857,9 @@ class Mapper
      * Truncate table
      * Should delete all rows and reset serial/auto_increment keys
      */
-    public function truncateTable()
+    public function truncateTable($cascade = false)
     {
-        return $this->resolver()->truncate($this->table());
+        return $this->resolver()->truncate($this->table(), $cascade);
     }
 
     /**

@@ -170,15 +170,18 @@ class Resolver
      * @param string $table Table name
      * @param array $data Array of data for WHERE clause in 'field' => 'value' format
      */
-    public function truncate($table)
+    public function truncate($table, $cascade = false)
     {
-        $connection = $this->mapper->connection();
+        $mapper = $this->mapper;
+        $connection = $mapper->connection();
 
         // SQLite doesn't support TRUNCATE
-        if(strpos(strtolower(get_class($connection->getDriver())), "sqlite") !== false) {
+        if ($mapper->connectionIs("sqlite")) {
             $sql = "DELETE FROM " . $table;
+        } elseif ($mapper->connectionIs("pgsql")) {
+            $sql = "TRUNCATE TABLE " . $table . ($cascade ? " CASCADE" : "");
         } else {
-            $sql = "TRUNCATE TABLE " . $table;
+            $sql = "TRUNCATE TABLE " . $table . "";
         }
 
         return $connection->transactional(function($conn) use($sql) {

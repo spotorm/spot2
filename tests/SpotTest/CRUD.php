@@ -161,4 +161,16 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $this->assertTrue((boolean) $result2);
         $this->assertSame('abcdef123456', $entity->svalue);
     }
+
+    public function testTruncate()
+    {
+        $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
+        $postTagMapper->truncateTable();
+    }
+
+    public function testDeleteAll()
+    {
+        $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
+        $postTagMapper->delete();
+    }
 }
