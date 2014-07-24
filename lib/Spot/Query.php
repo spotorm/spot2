@@ -7,7 +7,7 @@ namespace Spot;
  * @package Spot
  * @author Vance Lucas <vance@vancelucas.com>
  */
-class Query implements \Countable, \IteratorAggregate
+class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 {
     protected $_mapper;
     protected $_entityName;
@@ -579,6 +579,40 @@ class Query implements \Countable, \IteratorAggregate
     {
         $field = $this->_tableName . '.' . $field;
         return $escaped ? $this->escapeField($field) : $field;
+    }
+
+    // SPL - ArrayAccess functions - passthrough to collection
+    // -------------------------------------------------------
+    public function offsetExists($key)
+    {
+        $results = $this->getIterator();
+        return isset($results[$key]);
+    }
+
+    public function offsetGet($key)
+    {
+        $results = $this->getIterator();
+        return $results[$key];
+    }
+
+    public function offsetSet($key, $value)
+    {
+        $results = $this->getIterator();
+        if($key === null) {
+            return $results[] = $value;
+        } else {
+            return $results[$key] = $value;
+        }
+    }
+
+    public function offsetUnset($key)
+    {
+        $results = $this->getIterator();
+        if(is_int($key)) {
+            array_splice($results, $key, 1);
+        } else {
+            unset($results[$key]);
+        }
     }
 
     /**

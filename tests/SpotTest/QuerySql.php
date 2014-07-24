@@ -77,15 +77,15 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $posts = $mapper->where(['title' => 'even_title']);
-        $this->assertTrue($posts instanceof \Spot\Query);
+        $this->assertInstanceOf('Spot\Query', $posts);
     }
 
     public function testQueryCollectionInstance()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $posts = $mapper->where(['title' => 'even_title']);
-        $this->assertTrue($posts instanceof \Spot\Query);
-        $this->assertTrue($posts->execute() instanceof \Spot\Entity\Collection);
+        $this->assertInstanceOf('Spot\Query', $posts);
+        $this->assertInstanceOf('Spot\Entity\Collection', $posts->execute());
     }
 
     // Bare (implicit equals)
@@ -256,5 +256,14 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', $params);
 
         $this->assertContains('IN', $posts->toSql());
+    }
+
+    public function testQueryArrayAccess()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $posts = $mapper->all();
+
+        $this->assertInstanceOf('SpotTest\Entity\Post', $posts[0]);
     }
 }
