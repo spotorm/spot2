@@ -193,5 +193,18 @@ class Insert extends \PHPUnit_Framework_TestCase
         $this->assertFalse($result);
         $this->assertEquals(['Type contains invalid value'], $event->errors('type'));
     }
+
+    /**
+     * @expectedException Spot\Exception
+     */
+    public function testCreateWithErrorsThrowsException()
+    {
+        $mapper = test_spot_mapper('\SpotTest\Entity\Event');
+        $event = $mapper->create([
+            'title' => 'Test Event 1',
+            'description' => 'Test Description',
+            'date_start' => new \DateTime('+1 day')
+        ]);
+    }
 }
 

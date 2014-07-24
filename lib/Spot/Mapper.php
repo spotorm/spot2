@@ -480,6 +480,7 @@ class Mapper
      *
      * @param array $data array of key/values to set on new Entity instance
      * @return object Instance of $entityClass with $data set on it
+     * @throws Spot\Exception
      */
     public function create(array $data)
     {
@@ -487,7 +488,7 @@ class Mapper
         if($this->insert($entity)) {
             return $entity;
         }
-        return false;
+        throw new Exception("Unable to insert new " . get_class($entity) . " - Errors: " . var_export($entity->errors(), true));
     }
 
     /**
