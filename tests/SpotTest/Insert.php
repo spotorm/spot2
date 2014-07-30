@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class Insert extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post', 'Author', 'Event', 'Event\Search'];
+    private static $entities = ['Post', 'Author', 'Event', 'Event\Search', 'NoSerial'];
 
     public static function setupBeforeClass()
     {
@@ -199,12 +199,36 @@ class Insert extends \PHPUnit_Framework_TestCase
      */
     public function testCreateWithErrorsThrowsException()
     {
-        $mapper = test_spot_mapper('\SpotTest\Entity\Event');
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
         $event = $mapper->create([
             'title' => 'Test Event 1',
             'description' => 'Test Description',
             'date_start' => new \DateTime('+1 day')
         ]);
+    }
+
+    public function testInsertWithoutAutoIncrement()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\NoSerial');
+        $entity = $mapper->build([
+            'id' => 101,
+            'data' => 'Testing insert'
+        ]);
+        $result = $mapper->insert($entity);
+
+        $this->assertEquals(101, $result);
+    }
+
+    public function testInsertWithoutAutoIncrementWithoutPKValueHasValidationError()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\NoSerial');
+        $entity = $mapper->build([
+            'data' => 'Testing insert'
+        ]);
+        $result = $mapper->insert($entity);
+
+        $this->assertEquals(false, $result);
+        $this->assertEquals(1, count($entity->errors('id')));
     }
 }
 
