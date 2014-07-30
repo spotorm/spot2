@@ -281,6 +281,20 @@ class Mapper
     }
 
     /**
+     * Check if field exists in defined fields
+     *
+     * @param string $field Field name to check for existence
+     */
+    public function fieldInfo($field)
+    {
+        if ($this->fieldExists($field)) {
+            return $this->fields()[$field];
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Return field type
      *
      * @param string $field Field name
@@ -643,6 +657,7 @@ class Mapper
         $data = $entity->data();
         if(count($data) > 0) {
             $pkField = $this->primaryKeyField();
+            $pkFieldInfo = $this->fieldInfo($pkField);
 
             // Save only known, defined fields
             $entityFields = $this->fields();
@@ -662,15 +677,28 @@ class Mapper
 
             if($result) {
                 $connection = $this->connection();
-                if ($this->connectionIs('pgsql')) {
-                    $result = $connection->lastInsertId($table . '_' . $pkField . '_seq');
+
+                if (array_key_exists($pkField, $data)) {
+                    // PK value was given on insert, just return it
+                    $result = $data[$pkField];
                 } else {
-                    $result = $connection->lastInsertId();
+                    // Get PK from database
+                    if ($pkFieldInfo && $pkFieldInfo['autoincrement'] === true) {
+                        if ($this->connectionIs('pgsql')) {
+                            // Allow custom sequence name
+                            $sequenceName = $table . '_' . $pkField . '_seq';
+                            if (isset($pkFieldInfo['sequence_name'])) {
+                                $sequenceName = $pkFieldInfo['sequence_name'];
+                            }
+                            $result = $connection->lastInsertId($sequenceName);
+                        } else {
+                            $result = $connection->lastInsertId();
+                        }
+                    }
                 }
             }
 
             // Update primary key on entity object
-            $pkField = $this->primaryKeyField();
             $entity->$pkField = $result;
             $entity->isNew(false);
 
@@ -895,7 +923,12 @@ class Mapper
         $uniqueWhere = [];
         foreach($this->fields() as $field => $fieldAttrs) {
             // Required field
-            if (isset($fieldAttrs['required']) && true === $fieldAttrs['required']) {
+            if (
+                // Explicitly required
+                ( isset($fieldAttrs['required']) && true === $fieldAttrs['required'] )
+                // Primary key without autoincrement
+                || ($fieldAttrs['primary'] === true && $fieldAttrs['autoincrement'] === false)
+            ) {
                 $v->rule('required', $field);
             }
 
