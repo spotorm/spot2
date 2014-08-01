@@ -20,9 +20,9 @@ class Laravel extends ServiceProvider
         // Munge Laravel array structure to match expected Doctrine DBAL's
         $config = [
             'dbname'    => $config['database'],
-            'user'      => $config['username'],
-            'password'  => $config['password'],
-            'host'      => $config['host'],
+            'user'      => isset($config['username']) ? $config['username'] : null,
+            'password'  => isset($config['password']) ? $config['password'] : null,
+            'host'      => isset($config['host']) ? $config['host'] : null,
             'driver'    => 'pdo_' . $config['driver']
         ];
         $this->config = $config;
