@@ -184,7 +184,7 @@ class Mapper
         $foreignKey = $foreignMapper->primaryKeyField();
 
         // Return relation object so query can be lazy-loaded
-        return new Relation\BelongsTo($this, $foreignEntity, $foreignKey, $localKey, $entity->$foreignKey);
+        return new Relation\BelongsTo($this, $foreignEntity, $foreignKey, $localKey, $entity->$localKey);
     }
 
     /**

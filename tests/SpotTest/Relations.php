@@ -228,7 +228,9 @@ class Relations extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Event');
         $event = $mapper->get($eventId);
-        $this->assertInstanceOf('SpotTest\Entity\Event\Search', $event->search->execute());
+        $eventSearch = $event->search->execute();
+        $this->assertInstanceOf('SpotTest\Entity\Event\Search', $eventSearch);
+        $this->assertEquals($eventSearch->event_id, $eventId);
     }
 
     /**
@@ -238,6 +240,8 @@ class Relations extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
         $eventSearch = $mapper->first(['event_id' => $eventId]);
-        $this->assertInstanceOf('SpotTest\Entity\Event', $eventSearch->event->execute());
+        $event = $eventSearch->event->execute();
+        $this->assertInstanceOf('SpotTest\Entity\Event', $event);
+        $this->assertEquals($event->id, $eventId);
     }
 }

@@ -70,6 +70,16 @@ class Config implements \Serializable
     }
 
     /**
+     * Get all connections
+     *
+     * @return array Array of connection objects
+     */
+    public function connections()
+    {
+        return $this->_connections;
+    }
+
+    /**
      * Get default connection
      *
      * @return Spot_Adapter_Interface Spot adapter instance
