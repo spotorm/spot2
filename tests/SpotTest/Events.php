@@ -436,4 +436,61 @@ class Events extends \PHPUnit_Framework_TestCase
 
         $eventEmitter->removeAllListeners('afterSave');
     }
+
+    public function testValidationEvents()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $eventEmitter = $mapper->eventEmitter();
+        $post = new \SpotTest\Entity\Post([
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1,
+            'date_created' => new \DateTime()
+        ]);
+
+        $hooks = [];
+        $eventEmitter = $mapper->eventEmitter();
+        $eventEmitter->on('beforeValidate', function($post, $mapper, $validator) use (&$hooks) {
+            $hooks[] = 'called beforeValidate';
+        });
+        $eventEmitter->on('afterValidate', function($post, $mapper, $validator) use (&$hooks) {
+            $hooks[] = 'called afterValidate';
+        });
+
+        $mapper->validate($post);
+
+        $this->assertEquals(['called beforeValidate', 'called afterValidate'], $hooks);
+
+        $eventEmitter->removeAllListeners();
+    }
+
+    public function testBeforeValidateEventStopsValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $eventEmitter = $mapper->eventEmitter();
+        $post = new \SpotTest\Entity\Post([
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1,
+            'date_created' => new \DateTime()
+        ]);
+
+        $hooks = [];
+        $eventEmitter = $mapper->eventEmitter();
+        $eventEmitter->on('beforeValidate', function($post, $mapper, $validator) use (&$hooks) {
+            $hooks[] = 'called beforeValidate';
+            return false; // Should stop validation
+        });
+        $eventEmitter->on('afterValidate', function($post, $mapper, $validator) use (&$hooks) {
+            $hooks[] = 'called afterValidate';
+        });
+
+        $mapper->validate($post);
+
+        $this->assertEquals(['called beforeValidate'], $hooks);
+
+        $eventEmitter->removeAllListeners();
+    }
 }

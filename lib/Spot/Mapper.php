@@ -919,6 +919,11 @@ class Mapper
     {
         $v = new \Valitron\Validator($entity->data());
 
+        // Run beforeValidate to know whether or not we can continue
+        if (false === $this->eventEmitter()->emit('beforeValidate', [$entity, $this, $v])) {
+            return false;
+        }
+
         // Check validation rules on each feild
         $uniqueWhere = [];
         foreach($this->fields() as $field => $fieldAttrs) {
@@ -979,6 +984,11 @@ class Mapper
 
         if(!$v->validate()) {
             $entity->errors($v->errors(), false);
+        }
+
+        // Run afterValidate to run additional/custom validations
+        if (false === $this->eventEmitter()->emit('afterValidate', [$entity, $this, $v])) {
+            return false;
         }
 
         // Return error result
