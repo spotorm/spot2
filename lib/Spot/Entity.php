@@ -23,6 +23,8 @@ abstract class Entity
 
     // Entity state
     protected $_isNew = true;
+    protected $_inGetter = [];
+    protected $_inSetter = [];
 
     // Entity error messages (may be present after save attempt)
     protected $_errors = [];
@@ -125,18 +127,18 @@ abstract class Entity
     {
         // GET
         if(null === $data || !$data) {
-            return array_merge($this->_data, $this->_dataModified);
+            $data = array_merge($this->_data, $this->_dataModified);
+            foreach($data as $k => &$v) {
+                $v = $this->__get($k, $v);
+            }
+            return $data;
         }
 
         // SET
         if(is_object($data) || is_array($data)) {
             $fields = $this->fields();
             foreach($data as $k => $v) {
-                if(true === $modified) {
-                    $this->_dataModified[$k] = $v;
-                } else {
-                    $this->_data[$k] = $v;
-                }
+                $this->set($k, $v, $modified);
             }
             return $this;
         } else {
@@ -292,16 +294,27 @@ abstract class Entity
     {
         $v = null;
 
-        // We can't use isset because it returns false for NULL values
-        if (array_key_exists($field, $this->_dataModified)) {
-            $v =&  $this->_dataModified[$field];
-        } elseif (array_key_exists($field, $this->_data)) {
-            $v =& $this->_data[$field];
-        } elseif ($relation = $this->relation($field)) {
-            $v =& $relation;
+        if (!in_array($field, $this->_inGetter) && method_exists($this, 'get_' . $field)) {
+            // Custom getter method
+            $this->_inGetter[$field] = true;
+            $v = call_user_func([$this, 'get_' . $field]);
+            unset($this->_inGetter[$field]);
+        } else {
+            // We can't use isset because it returns false for NULL values
+            if (array_key_exists($field, $this->_dataModified)) {
+                $v =& $this->_dataModified[$field];
+            } elseif (array_key_exists($field, $this->_data)) {
+                $v =& $this->_data[$field];
+            } elseif ($relation = $this->relation($field)) {
+                $v =& $relation;
+            }
         }
 
         return $v;
+    }
+    public function get($field)
+    {
+        return $this->__get($field);
     }
 
     /**
@@ -309,7 +322,22 @@ abstract class Entity
      */
     public function __set($field, $value)
     {
-        $this->_dataModified[$field] = $value;
+        return $this->set($field, $value);
+    }
+    public function set($field, $value, $modified = true)
+    {
+        // Custom setter method
+        if (!in_array($field, $this->_inSetter) && method_exists($this, 'set_' . $field)) {
+            $this->_inSetter[$field] = true;
+            $value = call_user_func([$this, 'set_' . $field], $value);
+            unset($this->_inSetter[$field]);
+        }
+
+        if ($modified) {
+            $this->_dataModified[$field] = $value;
+        } else {
+            $this->_data[$field] = $value;
+        }
     }
 
     /**

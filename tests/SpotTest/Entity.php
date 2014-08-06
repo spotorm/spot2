@@ -265,4 +265,31 @@ class Entity extends \PHPUnit_Framework_TestCase
 
         $this->assertNotEquals($data, $post->data);
     }
+
+    public function testCustomSetterMethod()
+    {
+        $entity = new \SpotTest\Entity\CustomMethods();
+        $entity->test1 = 'test';
+
+        $this->assertEquals('test_test_gotten', $entity->test1);
+    }
+
+    public function testCustomSetterMethodWithArrayLoad()
+    {
+        $entity = new \SpotTest\Entity\CustomMethods([
+            'test1' => 'test'
+        ]);
+
+        $this->assertEquals('test_test_gotten', $entity->test1);
+    }
+
+    public function testCustomGetterMethodWithArrayData()
+    {
+        $entity = new \SpotTest\Entity\CustomMethods([
+            'test1' => 'test'
+        ]);
+        $data = $entity->data();
+
+        $this->assertEquals('test_test_gotten', $data['test1']);
+    }
 }
