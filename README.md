@@ -30,11 +30,25 @@ locator object:
 $cfg = new \Spot\Config();
 
 // MySQL
-$cfg->addConnection('test_mysql', 'mysql://user:password@localhost/database_name');
+$cfg->addConnection('mysql', 'mysql://user:password@localhost/database_name');
 // Sqlite
-$cfg->addConnection('test_sqlite', 'sqlite://path/to/database.sqlite');
+$cfg->addConnection('sqlite', 'sqlite://path/to/database.sqlite');
 
 $spot = new \Spot\Locator($cfg);
+```
+
+You can also use [DBAL-compatible configuration
+arrays](http://docs.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html)
+instead of DSN strings if you prefer:
+
+```php
+$cfg->addConnection('mysql', [
+    'dbname' => 'mydb',
+    'user' => 'user',
+    'password' => 'secret',
+    'host' => 'localhost',
+    'driver' => 'pdo_mysql',
+]);
 ```
 
 Accessing the Locator
@@ -121,7 +135,8 @@ class Post extends \Spot\Entity
 }
 ```
 
-### Using Custom Mappers
+Using Custom Mappers
+--------------------
 
 Although you do not have to create a mapper for each entity, sometimes it is
 nice to create one if you have a lot of custom finder methods, or want a better
@@ -133,7 +148,6 @@ namespace Entity;
 
 class Post extends \Spot\Entity
 {
-    protected static $table = 'posts';
     protected static $mapper = 'Entity\Mapper\Post';
 
     // ... snip ...
@@ -171,9 +185,10 @@ $mapper = $spot->mapper('Entity\Post');
 $sidebarPosts = $mapper->mostRecentPostsForSidebar();
 ```
 
-### Built-in Field Types
+Field Types
+-----------
 
-Since Spot v2.x is built on top of DBAL, all the same [DBAL
+Since Spot v2.x is built on top of DBAL, all the [DBAL
 types](http://docs.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/types.html)
 are used and fully supported in Spot:
 
@@ -228,7 +243,7 @@ Since Spot uses the DBAL internally, there are no additional changes you have
 to make for your custom type to work with Spot.
 
 Migrations / Creating and Updating Tables
-----------------
+-----------------------------------------
 
 Spot comes with a method for running migrations on Entities that will
 automatically CREATE and ALTER tables based on the current Entity's `fields`
@@ -242,11 +257,11 @@ $mapper->migrate();
 Your database should now have the `posts` table in it, with all the fields you
 described in your `Post` entity.
 
-NOTE: Please note that re-naming columns is not supported in migrations because
+**NOTE: Please note that re-naming columns is not supported in migrations because
 there is no way for spot to know which column you renamed to what - Spot will
 see a new column that needs to be created, and a column that no longer exists
 and needs to be dropped. This could result in data loss during an
-auto-migration.
+auto-migration.**
 
 Finders (Mapper)
 ----------------
@@ -254,17 +269,25 @@ Finders (Mapper)
 The main finders used most are `all` to return a collection of entities,
 and `first` or `get` to return a single entity matching the conditions.
 
-### all([conditions])
+### all()
 
-Find all `entityName` that matches the given conditions and return a
+Find all entities and return a `Spot\Entity\Collection` of loaded `Spot\Entity`
+objects.
+
+### where([conditions])
+
+Find all entities that match the given conditions and return a
 `Spot\Entity\Collection` of loaded `Spot\Entity` objects.
 
 ```php
-// Conditions can be the second argument
-$posts = $mapper->all(['status' => 1]);
+// Where can be called directly from the mapper
+$posts = $mapper->where(['status' => 1]);
 
 // Or chained using the returned `Spot\Query` object - results identical to above
 $posts = $mapper->all()->where(['status' => 1]);
+
+// Or more explicitly using using `select`, which always returns a `Spot\Query` object
+$posts = $mapper->select()->where(['status' => 1]);
 ```
 
 Since a `Spot\Query` object is returned, conditions and other statements
@@ -287,6 +310,9 @@ matching record.
 $post = $mapper->all(['title' => "Test Post"])->first();
 ```
 
+A call to `first` will always execute the query immediately, and return either
+a single loaded entity object, or boolean `false`.
+
 ### Conditional Queries
 
 ```php
@@ -295,14 +321,54 @@ $posts = $mapper->all()
     ->where(['status' => 'published'])
     ->order(['date_created' => 'DESC']);
 
-# All posts created before today
+# All posts created before 3 days ago
 $posts = $mapper->all()
-    ->where(['date_created <' => new \DateTime()]);
+    ->where(['date_created <' => new \DateTime('-3 days')]);
 
 # Posts with 'id' of 1, 2, 5, 12, or 15 - Array value = automatic "IN" clause
 $posts = $mapper->all()
     ->where(['id' => [1, 2, 5, 12, 15]]);
 ```
+
+### Joins
+
+Joins are currently not enabled by Spot's query builder. The Doctine DBAL query
+builder does provide full support for them, so they may be enabled in the
+future.
+
+### Custom Queries
+
+While ORMs like Spot are very nice to use, if you need to do complex queries,
+it's best to just use custom queries with the SQL you know and love.
+
+Spot provides a `query` method that allows you to run custom SQL, and load the
+results into a normal collection of entity objects. This way, you can easily run
+custom SQL queries with all the same ease of use and convenience as the
+built-in finder methods and you won't have to do any special handling.
+
+#### Using Custom SQL
+
+```php
+$posts = $mapper->query("SELECT * FROM posts WHERE id = 1");
+```
+
+#### Using Query Parameters
+
+```php
+$posts = $mapper->query("SELECT * FROM posts WHERE id = ?", [1]);
+```
+
+#### Using Named Placeholders
+
+```php
+$posts = $mapper->query("SELECT * FROM posts WHERE id = :id", ['id' => 1]);
+```
+
+**NOTE: Spot will load ALL returned columns on the target entity from the query
+you run. So if you perform a JOIN or get more data than the target entity
+normally has, it will just be loaded on the target entity, and no attempt will
+be made to map the data to other entities or to filter it based on only the
+defined fields.**
 
 Relations
 ---------
@@ -310,6 +376,38 @@ Relations
 Relations are convenient ways to access related, parent, and child entities from
 another loaded entity object. An example might be `$post->comments` to query for
 all the comments related to the current `$post` object.
+
+### Live Query Objects
+
+All relations are returned as instances of relation classes that extend
+`Spot\Relation\RelationAbstract`. This class holds a `Spot\Query` object
+internally, and allows you to chain your own query modifications on it so you
+can do custom things with relations, like ordering, adding more query
+conditions, etc.
+
+```php
+$mapper->hasMany($entity, 'Entity\Comment', 'post_id')
+    ->where(['status' => 'active'])
+    ->order(['date_created' => 'ASC']);
+```
+
+All of these query modifications are held in a queue, and are run when the
+relation is actually executed (on `count` or `foreach` iteration, or when
+`execute` is explicitly called).
+
+### Eager Loading
+
+All relation types are lazy-loaded by default, and can be eager-loaded to
+solve the N+1 query problem using the `with` method:
+
+```php
+$posts = $posts->all()->with('comments');
+```
+
+Multiple relations can also be eager-loaded using an array:
+```php
+$posts = $posts->all()->with(['comments', 'tags']);
+```
 
 ### Relation Types
 
