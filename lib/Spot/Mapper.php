@@ -596,8 +596,9 @@ class Mapper
      * Performs validation automatically before saving record
      *
      * @param \Spot\Entity $entity Entity object
+     * @param array optional Array of save options
      */
-    public function save(Entity $entity)
+    public function save(Entity $entity, array $options = [])
     {
         $eventEmitter = $this->eventEmitter();
 
@@ -613,9 +614,9 @@ class Mapper
         }
 
         if($entity->isNew()) {
-            $result = $this->insert($entity);
+            $result = $this->insert($entity, $options);
         } else {
-            $result = $this->update($entity);
+            $result = $this->update($entity, $options);
         }
 
         if (false === $eventEmitter->emit('afterSave', [$entity, $this, &$result])) {
@@ -661,7 +662,15 @@ class Mapper
 
             // Save only known, defined fields
             $entityFields = $this->fields();
+            $extraData = array_diff_key($data, $entityFields);
             $data = array_intersect_key($data, $entityFields);
+
+            // If there are extra fields here, throw an error
+            if (!isset($options['strict']) || (isset($options['strict']) && $options['strict'] === true)) {
+                if (count($extraData) > 0) {
+                    throw new Exception("Insert error: Unknown fields provided for " . $entityName . ": '" . implode("', '", array_keys($extraData)). "'");
+                }
+            }
 
             // Do type conversion
             $data = $this->convertToDatabaseValues($entityName, $data);
@@ -740,7 +749,15 @@ class Mapper
         // Save only known, defined fields
         $entityFields = $this->fields();
         $entityName = $this->entity();
+        $extraData = array_diff_key($data, $entityFields);
         $data = array_intersect_key($data, $entityFields);
+
+        // If there are extra fields here, throw an error
+        if (!isset($options['strict']) || (isset($options['strict']) && $options['strict'] === true)) {
+            if (count($extraData) > 0) {
+                throw new Exception("Update error: Unknown fields provided for " . $entityName . ": '" . implode("', '", array_keys($extraData)). "'");
+            }
+        }
 
         // Do type conversion
         $data = $this->convertToDatabaseValues($entityName, $data);

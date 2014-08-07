@@ -173,4 +173,105 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
         $postTagMapper->delete();
     }
+
+    /**
+     * @expectedException Spot\Exception
+     */
+    public function testStrictInsert()
+    {
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $result = $postMapper->insert([
+            'title' => 'irrelevant_title',
+            'author_id' => 1,
+            'body' => '<p>test_body</p>',
+            'status' => 10,
+            'date_created' => new \DateTime(),
+            'additional_field' => 'Should cause an error'
+        ]);
+    }
+
+    public function testNonStrictInsert()
+    {
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $result = $postMapper->insert([
+            'title' => 'irrelevant_title',
+            'author_id' => 1,
+            'body' => '<p>test_body</p>',
+            'status' => 10,
+            'date_created' => new \DateTime(),
+            'additional_field' => 'Should cause an error'
+        ], ['strict' => false]);
+
+        $this->assertTrue((boolean) $result);
+    }
+
+    /**
+     * @expectedException Spot\Exception
+     */
+    public function testStrictUpdate()
+    {
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->create([
+            'title' => 'irrelevant_title',
+            'author_id' => 1,
+            'body' => '<p>test_body</p>',
+            'status' => 10,
+            'date_created' => new \DateTime()
+        ]);
+
+        $post->additional_field = 'Should cause an error';
+        $result = $postMapper->update($post);
+    }
+
+    public function testNonStrictUpdate()
+    {
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->create([
+            'title' => 'irrelevant_title',
+            'author_id' => 1,
+            'body' => '<p>test_body</p>',
+            'status' => 10,
+            'date_created' => new \DateTime()
+        ]);
+
+        $post->status = 11;
+        $post->additional_field = 'Should cause an error';
+
+        $result = $postMapper->update($post, ['strict' => false]);
+        $this->assertTrue((boolean) $result);
+    }
+
+    /**
+     * @expectedException Spot\Exception
+     */
+    public function testStrictSave()
+    {
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->build([
+            'title' => 'irrelevant_title',
+            'author_id' => 1,
+            'body' => '<p>test_body</p>',
+            'status' => 10,
+            'date_created' => new \DateTime(),
+            'additional_field' => 'Should cause an error'
+        ]);
+
+        $postMapper->save($post);
+    }
+
+    public function testNonStrictSave()
+    {
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->build([
+            'title' => 'irrelevant_title',
+            'author_id' => 1,
+            'body' => '<p>test_body</p>',
+            'status' => 10,
+            'date_created' => new \DateTime(),
+            'additional_field' => 'Should cause an error'
+        ]);
+
+        $result = $postMapper->save($post, ['strict' => false]);
+        $this->assertTrue((boolean) $result);
+    }
 }
