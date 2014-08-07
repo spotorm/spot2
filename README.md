@@ -404,7 +404,7 @@ solve the N+1 query problem using the `with` method:
 $posts = $posts->all()->with('comments');
 ```
 
-Multiple relations can also be eager-loaded using an array:
+Multiple relations can be eager-loaded using an array:
 ```php
 $posts = $posts->all()->with(['comments', 'tags']);
 ```
@@ -426,12 +426,12 @@ current object* - an example might be `User` has one `Profile`.
 #### Method
 
 ```php
-$mapper->hasOne(Entity $entity, $foreignEntity, $localKey)
+$mapper->hasOne(Entity $entity, $foreignEntity, $foreignKey)
 ```
  * `$entity` - The current entity instance
  * `$foreignEntity` - Name of the entity you want to load
- * `$localKey` - Field name on the current entity that matches up with the
-   primary key of `$foreignEntity` (the one you want to load)
+ * `$foreignKey` - Field name on the `$foreignEntity` that matches up with the
+   primary key of the current entity
 
 #### Example
 
