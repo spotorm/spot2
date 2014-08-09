@@ -30,12 +30,12 @@ class Laravel extends ServiceProvider
 
     public function register()
     {
-        $this->app['spot'] = function() {
+        $this->app['spot'] = function () {
             $config = new Config();
             $config->addConnection('default', $this->config);
+
             return new Locator($config);
         };
     }
 
 }
-

@@ -31,4 +31,3 @@ class CustomMethods extends \Spot\Entity
         return $this->get('test1') . '_gotten';
     }
 }
-

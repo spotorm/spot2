@@ -45,6 +45,7 @@ class HasOne extends RelationAbstract implements \ArrayAccess
     protected function buildQuery()
     {
         $foreignMapper = $this->mapper()->getMapper($this->entityName());
+
         return $foreignMapper->where([$this->foreignKey() => $this->identityValue()]);
     }
 
@@ -58,6 +59,7 @@ class HasOne extends RelationAbstract implements \ArrayAccess
         if ($this->result === null) {
             $this->result = $this->query()->execute()->first();
         }
+
         return $this->result;
     }
 
@@ -78,12 +80,14 @@ class HasOne extends RelationAbstract implements \ArrayAccess
     public function offsetExists($key)
     {
         $entity = $this->execute();
+
         return isset($entity[$key]);
     }
 
     public function offsetGet($key)
     {
         $entity = $this->execute();
+
         return $entity[$key];
     }
 
@@ -91,7 +95,7 @@ class HasOne extends RelationAbstract implements \ArrayAccess
     {
         $entity = $this->execute();
 
-        if($key === null) {
+        if ($key === null) {
             return $entity[] = $value;
         } else {
             return $entity[$key] = $value;

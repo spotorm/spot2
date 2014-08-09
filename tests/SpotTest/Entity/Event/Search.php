@@ -18,7 +18,6 @@ class Search extends Entity
         'engine' => 'MyISAM'
     ];
 
-
     public static function fields()
     {
         return [

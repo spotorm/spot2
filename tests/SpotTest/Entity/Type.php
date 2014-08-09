@@ -23,4 +23,3 @@ class Type extends \Spot\Entity
         return self::$_fields;
     }
 }
-

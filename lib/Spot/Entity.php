@@ -1,8 +1,6 @@
 <?php
 namespace Spot;
 
-use Spot\Relation\RelationAbstract;
-
 /**
 * Entity object
 *
@@ -40,7 +38,7 @@ abstract class Entity
         $this->initFields();
 
         // Set given data
-        if($data) {
+        if ($data) {
             $this->data($data, false);
         }
     }
@@ -51,8 +49,8 @@ abstract class Entity
     protected function initFields()
     {
         $fields = static::fields();
-        foreach($fields as $field => $opts) {
-            if(!isset($this->_data[$field])) {
+        foreach ($fields as $field => $opts) {
+            if (!isset($this->_data[$field])) {
                 $this->_data[$field] = isset($opts['value']) ? $opts['value'] : null;
             }
         }
@@ -63,10 +61,12 @@ abstract class Entity
      */
     public static function table($tableName = null)
     {
-        if(null !== $tableName) {
+        if (null !== $tableName) {
             static::$table = $tableName;
+
             return $this;
         }
+
         return static::$table;
     }
 
@@ -75,10 +75,12 @@ abstract class Entity
      */
     public static function tableOptions($tableOpts = null)
     {
-        if(null !== $tableOpts) {
+        if (null !== $tableOpts) {
             static::$tableOptions = $tableOpts;
+
             return $this;
         }
+
         return static::$tableOptions;
     }
 
@@ -126,20 +128,22 @@ abstract class Entity
     public function data($data = null, $modified = true)
     {
         // GET
-        if(null === $data || !$data) {
+        if (null === $data || !$data) {
             $data = array_merge($this->_data, $this->_dataModified);
-            foreach($data as $k => &$v) {
+            foreach ($data as $k => &$v) {
                 $v = $this->__get($k, $v);
             }
+
             return $data;
         }
 
         // SET
-        if(is_object($data) || is_array($data)) {
+        if (is_object($data) || is_array($data)) {
             $fields = $this->fields();
-            foreach($data as $k => $v) {
+            foreach ($data as $k => $v) {
                 $this->set($k, $v, $modified);
             }
+
             return $this;
         } else {
             throw new \InvalidArgumentException(__METHOD__ . " Expected array or object input - " . gettype($data) . " given");
@@ -165,6 +169,7 @@ abstract class Entity
         if (null !== $field) {
             return isset($this->_dataModified[$field]) ? $this->_dataModified[$field] : null;
         }
+
         return $this->_dataModified;
     }
 
@@ -177,6 +182,7 @@ abstract class Entity
         if (null !== $field) {
             return isset($this->_data[$field]) ? $this->_data[$field] : null;
         }
+
         return $this->_data;
     }
 
@@ -187,9 +193,10 @@ abstract class Entity
      */
     public function isNew($new = null)
     {
-        if($new !== null) {
+        if ($new !== null) {
             $this->_isNew = (boolean) $new;
         }
+
         return $this->_isNew;
     }
 
@@ -205,13 +212,15 @@ abstract class Entity
                     // Use strict comparison for null values, non-strict otherwise
                     return $this->_dataModified[$field] !== $this->_data[$field];
                 }
+
                 return $this->_dataModified[$field] != $this->_data[$field];
-            } else if (array_key_exists($field, $this->_data)) {
+            } elseif (array_key_exists($field, $this->_data)) {
                 return false;
             } else {
                 return null;
             }
         }
+
         return !!count($this->_dataModified);
     }
 
@@ -226,14 +235,15 @@ abstract class Entity
     /**
      * Check if any errors exist
      *
-     * @param string $field OPTIONAL field name
+     * @param  string  $field OPTIONAL field name
      * @return boolean
      */
     public function hasErrors($field = null)
     {
-        if(null !== $field) {
+        if (null !== $field) {
             return isset($this->_errors[$field]) ? count($this->_errors[$field]) > 0 : false;
         }
+
         return count($this->_errors) > 0;
     }
 
@@ -246,17 +256,18 @@ abstract class Entity
     public function errors($msgs = null, $overwrite = true)
     {
         // Return errors for given field
-        if(is_string($msgs)) {
+        if (is_string($msgs)) {
             return isset($this->_errors[$msgs]) ? $this->_errors[$msgs] : [];
 
         // Set error messages from given array
-        } elseif(is_array($msgs)) {
-            if($overwrite) {
+        } elseif (is_array($msgs)) {
+            if ($overwrite) {
                 $this->_errors = $msgs;
             } else {
                 $this->_errors = array_merge_recursive($this->_errors, $msgs);
             }
         }
+
         return $this->_errors;
     }
 
@@ -264,13 +275,13 @@ abstract class Entity
      * Add an error to error messages array
      *
      * @param string $field Field name that error message relates to
-     * @param mixed $msg Error message text - String or array of messages
+     * @param mixed  $msg   Error message text - String or array of messages
      */
     public function error($field, $msg)
     {
-        if(is_array($msg)) {
+        if (is_array($msg)) {
             // Add array of error messages about field
-            foreach($msg as $msgx) {
+            foreach ($msg as $msgx) {
                 $this->_errors[$field][] = $msgx;
             }
         } else {
@@ -356,6 +367,7 @@ abstract class Entity
             if (isset($relations[$objectId][$relationName])) {
                 return $relations[$objectId][$relationName];
             }
+
             return false;
         } else {
             // Set relation

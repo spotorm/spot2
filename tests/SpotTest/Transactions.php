@@ -10,14 +10,14 @@ class Transactions extends \PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -32,7 +32,7 @@ class Transactions extends \PHPUnit_Framework_TestCase
         $post->author_id = 1;
 
         // Save in transation
-        $mapper->transaction(function($mapper) use($post) {
+        $mapper->transaction(function ($mapper) use ($post) {
             $result = $mapper->insert($post);
         });
 
@@ -53,13 +53,13 @@ class Transactions extends \PHPUnit_Framework_TestCase
         $phpunit = $this;
 
         try {
-            $mapper->transaction(function($mapper) use($post, $phpunit) {
+            $mapper->transaction(function ($mapper) use ($post, $phpunit) {
                 $result = $mapper->insert($post);
 
                 // Throw exception AFTER save to trigger rollback
                 throw new \LogicException("Exceptions should trigger auto-rollback");
             });
-        } catch(\LogicException $e) {
+        } catch (\LogicException $e) {
             // Ensure record was NOT saved
             $this->assertFalse($mapper->first(['title' => $post->title]));
         }
@@ -77,7 +77,7 @@ class Transactions extends \PHPUnit_Framework_TestCase
         // Save in transation
         $phpunit = $this;
 
-        $mapper->transaction(function($mapper) use($post, $phpunit) {
+        $mapper->transaction(function ($mapper) use ($post, $phpunit) {
             $result = $mapper->insert($post);
 
             // Return false AFTER save to trigger rollback

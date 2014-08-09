@@ -45,9 +45,9 @@ class Post extends Entity
         // This is done only to allow events to be set dynamically in a very
         // specific way for testing purposes. You probably don't want to do
         // this in your code...
-        foreach(static::$events as $eventName => $methods) {
-            $eventEmitter->on($eventName, function($entity, $mapper) use($methods) {
-                foreach($methods as $method) {
+        foreach (static::$events as $eventName => $methods) {
+            $eventEmitter->on($eventName, function ($entity, $mapper) use ($methods) {
+                foreach ($methods as $method) {
                     $entity->$method();
                 }
             });

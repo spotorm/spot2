@@ -1,6 +1,5 @@
 <?php
 namespace Spot\Entity;
-use Spot\Config;
 use Spot;
 
 /**
@@ -30,11 +29,11 @@ class Manager
      */
     public function __construct($entityName)
     {
-        if(!is_string($entityName)) {
+        if (!is_string($entityName)) {
             throw new \Spot\Exception(__METHOD__ . " only accepts a string. Given (" . gettype($entityName) . ")");
         }
 
-        if(!is_subclass_of($entityName, '\Spot\Entity')) {
+        if (!is_subclass_of($entityName, '\Spot\Entity')) {
             throw new \Spot\Exception($entityName . " must be subclass of '\Spot\Entity'.");
         }
 
@@ -51,13 +50,13 @@ class Manager
     {
         $entityName = $this->entityName;
 
-        if(!empty($this->fields)) {
+        if (!empty($this->fields)) {
             $returnFields = $this->fields;
         } else {
             // Table info
             $entityTable = null;
             $entityTable = $entityName::table();
-            if(null === $entityTable || !is_string($entityTable)) {
+            if (null === $entityTable || !is_string($entityTable)) {
                 throw new \InvalidArgumentException("Entity must have a table defined. Please define a protected static property named 'table' on your '" . $entityName . "' entity class.");
             }
             $this->table = $entityTable;
@@ -103,13 +102,13 @@ class Manager
             // Get entity fields from entity class
             $entityFields = false;
             $entityFields = $entityName::fields();
-            if(!is_array($entityFields) || count($entityFields) < 1) {
+            if (!is_array($entityFields) || count($entityFields) < 1) {
                 throw new \InvalidArgumentException($entityName . " Must have at least one field defined.");
             }
 
             $returnFields = [];
             $this->fieldDefaultValues = [];
-            foreach($entityFields as $fieldName => $fieldOpts) {
+            foreach ($entityFields as $fieldName => $fieldOpts) {
                 // Store field definition exactly how it is defined before modifying it below
                 $this->fieldsDefined[$fieldName] = $fieldOpts;
 
@@ -154,6 +153,7 @@ class Manager
             }
             $this->fields = $returnFields;
         }
+
         return $returnFields;
     }
 
@@ -176,26 +176,26 @@ class Manager
             'index' => []
         ];
         $usedKeyNames = [];
-        foreach($formattedFields as $fieldName => $fieldInfo) {
+        foreach ($formattedFields as $fieldName => $fieldInfo) {
             // Determine key field name (can't use same key name twice, so we have to append a number)
             $fieldKeyName = $table . '_' . $fieldName;
-            while(in_array($fieldKeyName, $usedKeyNames)) {
+            while (in_array($fieldKeyName, $usedKeyNames)) {
                 $fieldKeyName = $fieldName . '_' . $ki;
             }
             // Key type
-            if($fieldInfo['primary']) {
+            if ($fieldInfo['primary']) {
                 $tableKeys['primary'][] = $fieldName;
             }
-            if($fieldInfo['unique']) {
-                if(is_string($fieldInfo['unique'])) {
+            if ($fieldInfo['unique']) {
+                if (is_string($fieldInfo['unique'])) {
                     // Named group
                     $fieldKeyName = $table . '_' . $fieldInfo['unique'];
                 }
                 $tableKeys['unique'][$fieldKeyName][] = $fieldName;
                 $usedKeyNames[] = $fieldKeyName;
             }
-            if($fieldInfo['index']) {
-                if(is_string($fieldInfo['index'])) {
+            if ($fieldInfo['index']) {
+                if (is_string($fieldInfo['index'])) {
                     // Named group
                     $fieldKeyName = $table . '_' . $fieldInfo['index'];
                 }
@@ -214,9 +214,10 @@ class Manager
      */
     public function fieldsDefined()
     {
-        if(!isset($this->fieldsDefined)) {
+        if (!isset($this->fieldsDefined)) {
             $this->fields();
         }
+
         return $this->fieldsDefined;
     }
 
@@ -227,9 +228,10 @@ class Manager
      */
     public function fieldDefaultValues()
     {
-        if(!isset($this->fieldDefaultValues)) {
+        if (!isset($this->fieldDefaultValues)) {
             $this->fields();
         }
+
         return $this->fieldDefaultValues;
     }
 
@@ -248,9 +250,10 @@ class Manager
     public function relations()
     {
         $this->fields();
-        if(!isset($this->relations)) {
+        if (!isset($this->relations)) {
             return [];
         }
+
         return $this->relations;
     }
 
@@ -259,10 +262,11 @@ class Manager
      */
     public function scopes()
     {
-        if(empty($this->scopes)) {
+        if (empty($this->scopes)) {
             $entityName = $this->entityName;
             $this->scopes = $entityName::scopes();
         }
+
         return $this->scopes;
     }
 
@@ -271,9 +275,10 @@ class Manager
      */
     public function primaryKeyField()
     {
-        if(!isset($this->primaryKeyField)) {
+        if (!isset($this->primaryKeyField)) {
             $this->fields();
         }
+
         return $this->primaryKeyField;
     }
 
@@ -290,12 +295,13 @@ class Manager
     /**
      * Return field type
      *
-     * @param string $field Field name
-     * @return mixed Field type string or boolean false
+     * @param  string $field Field name
+     * @return mixed  Field type string or boolean false
      */
     public function fieldType($field)
     {
         $fields = $this->fields();
+
         return $this->fieldExists($field) ? $fields[$field]['type'] : false;
     }
 
@@ -306,9 +312,10 @@ class Manager
      */
     public function table()
     {
-        if($this->table === null) {
+        if ($this->table === null) {
             $this->fields();
         }
+
         return $this->table;
     }
 
@@ -319,9 +326,10 @@ class Manager
      */
     public function tableOptions()
     {
-        if($this->tableOptions === null) {
+        if ($this->tableOptions === null) {
             $this->fields();
         }
+
         return $this->tableOptions;
     }
 
@@ -332,9 +340,10 @@ class Manager
      */
     public function mapper()
     {
-        if($this->mapper === null) {
+        if ($this->mapper === null) {
             $this->fields();
         }
+
         return $this->mapper;
     }
 }

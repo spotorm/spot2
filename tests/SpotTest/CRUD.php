@@ -8,14 +8,14 @@ class CRUD extends \PHPUnit_Framework_TestCase
 {
     public static function setupBeforeClass()
     {
-        foreach(['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
+        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach(['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
+        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -43,7 +43,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $post->date_created = null;
         try {
             $result = $mapper->insert($post); // returns an id
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             $result = false;
         }
 
@@ -104,7 +104,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
     public function testMultipleConditionDelete()
     {
         $postMapper = test_spot_mapper('SpotTest\Entity\Post');
-        for( $i = 1; $i <= 10; $i++ ) {
+        for ($i = 1; $i <= 10; $i++) {
             $postMapper->insert([
                 'title' => ($i % 2 ? 'odd' : 'even' ). '_title',
                 'author_id' => 1,

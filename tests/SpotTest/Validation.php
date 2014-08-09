@@ -8,14 +8,14 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }

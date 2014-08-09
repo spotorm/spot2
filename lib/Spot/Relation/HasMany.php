@@ -44,6 +44,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
     protected function buildQuery()
     {
         $foreignMapper = $this->mapper()->getMapper($this->entityName());
+
         return $foreignMapper->where([$this->foreignKey() => $this->identityValue()]);
     }
 
@@ -67,12 +68,12 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
         // Divvy up related objects for each entity by foreign key value
         // ex. comment foreignKey 'post_id' will == entity primaryKey value
         $entityRelations = [];
-        foreach($collectionRelations as $relatedEntity) {
+        foreach ($collectionRelations as $relatedEntity) {
             $entityRelations[$relatedEntity->$relationForeignKey][] = $relatedEntity;
         }
 
         // Set relation collections back on each entity object
-        foreach($collection as $entity) {
+        foreach ($collection as $entity) {
             if (isset($entityRelations[$entity->$relationEntityKey])) {
                 $entityCollection = new Collection($entityRelations[$entity->$relationEntityKey]);
                 $entity->relation($relationName, $entityCollection);
@@ -91,6 +92,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
     public function count()
     {
         $results = $this->execute();
+
         return $results ? count($results) : 0;
     }
 
@@ -104,6 +106,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
     {
         // Load related records for current row
         $data = $this->execute();
+
         return $data ? $data : [];
     }
 
@@ -112,12 +115,14 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
     public function offsetExists($key)
     {
         $this->execute();
+
         return isset($this->result[$key]);
     }
 
     public function offsetGet($key)
     {
         $this->execute();
+
         return $this->result[$key];
     }
 

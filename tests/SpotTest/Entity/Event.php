@@ -52,10 +52,10 @@ class Event extends \Spot\Entity
     public static function scopes()
     {
         return [
-            'free' => function($query) {
+            'free' => function ($query) {
                 return $query->where(['type' => 'free']);
             },
-            'active' => function($query) {
+            'active' => function ($query) {
                 return $query->where(['status' => 1]);
             }
         ];
@@ -63,18 +63,18 @@ class Event extends \Spot\Entity
 
     public static function events(EventEmitter $eventEmitter)
     {
-        $eventEmitter->on('beforeInsert', function($entity, $mapper) {
+        $eventEmitter->on('beforeInsert', function ($entity, $mapper) {
             $entity->token = uniqid();
         });
 
-        $eventEmitter->on('afterInsert', function($entity, $mapper) {
+        $eventEmitter->on('afterInsert', function ($entity, $mapper) {
             $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
             $result = $mapper->create([
                 'event_id' => $entity->id,
                 'body'     => $entity->title . ' ' . $entity->description
             ]);
 
-            if(!$result) {
+            if (!$result) {
                 throw new \Spot\Exception("Event search index entity failed to save!");
             }
         });

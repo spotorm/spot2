@@ -30,13 +30,14 @@ class Locator
         if (empty($this->config)) {
             throw new Exception("Config object must be set with \$spot->config(<\Spot\Config object>)");
         }
+
         return $this->config;
     }
 
     /**
      * Get mapper for specified entity
      *
-     * @param string $entityName Name of Entity object to load mapper for
+     * @param  string      $entityName Name of Entity object to load mapper for
      * @return Spot\Mapper
      */
     public function mapper($entityName)
@@ -50,6 +51,7 @@ class Locator
             }
             $this->mapper[$entityName] = new $mapper($this, $entityName);
         }
+
         return $this->mapper[$entityName];
     }
 }

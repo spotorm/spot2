@@ -4,13 +4,13 @@ namespace SpotTest;
 /**
  * @package Spot
  */
-class PolymorphicRelations extends \PHPUnit_Framework_TestCase
+class RelationsPolymorphic extends \PHPUnit_Framework_TestCase
 {
     private static $entities = ['Author', 'Post', 'Event', 'Event\Search', 'PolymorphicComment'];
 
     public static function setupBeforeClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
@@ -38,7 +38,7 @@ class PolymorphicRelations extends \PHPUnit_Framework_TestCase
 
         // 3 polymorphic comments for each post
         $commentMapper = test_spot_mapper('SpotTest\Entity\PolymorphicComment');
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $comments = [];
             $commentCount = 3;
             for ($i = 1; $i <= $commentCount; $i++) {
@@ -70,7 +70,7 @@ class PolymorphicRelations extends \PHPUnit_Framework_TestCase
         ]);
 
         // 3 polymorphic comments for each event
-        foreach($events as $event) {
+        foreach ($events as $event) {
             $eventComments = [];
             $commentCount = 3;
             for ($i = 1; $i <= $commentCount; $i++) {
@@ -87,7 +87,7 @@ class PolymorphicRelations extends \PHPUnit_Framework_TestCase
 
     public static function tearDownAfterClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }

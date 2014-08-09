@@ -10,14 +10,14 @@ class Relations extends \PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -62,7 +62,7 @@ class Relations extends \PHPUnit_Framework_TestCase
         ]);
 
         $commentSaved = $commentMapper->save($comment);
-        if(!$commentSaved) {
+        if (!$commentSaved) {
             print_r($comment->errors());
             $this->fail("Comment NOT saved");
         }
@@ -78,8 +78,8 @@ class Relations extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get($postId);
 
-        foreach($post->comments as $comment) {
-            $this->assertTrue($comment instanceOf \SpotTest\Entity\Post\Comment);
+        foreach ($post->comments as $comment) {
+            $this->assertTrue($comment instanceof \SpotTest\Entity\Post\Comment);
         }
     }
 
@@ -104,8 +104,8 @@ class Relations extends \PHPUnit_Framework_TestCase
         $mapper->save($post);
 
         // Testing that we can iterate over an empty set
-        foreach($post->comments as $comment) {
-            $this->assertTrue($comment instanceOf \SpotTest\Entity\Post\Comment);
+        foreach ($post->comments as $comment) {
+            $this->assertTrue($comment instanceof \SpotTest\Entity\Post\Comment);
         }
     }
 
@@ -153,7 +153,7 @@ class Relations extends \PHPUnit_Framework_TestCase
         $post = $mapper->get($postId);
 
         $before_count = $post->comments->count();
-        foreach($post->comments as $comment) {
+        foreach ($post->comments as $comment) {
             $query = $comment->post;
         }
 
@@ -183,7 +183,7 @@ class Relations extends \PHPUnit_Framework_TestCase
         // Create some tags
         $tags = array();
         $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
-        for( $i = 1; $i <= $tagCount; $i++ ) {
+        for ($i = 1; $i <= $tagCount; $i++) {
             $tags[] = $tagMapper->create([
                 'name'  => "Title {$i}"
             ]);
@@ -191,7 +191,7 @@ class Relations extends \PHPUnit_Framework_TestCase
 
         // Insert all tags for current post
         $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
-        foreach($tags as $tag) {
+        foreach ($tags as $tag) {
             $posttag_id = $postTagMapper->create([
                 'post_id' => $post->id,
                 'tag_id' => $tag->id
@@ -200,10 +200,10 @@ class Relations extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($tagCount, count($post->tags));
         $tagData = [];
-        foreach($tags as $tag) {
+        foreach ($tags as $tag) {
             $tagData[] = $tag->data();
         }
-        $this->assertEquals($tagData, $post->tags->map(function($tag) { return $tag->data(); }));
+        $this->assertEquals($tagData, $post->tags->map(function ($tag) { return $tag->data(); }));
     }
 
     public function testEventInsert()

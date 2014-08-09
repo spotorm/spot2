@@ -10,14 +10,14 @@ class Entity extends \PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -105,7 +105,8 @@ class Entity extends \PHPUnit_Framework_TestCase
         $this->assertEquals($postErrors['title'], $post->errors('title'));
     }
 
-    public function testDataModified() {
+    public function testDataModified()
+    {
         $data = [
             'title' => 'My Awesome Post 2',
             'body' => '<p>Body 2</p>'
@@ -139,7 +140,6 @@ class Entity extends \PHPUnit_Framework_TestCase
         $this->assertNull($post->dataModified('id'));
         $this->assertNull($post->dataModified('status'));
     }
-
 
     public function testDataNulls()
     {

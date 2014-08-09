@@ -38,7 +38,7 @@ class Resolver
 
         $tableColumns = $tableObject->getColumns();
         $tableExists = !empty($tableColumns);
-        if($tableExists) {
+        if ($tableExists) {
             // Update existing table
             $existingTable = $schema->getTable($table);
             $newSchema = $this->migrateCreateSchema();
@@ -51,7 +51,7 @@ class Resolver
 
         // Execute resulting queries
         $lastResult = false;
-        foreach($queries as $sql) {
+        foreach ($queries as $sql) {
             $lastResult = $connection->exec($sql);
         }
 
@@ -71,22 +71,22 @@ class Resolver
         $schema = new \Doctrine\DBAL\Schema\Schema();
         $table  = $schema->createTable($table);
 
-        foreach($fields as $field => $fieldInfo) {
+        foreach ($fields as $field => $fieldInfo) {
             $fieldType = $fieldInfo['type'];
             unset($fieldInfo['type']);
             $table->addColumn($field, $fieldType, $fieldInfo);
         }
 
         // PRIMARY
-        if($fieldIndexes['primary']) {
+        if ($fieldIndexes['primary']) {
             $table->setPrimaryKey($fieldIndexes['primary']);
         }
         // UNIQUE
-        foreach($fieldIndexes['unique'] as $keyName => $keyFields) {
+        foreach ($fieldIndexes['unique'] as $keyName => $keyFields) {
             $table->addUniqueIndex($keyFields, $keyName);
         }
         // INDEX
-        foreach($fieldIndexes['index'] as $keyName => $keyFields) {
+        foreach ($fieldIndexes['index'] as $keyName => $keyFields) {
             $table->addIndex($keyFields, $keyName);
         }
 
@@ -96,8 +96,8 @@ class Resolver
     /**
      * Find records with custom SQL query
      *
-     * @param string $sql SQL query to execute
-     * @param array $binds Array of bound parameters to use as values for query
+     * @param  string          $sql   SQL query to execute
+     * @param  array           $binds Array of bound parameters to use as values for query
      * @throws \Spot\Exception
      */
     public function query($sql, array $binds = array())
@@ -109,7 +109,7 @@ class Resolver
     /**
      * Find records with custom SQL query
      *
-     * @param string $sql SQL query to execute
+     * @param  string          $sql SQL query to execute
      * @throws \Spot\Exception
      */
     public function read(\Spot\Query $query)
@@ -131,12 +131,13 @@ class Resolver
      * Create new row object with set properties
      *
      * @param string $table Table name
-     * @param array $data Array of data to save in 'field' => 'value' format
+     * @param array  $data  Array of data to save in 'field' => 'value' format
      */
     public function create($table, array $data)
     {
         $connection = $this->mapper->connection();
         $result = $connection->insert($table, $data);
+
         return $result;
     }
 
@@ -144,19 +145,20 @@ class Resolver
      * Update
      *
      * @param string $table Table name
-     * @param array $data Array of data to save in 'field' => 'value' format
-     * @param array $data Array of data for WHERE clause in 'field' => 'value' format
+     * @param array  $data  Array of data to save in 'field' => 'value' format
+     * @param array  $data  Array of data for WHERE clause in 'field' => 'value' format
      */
     public function update($table, array $data, array $where)
     {
         $connection = $this->mapper->connection();
+
         return $connection->update($table, $data, $where);
     }
 
     /**
      * Execute provided query and return result
      *
-     * @param string $sql SQL query to execute
+     * @param  string          $sql SQL query to execute
      * @throws \Spot\Exception
      */
     public function exec(\Spot\Query $query)
@@ -168,7 +170,7 @@ class Resolver
      * Truncate Table
      *
      * @param string $table Table name
-     * @param array $data Array of data for WHERE clause in 'field' => 'value' format
+     * @param array  $data  Array of data for WHERE clause in 'field' => 'value' format
      */
     public function truncate($table, $cascade = false)
     {
@@ -184,7 +186,7 @@ class Resolver
             $sql = "TRUNCATE TABLE " . $table . "";
         }
 
-        return $connection->transactional(function($conn) use($sql) {
+        return $connection->transactional(function ($conn) use ($sql) {
             $conn->exec($sql);
         });
     }
@@ -200,9 +202,10 @@ class Resolver
         $connection = $this->mapper->connection();
         try {
             $result = $connection->getSchemaManager()->dropTable($table);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $result = false;
         }
+
         return $result;
     }
 }

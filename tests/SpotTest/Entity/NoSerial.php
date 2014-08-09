@@ -2,7 +2,6 @@
 namespace SpotTest\Entity;
 
 use Spot\Entity;
-use Spot\Mapper;
 
 /**
  * Entity with no serial/autoincrement

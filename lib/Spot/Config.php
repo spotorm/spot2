@@ -12,8 +12,8 @@ class Config implements \Serializable
     /**
      * Add database connection
      *
-     * @param string $name Unique name for the connection
-     * @param string $dsn DSN string for this connection
+     * @param string  $name   Unique name for the connection
+     * @param string  $dsn    DSN string for this connection
      * @param boolean $defaut Use this connection as the default? The first connection added is automatically set as the default, even if this flag is false.
      *
      * @return Doctrine\DBAL\Connection
@@ -22,7 +22,7 @@ class Config implements \Serializable
     public function addConnection($name, $dsn, $default = false)
     {
         // Connection name must be unique
-        if(isset($this->_connections[$name])) {
+        if (isset($this->_connections[$name])) {
             throw new Exception("Connection for '" . $name . "' already exists. Connection name must be unique.");
         }
 
@@ -30,7 +30,7 @@ class Config implements \Serializable
             $connectionParams = $dsn;
         } else {
             $connectionParams = $this->parseDsn($dsn);
-            if($connectionParams === false) {
+            if ($connectionParams === false) {
                 throw new Exception("Unable to parse given DSN string");
             }
         }
@@ -39,19 +39,20 @@ class Config implements \Serializable
         $connection = \Doctrine\DBAL\DriverManager::getConnection($connectionParams, $config);
 
         // Set as default connection?
-        if(true === $default || null === $this->_defaultConnection) {
+        if (true === $default || null === $this->_defaultConnection) {
             $this->_defaultConnection = $name;
         }
 
         // Store connection and return adapter instance
         $this->_connections[$name] = $connection;
+
         return $connection;
     }
 
     /**
      * Get connection by name
      *
-     * @param string $name Unique name of the connection to be returned
+     * @param  string                   $name Unique name of the connection to be returned
      * @return Doctrine\DBAL\Connection Spot adapter instance
      * @throws Spot\Exception
      */
@@ -90,6 +91,7 @@ class Config implements \Serializable
         if (!isset($this->_connections[$this->_defaultConnection])) {
             throw new Exception("No database connection specified! Please add at least one database connection!");
         }
+
         return $this->_connections[$this->_defaultConnection];
     }
 
@@ -124,18 +126,17 @@ class Config implements \Serializable
      * @param string $dsn Data Source Name to be parsed
      *
      * @return array an associative array with the following keys:
-     *  + adapter:  Database backend used in PHP (mysql, odbc etc.)
-     *  + dbsyntax: Database used with regards to SQL syntax etc.
-     *  + protocol: Communication protocol to use (tcp, unix etc.)
-     *  + host: Host specification (hostname[:port])
-     *  + dbname: Database to use on the DBMS server
-     *  + user: User name for login
-     *  + password: Password for login
+     *               + adapter:  Database backend used in PHP (mysql, odbc etc.)
+     *               + dbsyntax: Database used with regards to SQL syntax etc.
+     *               + protocol: Communication protocol to use (tcp, unix etc.)
+     *               + host: Host specification (hostname[:port])
+     *               + dbname: Database to use on the DBMS server
+     *               + user: User name for login
+     *               + password: Password for login
      */
-    public static function parseDsn( $dsn )
+    public static function parseDsn($dsn)
     {
-        if ( $dsn == 'sqlite::memory:' )
-        {
+        if ($dsn == 'sqlite::memory:') {
             $dsn = 'sqlite://:memory:';
         }
 
@@ -151,141 +152,105 @@ class Config implements \Serializable
             'dbname'   => FALSE,
         ];
 
-        if ( is_array( $dsn ) )
-        {
+        if ( is_array( $dsn ) ) {
             $dsn = array_merge( $parsed, $dsn );
-            if ( !$dsn['dbsyntax'] )
-            {
+            if (!$dsn['dbsyntax']) {
                 $dsn['dbsyntax'] = $dsn['adapter'];
             }
+
             return $dsn;
         }
 
         // Find phptype and dbsyntax
-        if ( ( $pos = strpos( $dsn, '://' ) ) !== FALSE )
-        {
+        if ( ( $pos = strpos( $dsn, '://' ) ) !== FALSE ) {
             $str = substr( $dsn, 0, $pos );
             $dsn = substr( $dsn, $pos + 3 );
-        }
-        else if (( $pos = strpos( $dsn, ':' ) ) !== FALSE)
-        {
+        } elseif (( $pos = strpos( $dsn, ':' ) ) !== FALSE) {
             $str = substr( $dsn, 0, $pos );
             $dsn = substr( $dsn, $pos + 1 );
-        }
-        else
-        {
+        } else {
             $str = $dsn;
-            $dsn = NULL;
+            $dsn = null;
         }
 
         // Get phptype and dbsyntax
         // $str => phptype(dbsyntax)
-        if ( preg_match( '|^(.+?)\((.*?)\)$|', $str, $arr ) )
-        {
+        if ( preg_match( '|^(.+?)\((.*?)\)$|', $str, $arr ) ) {
             $parsed['adapter']  = $arr[1];
             $parsed['dbsyntax'] = !$arr[2] ? $arr[1] : $arr[2];
-        }
-        else
-        {
+        } else {
             $parsed['adapter']  = $str;
             $parsed['dbsyntax'] = $str;
         }
 
-        if ( !count( $dsn ) )
-        {
+        if ( !count( $dsn ) ) {
             return $parsed;
         }
 
         // Get (if found): user and password
         // $dsn => user:password@protocol+host/database
-        if ( ( $at = strrpos( (string) $dsn, '@' ) ) !== FALSE )
-        {
+        if ( ( $at = strrpos( (string) $dsn, '@' ) ) !== FALSE ) {
             $str = substr( $dsn, 0, $at );
             $dsn = substr( $dsn, $at + 1 );
-            if ( ( $pos = strpos( $str, ':' ) ) !== FALSE )
-            {
+            if ( ( $pos = strpos( $str, ':' ) ) !== FALSE ) {
                 $parsed['user'] = rawurldecode( substr( $str, 0, $pos ) );
                 $parsed['password'] = rawurldecode( substr( $str, $pos + 1 ) );
-            }
-            else
-            {
+            } else {
                 $parsed['user'] = rawurldecode( $str );
             }
         }
 
         // Find protocol and host
 
-        if ( preg_match( '|^([^(]+)\((.*?)\)/?(.*?)$|', $dsn, $match ) )
-        {
+        if ( preg_match( '|^([^(]+)\((.*?)\)/?(.*?)$|', $dsn, $match ) ) {
             // $dsn => proto(proto_opts)/database
             $proto       = $match[1];
-            $proto_opts  = $match[2] ? $match[2] : FALSE;
+            $proto_opts  = $match[2] ? $match[2] : false;
             $dsn         = $match[3];
-        }
-        else
-        {
+        } else {
             // $dsn => protocol+host/database (old format)
-            if ( strpos( $dsn, '+' ) !== FALSE )
-            {
+            if ( strpos( $dsn, '+' ) !== FALSE ) {
                 list( $proto, $dsn ) = explode( '+', $dsn, 2 );
             }
-            if ( strpos( $dsn, '/' ) !== FALSE )
-            {
+            if ( strpos( $dsn, '/' ) !== FALSE ) {
                 list( $proto_opts, $dsn ) = explode( '/', $dsn, 2 );
-            }
-            else
-            {
+            } else {
                 $proto_opts = $dsn;
-                $dsn = NULL;
+                $dsn = null;
             }
         }
 
         // process the different protocol options
         $parsed['protocol'] = ( !empty( $proto ) ) ? $proto : 'tcp';
         $proto_opts = rawurldecode( $proto_opts );
-        if ( $parsed['protocol'] == 'tcp' )
-        {
-            if ( strpos( $proto_opts, ':' ) !== FALSE )
-            {
+        if ($parsed['protocol'] == 'tcp') {
+            if ( strpos( $proto_opts, ':' ) !== FALSE ) {
                 list( $parsed['host'], $parsed['port'] ) = explode( ':', $proto_opts );
-            }
-            else
-            {
+            } else {
                 $parsed['host'] = $proto_opts;
             }
-        }
-        elseif ( $parsed['protocol'] == 'unix' )
-        {
+        } elseif ($parsed['protocol'] == 'unix') {
             $parsed['socket'] = $proto_opts;
         }
 
         // Get dabase if any
         // $dsn => database
-        if ( $dsn )
-        {
-            if ( ( $pos = strpos( $dsn, '?' ) ) === FALSE )
-            {
+        if ($dsn) {
+            if ( ( $pos = strpos( $dsn, '?' ) ) === FALSE ) {
                 // /database
                 $parsed['dbname'] = rawurldecode( $dsn );
-            }
-            else
-            {
+            } else {
                 // /database?param1=value1&param2=value2
                 $parsed['dbname'] = rawurldecode( substr( $dsn, 0, $pos ) );
                 $dsn = substr( $dsn, $pos + 1 );
-                if ( strpos( $dsn, '&') !== FALSE )
-                {
+                if ( strpos( $dsn, '&') !== FALSE ) {
                     $opts = explode( '&', $dsn );
-                }
-                else
-                { // database?param1=value1
+                } else { // database?param1=value1
                     $opts = [$dsn];
                 }
-                foreach ( $opts as $opt )
-                {
+                foreach ($opts as $opt) {
                     list( $key, $value ) = explode( '=', $opt );
-                    if ( !isset( $parsed[$key] ) )
-                    {
+                    if ( !isset( $parsed[$key] ) ) {
                         // don't allow params overwrite
                         $parsed[$key] = rawurldecode( $value );
                     }

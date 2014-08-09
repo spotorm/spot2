@@ -84,6 +84,7 @@ abstract class RelationAbstract
         if ($identityValue !== null) {
             $this->identityValue = $identityValue;
         }
+
         return $this->identityValue;
     }
 
@@ -112,13 +113,13 @@ abstract class RelationAbstract
         // Divvy up related objects for each entity by foreign key value
         // ex. comment foreignKey 'post_id' will == entity primaryKey value
         $entityRelations = [];
-        foreach($collectionRelations as $relatedEntity) {
+        foreach ($collectionRelations as $relatedEntity) {
             // @todo Does this need to be an array?
             $entityRelations[$relatedEntity->$relationForeignKey] = $relatedEntity;
         }
 
         // Set relation collections back on each entity object
-        foreach($collection as $entity) {
+        foreach ($collection as $entity) {
             if (isset($entityRelations[$entity->$relationEntityKey])) {
                 $entity->relation($relationName, $entityRelations[$entity->$relationEntityKey]);
             }
@@ -141,10 +142,11 @@ abstract class RelationAbstract
     {
         if ($this->query === null) {
             $this->query = $this->buildQuery();
-            foreach($this->queryQueue as $closure) {
+            foreach ($this->queryQueue as $closure) {
                 $this->query = call_user_func($closure, $this->query);
             }
         }
+
         return $this->query;
     }
 
@@ -156,6 +158,7 @@ abstract class RelationAbstract
         if ($this->result === null) {
             $this->result = $this->query()->execute();
         }
+
         return $this->result;
     }
 
@@ -168,9 +171,10 @@ abstract class RelationAbstract
             // See if method exists on Query object, and if it does, add query
             // modification to queue to be executed after query is built and
             // ready so that query is not executed immediately
-            $this->queryQueue[] = function(Query $query) use($func, $args) {
+            $this->queryQueue[] = function (Query $query) use ($func, $args) {
                 return call_user_func_array([$query, $func], $args);
             };
+
             return $this;
         } else {
             // See if method exists on destination object after execution

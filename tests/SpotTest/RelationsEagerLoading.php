@@ -10,7 +10,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
     public static function setupBeforeClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
@@ -37,7 +37,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         }
 
         // 3 comments for each post
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $comments = [];
             $commentCount = 3;
             $commentMapper = test_spot_mapper('SpotTest\Entity\Post\Comment');
@@ -55,7 +55,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         $tags = array();
         $tagCount = 3;
         $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
-        for( $i = 1; $i <= $tagCount; $i++ ) {
+        for ($i = 1; $i <= $tagCount; $i++) {
             $tags[] = $tagMapper->create([
                 'name' => "Tag {$i}"
             ]);
@@ -63,8 +63,8 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
         // Insert all tags for current post
         $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
-        foreach($posts as $post) {
-            foreach($tags as $tag) {
+        foreach ($posts as $post) {
+            foreach ($tags as $tag) {
                 $posttag_id = $postTagMapper->create([
                     'post_id' => $post->id,
                     'tag_id'  => $tag->id
@@ -90,7 +90,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
     public static function tearDownAfterClass()
     {
-        foreach(self::$entities as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -106,8 +106,8 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         $startCount = count($logger->queries);
 
         $posts = $mapper->all()->with('comments');
-        foreach($posts as $post) {
-            foreach($post->comments as $comment) {
+        foreach ($posts as $post) {
+            foreach ($post->comments as $comment) {
                 // Do nothing - just had to iterate to execute the queries
             }
         }
@@ -128,7 +128,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         $startCount = count($logger->queries);
 
         $posts = $mapper->all()->with('author');
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $this->assertEquals($post->author_id, $post->author->id);
         }
         $endCount = count($logger->queries);
@@ -148,7 +148,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         $startCount = count($logger->queries);
 
         $events = $mapper->all()->with('search');
-        foreach($events as $event) {
+        foreach ($events as $event) {
             $this->assertEquals($event->id, $event->search->event_id);
         }
         $endCount = count($logger->queries);
@@ -168,8 +168,8 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         $startCount = count($logger->queries);
 
         $posts = $mapper->all()->with('tags');
-        foreach($posts as $post) {
-            foreach($post->tags as $tags) {
+        foreach ($posts as $post) {
+            foreach ($post->tags as $tags) {
                 // Do nothing - just had to iterate to execute the queries
             }
             $this->assertEquals(3, count($post->tags));

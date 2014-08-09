@@ -51,7 +51,7 @@ class Mapper
     /**
      * Get mapper for specified entity
      *
-     * @param string $entityName Name of Entity object to load mapper for
+     * @param  string      $entityName Name of Entity object to load mapper for
      * @return Spot\Mapper
      */
     public function getMapper($entityName)
@@ -98,6 +98,7 @@ class Mapper
         if (!isset(self::$entityManager[$entityName])) {
             self::$entityManager[$entityName] = new Entity\Manager($entityName);
         }
+
         return self::$entityManager[$entityName];
     }
 
@@ -110,6 +111,7 @@ class Mapper
         if (empty(self::$eventEmitter[$entityName])) {
             self::$eventEmitter[$entityName] = new EventEmitter();
         }
+
         return self::$eventEmitter[$entityName];
     }
 
@@ -130,7 +132,7 @@ class Mapper
     {
         $entityName = $this->entity();
         $relations = $entityName::relations($this, $entity);
-        foreach($relations as $relation => $query) {
+        foreach ($relations as $relation => $query) {
             $entity->relation($relation, $query);
         }
     }
@@ -217,8 +219,8 @@ class Mapper
      * Get formatted fields with all neccesary array keys and values.
      * Merges defaults with defined field values to ensure all options exist for each field.
      *
-     * @param string $entityName Name of the entity class
-     * @return array Defined fields plus all defaults for full array of all possible options
+     * @param  string $entityName Name of the entity class
+     * @return array  Defined fields plus all defaults for full array of all possible options
      */
     public function fields()
     {
@@ -259,6 +261,7 @@ class Mapper
     public function primaryKey(Entity $entity)
     {
         $pkField = $this->entityManager()->primaryKeyField();
+
         return $entity->$pkField;
     }
 
@@ -297,30 +300,31 @@ class Mapper
     /**
      * Return field type
      *
-     * @param string $field Field name
-     * @return mixed Field type string or boolean false
+     * @param  string $field Field name
+     * @return mixed  Field type string or boolean false
      */
     public function fieldType($field)
     {
         $fields = $this->fields();
+
         return $this->fieldExists($field) ? $fields[$field]['type'] : false;
     }
 
     /**
      * Get connection to use
      *
-     * @param string $connectionName Named connection or entity class name
+     * @param  string         $connectionName Named connection or entity class name
      * @return Spot_Adapter
      * @throws Spot_Exception
      */
     public function connection($connectionName = null)
     {
         // Try getting connection based on given name
-        if($connectionName === null) {
+        if ($connectionName === null) {
             return $this->config()->defaultConnection();
-        } elseif($connection = $this->config()->connection($connectionName)) {
+        } elseif ($connection = $this->config()->connection($connectionName)) {
             return $connection;
-        } elseif($connection = $this->config()->defaultConnection()) {
+        } elseif ($connection = $this->config()->defaultConnection()) {
             return $connection;
         }
 
@@ -349,14 +353,14 @@ class Mapper
 
         // Ensure PDO only gives key => value pairs, not index-based fields as well
         // Raw PDOStatement objects generally only come from running raw SQL queries or other custom stuff
-        if($cursor instanceof \PDOStatement) {
+        if ($cursor instanceof \PDOStatement) {
             $cursor->setFetchMode(\PDO::FETCH_ASSOC);
         }
 
         // Fetch all results into new entity class
         // @todo Move this to collection class so entities will be lazy-loaded by Collection iteration
         $entityFields = $this->fields();
-        foreach($cursor as $data) {
+        foreach ($cursor as $data) {
             // Do type conversion
             $data = $this->convertToPHPValues($entityName, $data);
 
@@ -370,7 +374,7 @@ class Mapper
 
             // Store primary key of each unique record in set
             $pk = $this->primaryKey($entity);
-            if(!in_array($pk, $resultsIdentities) && !empty($pk)) {
+            if (!in_array($pk, $resultsIdentities) && !empty($pk)) {
                 $resultsIdentities[] = $pk;
             }
         }
@@ -398,7 +402,7 @@ class Mapper
             return $collection;
         }
 
-        foreach($with as $relationName) {
+        foreach ($with as $relationName) {
             // We only need a single entity from the collection, because we're
             // going to modify the query to pass in an array of all the
             // identity keys from the collection instead of just that single entity
@@ -434,6 +438,7 @@ class Mapper
         }
 
         $eventEmitter->emit('afterWith', [$this, $collection, $with]);
+
         return $collection;
     }
 
@@ -441,35 +446,35 @@ class Mapper
      * Get a new entity object, or an existing
      * entity from identifiers
      *
-     * @param mixed $identifier Primary key or array of key/values
+     * @param  mixed $identifier Primary key or array of key/values
      * @return mixed Depends on input
-     *         false If $identifier is scalar and no entity exists
+     *                          false If $identifier is scalar and no entity exists
      */
     public function get($identifier = false)
     {
         $entityClass = $this->entity();
         $pkField = $this->primaryKeyField();
 
-        if(false === $identifier) {
+        if (false === $identifier) {
             // No parameter passed, create a new empty entity object
             $entity = new $entityClass();
             $entity->data([$pkField => null]);
-        } else if(is_array($identifier)) {
+        } elseif (is_array($identifier)) {
             // An array was passed, create a new entity with that data
             $entity = new $entityClass($identifier);
             $entity->data([$pkField => null]);
         } else {
             // Scalar, find record by primary key
             $entity = $this->first([$pkField => $identifier]);
-            if(!$entity) {
+            if (!$entity) {
                 return false;
             }
         }
 
         // Set default values if entity not loaded
-        if(!$this->primaryKey($entity)) {
+        if (!$this->primaryKey($entity)) {
             $entityDefaultValues = $this->entityManager()->fieldDefaultValues();
-            if(count($entityDefaultValues) > 0) {
+            if (count($entityDefaultValues) > 0) {
                 $entity->data($entityDefaultValues);
             }
         }
@@ -480,26 +485,27 @@ class Mapper
     /**
      * Get a new entity object, set given data on it
      *
-     * @param array $data array of key/values to set on new Entity instance
+     * @param  array  $data array of key/values to set on new Entity instance
      * @return object Instance of $entityClass with $data set on it
      */
     public function build(array $data)
     {
         $className = $this->entity();
+
         return new $className($data);
     }
 
     /**
      * Get a new entity object, set given data on it, and save it
      *
-     * @param array $data array of key/values to set on new Entity instance
-     * @return object Instance of $entityClass with $data set on it
+     * @param  array          $data array of key/values to set on new Entity instance
+     * @return object         Instance of $entityClass with $data set on it
      * @throws Spot\Exception
      */
     public function create(array $data)
     {
         $entity = $this->build($data);
-        if($this->insert($entity)) {
+        if ($this->insert($entity)) {
             return $entity;
         }
         throw new Exception("Unable to insert new " . get_class($entity) . " - Errors: " . var_export($entity->errors(), true));
@@ -508,15 +514,16 @@ class Mapper
     /**
      * Find records with custom query
      *
-     * @param string $sql Raw query or SQL to run against the datastore
+     * @param string         $sql        Raw query or SQL to run against the datastore
      * @param array Optional $conditions Array of binds in column => value pairs to use for prepared statement
      */
     public function query($sql, array $params = [])
     {
         $result = $this->connection()->query($sql, $params);
-        if($result) {
+        if ($result) {
             return $this->collection($result);
         }
+
         return false;
     }
 
@@ -534,7 +541,7 @@ class Mapper
      * Find records with given conditions
      * If all parameters are empty, find all records
      *
-     * @param array $conditions Array of conditions in column => value pairs
+     * @param  array      $conditions Array of conditions in column => value pairs
      * @return Spot\Query
      */
     public function where(array $conditions = [])
@@ -572,6 +579,7 @@ class Mapper
     public function queryBuilder()
     {
         $query = new $this->_queryClass($this);
+
         return $query;
     }
 
@@ -580,13 +588,14 @@ class Mapper
      * Acts as a kind of factory to get the current adapter's query builder object
      *
      * @param string $entityName Name of the entity class
-     * @param mixed $fields String for single field or array of fields
+     * @param mixed  $fields     String for single field or array of fields
      *
      * @return \Spot\Query
      */
     public function select($fields = "*")
     {
         $table = $this->table();
+
         return $this->queryBuilder()->select($fields)->from($table, $table);
     }
 
@@ -613,7 +622,7 @@ class Mapper
             return false;
         }
 
-        if($entity->isNew()) {
+        if ($entity->isNew()) {
             $result = $this->insert($entity, $options);
         } else {
             $result = $this->update($entity, $options);
@@ -629,15 +638,15 @@ class Mapper
     /**
      * Insert record
      *
-     * @param mixed $entity Entity object or array of field => value pairs
+     * @param mixed $entity  Entity object or array of field => value pairs
      * @param array $options Array of adapter-specific options
      */
     public function insert($entity, array $options = [])
     {
-        if(is_object($entity)) {
+        if (is_object($entity)) {
             $entityName = get_class($entity);
             $this->entity($entityName);
-        } elseif(is_array($entity)) {
+        } elseif (is_array($entity)) {
             $entityName = $this->entity();
             $entity = $this->get()->data($entity);
         } else {
@@ -650,13 +659,13 @@ class Mapper
         }
 
         // Run validation
-        if(!$this->validate($entity)) {
+        if (!$this->validate($entity)) {
             return false;
         }
 
         // Ensure there is actually data to update
         $data = $entity->data();
-        if(count($data) > 0) {
+        if (count($data) > 0) {
             $pkField = $this->primaryKeyField();
             $pkFieldInfo = $this->fieldInfo($pkField);
 
@@ -676,7 +685,7 @@ class Mapper
             $data = $this->convertToDatabaseValues($entityName, $data);
 
             // Don't pass NULL for "serial" columns (causes issues with PostgreSQL + others)
-            if(array_key_exists($pkField, $data) && empty($data[$pkField])) {
+            if (array_key_exists($pkField, $data) && empty($data[$pkField])) {
                 unset($data[$pkField]);
             }
 
@@ -684,7 +693,7 @@ class Mapper
             $table = $this->table();
             $result = $this->resolver()->create($table, $data);
 
-            if($result) {
+            if ($result) {
                 $connection = $this->connection();
 
                 if (array_key_exists($pkField, $data)) {
@@ -711,7 +720,7 @@ class Mapper
             $entity->$pkField = $result;
             $entity->isNew(false);
 
-            if($result) {
+            if ($result) {
                 $this->prepareEntity($entity);
             }
 
@@ -780,8 +789,8 @@ class Mapper
      * Upsert save entity - insert or update on duplicate key. Intended to be
      * used in conjunction with fields that are marked 'unique'
      *
-     * @param array $data array of key/values to set on new Entity instance
-     * @param array $where array of keys to select record by for updating if it already exists
+     * @param  array  $data  array of key/values to set on new Entity instance
+     * @param  array  $where array of keys to select record by for updating if it already exists
      * @return object Instance of $entityClass with $data set on it
      */
     public function upsert(array $data, array $where)
@@ -790,16 +799,17 @@ class Mapper
         $entity = new $entityClass($data);
         $result = $this->insert($entity);
         // Unique constraint produces a validation error
-        if($result === false && $entity->hasErrors()) {
+        if ($result === false && $entity->hasErrors()) {
             $dataUpdate = array_diff_key($data, $where);
             $existingEntity = $this->first($where);
-            if(!$existingEntity) {
+            if (!$existingEntity) {
                 return $entity;
             }
             $existingEntity->data($dataUpdate);
             $entity = $existingEntity;
             $result = $this->update($entity);
         }
+
         return $entity;
     }
 
@@ -825,11 +835,13 @@ class Mapper
 
             // Run afterDelete
             $this->eventEmitter()->emit('afterDelete', [$entity, $this, &$result]);
+
             return $result;
 
         // Passed array of conditions
         } elseif (is_array($conditions)) {
             $query = $this->queryBuilder()->delete($this->table())->where($conditions);
+
             return $this->resolver()->exec($query);
         }
     }
@@ -842,10 +854,11 @@ class Mapper
         $dbData = [];
         $fields = $entityName::fields();
         $platform = $this->connection()->getDatabasePlatform();
-        foreach($data as $field => $value) {
+        foreach ($data as $field => $value) {
             $typeHandler = Type::getType($fields[$field]['type']);
             $dbData[$field] = $typeHandler->convertToDatabaseValue($value, $platform);
         }
+
         return $dbData;
     }
 
@@ -858,7 +871,7 @@ class Mapper
         $fields = $entityName::fields();
         $platform = $this->connection()->getDatabasePlatform();
         $entityData = array_intersect_key($data, $fields);
-        foreach($data as $field => $value) {
+        foreach ($data as $field => $value) {
             // Field is in the Entity definitions
             if (isset($entityData[$field])) {
                 $typeHandler = Type::getType($fields[$field]['type']);
@@ -868,6 +881,7 @@ class Mapper
                 $phpData[$field] = $value;
             }
         }
+
         return $phpData;
     }
 
@@ -885,12 +899,12 @@ class Mapper
             $result = $work($this);
 
             // Rollback on boolean 'false' return
-            if($result === false) {
+            if ($result === false) {
                 $connection->rollback();
             } else {
                 $connection->commit();
             }
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             // Rollback on uncaught exception
             $connection->rollback();
 
@@ -943,7 +957,7 @@ class Mapper
 
         // Check validation rules on each feild
         $uniqueWhere = [];
-        foreach($this->fields() as $field => $fieldAttrs) {
+        foreach ($this->fields() as $field => $fieldAttrs) {
             // Required field
             if (
                 // Explicitly required
@@ -974,7 +988,7 @@ class Mapper
 
                 // Valitron validation rules
                 if (isset($fieldAttrs['validation']) && is_array($fieldAttrs['validation'])) {
-                    foreach($fieldAttrs['validation'] as $rule => $ruleName) {
+                    foreach ($fieldAttrs['validation'] as $rule => $ruleName) {
                         $params = [];
                         if (is_string($rule)) {
                             $params = (array) $ruleName;
@@ -988,18 +1002,18 @@ class Mapper
         }
 
         // Unique validation
-        if(!empty($uniqueWhere)) {
-            foreach($uniqueWhere as $field => $value) {
-                if(!is_array($value)) {
+        if (!empty($uniqueWhere)) {
+            foreach ($uniqueWhere as $field => $value) {
+                if (!is_array($value)) {
                     $value = [$field => $entity->$field];
                 }
-                if($this->first($value) !== false) {
+                if ($this->first($value) !== false) {
                     $entity->error($field, "" . ucwords(str_replace('_', ' ', $field)) . " '" . implode('-', $value) . "' is already taken.");
                 }
             }
         }
 
-        if(!$v->validate()) {
+        if (!$v->validate()) {
             $entity->errors($v->errors(), false);
         }
 

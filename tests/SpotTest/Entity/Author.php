@@ -26,4 +26,3 @@ class Author extends \Spot\Entity
         ];
     }
 }
-

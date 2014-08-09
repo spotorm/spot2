@@ -87,12 +87,12 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
         // keys since resulting relation objects won't have any reference to
         // the entities in the original collection
         $entityRelations = [];
-        foreach($this->throughCollection as $throughEntity) {
+        foreach ($this->throughCollection as $throughEntity) {
             $throughForeignKey = $throughEntity->$relationForeignKey;
             $throughLocalKey = $throughEntity->$relationLocalKey;
             /* $throughKeys[$throughLocalKey][] = $throughForeignKey; */
 
-            foreach($collectionRelations as $relatedEntity) {
+            foreach ($collectionRelations as $relatedEntity) {
                 $relatedEntityPk = $relatedEntity->$relationEntityKey;
                 if ($relatedEntityPk == $throughForeignKey) {
                     $entityRelations[$throughLocalKey][] = $relatedEntity;
@@ -101,7 +101,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
         }
 
         // Set relation collections back on each entity object
-        foreach($collection as $entity) {
+        foreach ($collection as $entity) {
             if (isset($entityRelations[$entity->$relationEntityKey])) {
                 $entityCollection = new Collection($entityRelations[$entity->$relationEntityKey]);
                 $entity->relation($relationName, $entityCollection);
@@ -128,6 +128,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
     public function count()
     {
         $results = $this->execute();
+
         return $results ? count($results) : 0;
     }
 
@@ -141,6 +142,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
     {
         // Load related records for current row
         $data = $this->execute();
+
         return $data ? $data : [];
     }
 
@@ -149,12 +151,14 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
     public function offsetExists($key)
     {
         $this->execute();
+
         return isset($this->result[$key]);
     }
 
     public function offsetGet($key)
     {
         $this->execute();
+
         return $this->result[$key];
     }
 

@@ -8,24 +8,24 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 {
     public static function setupBeforeClass()
     {
-        foreach(['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
+        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
             test_spot_mapper('SpotTest\Entity\\' . $entity)->migrate();
         }
 
         // Insert blog dummy data
         $tags = [];
-        for( $i = 1; $i <= 3; $i++ ) {
+        for ($i = 1; $i <= 3; $i++) {
             $tags[] = test_spot_mapper('SpotTest\Entity\Tag')->insert([
                 'name' => "Title {$i}"
             ]);
         }
-        for( $i = 1; $i <= 3; $i++ ) {
+        for ($i = 1; $i <= 3; $i++) {
             $author_id = test_spot_mapper('SpotTest\Entity\Author')->insert([
                 'email' => $i.'user@somewhere.com',
                 'password' => 'securepassword'
             ]);
         }
-        for( $i = 1; $i <= 10; $i++ ) {
+        for ($i = 1; $i <= 10; $i++) {
             $post_id = test_spot_mapper('SpotTest\Entity\Post')->insert([
                 'title' => ($i % 2 ? 'odd' : 'even' ). '_title',
                 'body' => '<p>' . $i  . '_body</p>',
@@ -33,7 +33,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
                 'date_created' => new \DateTime(),
                 'author_id' => rand(1,3)
             ]);
-            for( $j = 1; $j <= 2; $j++ ) {
+            for ($j = 1; $j <= 2; $j++) {
                 test_spot_mapper('SpotTest\Entity\Post\Comment')->insert([
                     'post_id' => $post_id,
                     'name' => ($j % 2 ? 'odd' : 'even' ). '_title',
@@ -41,7 +41,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
                     'body' => ($j % 2 ? 'odd' : 'even' ). '_comment_body',
                 ]);
             }
-            foreach($tags as $tag_id) {
+            foreach ($tags as $tag_id) {
                 $posttag_id = test_spot_mapper('SpotTest\Entity\PostTag')->insert([
                     'post_id' => $post_id,
                     'tag_id' => $tag_id
@@ -52,7 +52,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 
     public static function tearDownAfterClass()
     {
-        foreach(['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
+        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }

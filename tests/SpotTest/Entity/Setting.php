@@ -20,7 +20,6 @@ class Setting extends \Spot\Entity
     }
 }
 
-
 // Add encrypted type
 \SpotTest\Type\Encrypted::$key = 'SOUPER-SEEKRET1!';
 \Doctrine\DBAL\Types\Type::addType('encrypted', 'SpotTest\Type\Encrypted');

@@ -55,6 +55,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function noQuote($noQuote = true)
     {
         $this->_noQuote = $noQuote;
+
         return $this;
     }
 
@@ -69,13 +70,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Add a custom user method via closure or PHP callback
      *
-     * @param string $method Method name to add
-     * @param callable $callback Callback or closure that will be executed when missing method call matching $method is made
+     * @param  string                   $method   Method name to add
+     * @param  callable                 $callback Callback or closure that will be executed when missing method call matching $method is made
      * @throws InvalidArgumentException
      */
     public static function addMethod($method, callable $callback)
     {
-        if(method_exists(__CLASS__, $method)) {
+        if (method_exists(__CLASS__, $method)) {
             throw new \InvalidArgumentException("Method '" . $method . "' already exists on " . __CLASS__);
         }
         self::$_customMethods[$method] = $callback;
@@ -103,6 +104,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function select()
     {
         call_user_func_array([$this->builder(), 'select'], func_get_args());
+
         return $this;
     }
 
@@ -112,6 +114,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function delete()
     {
         call_user_func_array([$this->builder(), 'delete'], func_get_args());
+
         return $this;
     }
 
@@ -121,6 +124,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function from()
     {
         call_user_func_array([$this->builder(), 'from'], func_get_args());
+
         return $this;
     }
 
@@ -138,14 +142,15 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function setParameters()
     {
         call_user_func_array([$this->builder(), __FUNCTION__], func_get_args());
+
         return $this;
     }
 
     /**
      * WHERE conditions
      *
-     * @param array $conditions Array of conditions for this clause
-     * @param string $type Keyword that will separate each condition - "AND", "OR"
+     * @param array  $conditions Array of conditions for this clause
+     * @param string $type       Keyword that will separate each condition - "AND", "OR"
      */
     public function where(array $where, $type = 'AND')
     {
@@ -153,14 +158,15 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
             $whereClause = implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($where));
             $this->builder()->andWhere($whereClause);
         }
+
         return $this;
     }
 
     /**
      * WHERE OR conditions
      *
-     * @param array $conditions Array of conditions for this clause
-     * @param string $type Keyword that will separate each condition - "AND", "OR"
+     * @param array  $conditions Array of conditions for this clause
+     * @param string $type       Keyword that will separate each condition - "AND", "OR"
      */
     public function orWhere(array $where, $type = 'AND')
     {
@@ -168,14 +174,15 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
             $whereClause = implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($where));
             $this->builder()->orWhere($whereClause);
         }
+
         return $this;
     }
 
     /**
      * WHERE AND conditions
      *
-     * @param array $conditions Array of conditions for this clause
-     * @param string $type Keyword that will separate each condition - "AND", "OR"
+     * @param array  $conditions Array of conditions for this clause
+     * @param string $type       Keyword that will separate each condition - "AND", "OR"
      */
     public function andWhere(array $where, $type = 'AND')
     {
@@ -186,7 +193,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      * WHERE field + raw SQL
      *
      * @param string $field Field name for SQL statement (will be quoted)
-     * @param string $sql SQL string to put in WHERE clause
+     * @param string $sql   SQL string to put in WHERE clause
      */
     public function whereFieldSql($field, $sql, array $params = [])
     {
@@ -197,11 +204,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
             throw new Exception("Number of supplied parameters (" . $paramCount . ") does not match the number of provided placeholders (" . $placeholderCount . ")");
         }
 
-        $sql = preg_replace_callback('/\?/', function($match) use($builder, $params) {
+        $sql = preg_replace_callback('/\?/', function ($match) use ($builder, $params) {
             $param = array_shift($params);
+
             return $builder->createPositionalParameter($param);
         }, $sql);
         $builder->andWhere($this->escapeField($field) . ' ' . $sql);
+
         return $this;
     }
 
@@ -213,13 +222,14 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function whereSql($sql)
     {
         $this->builder()->andWhere($sql);
+
         return $this;
     }
 
     /**
      * Parse array-syntax WHERE conditions and translate them to DBAL QueryBuilder syntax
      *
-     * @param array $where Array of conditions for this clause
+     * @param  array $where Array of conditions for this clause
      * @return array SQL fragment strings for WHERE clause
      */
     private function parseWhereToSQLFragments(array $where, $useAlias = true)
@@ -227,12 +237,12 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         $builder = $this->builder();
 
         $sqlFragments = [];
-        foreach($where as $column => $value) {
+        foreach ($where as $column => $value) {
             $whereClause = "";
             // Column name with comparison operator
             $colData = explode(' ', $column);
             $operator = isset($colData[1]) ? $colData[1] : '=';
-            if(count($colData) > 2) {
+            if (count($colData) > 2) {
                 $operator = array_pop($colData);
                 $colData = [implode(' ', $colData), $operator];
             }
@@ -244,7 +254,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
             }
 
             // Determine which operator to use based on custom and standard syntax
-            switch(strtolower($operator)) {
+            switch (strtolower($operator)) {
                 case '<':
                 case ':lt':
                     $operator = '<';
@@ -283,7 +293,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                 case 'in':
                 case ':in':
                     $operator = 'IN';
-                    if(!is_array($value)) {
+                    if (!is_array($value)) {
                         throw new Exception("Use of IN operator expects value to be array. Got " . gettype($value) . ".");
                     }
                 break;
@@ -293,9 +303,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                 case ':ne':
                 case ':not':
                     $operator = '!=';
-                    if(is_array($value)) {
+                    if (is_array($value)) {
                         $operator = "NOT IN";
-                    } elseif(is_null($value)) {
+                    } elseif (is_null($value)) {
                         $operator = "IS NOT NULL";
                     }
                 break;
@@ -303,9 +313,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                 case '=':
                 case ':eq':
                     $operator = '=';
-                    if(is_array($value)) {
+                    if (is_array($value)) {
                         $operator = "IN";
-                    } elseif(is_null($value)) {
+                    } elseif (is_null($value)) {
                         $operator = "IS NULL";
                     }
                 break;
@@ -316,24 +326,24 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
             }
 
             // If WHERE clause not already set by the code above...
-            if(empty($whereClause)) {
-                if(is_array($value)) {
-                    if(empty($value)) {
+            if (empty($whereClause)) {
+                if (is_array($value)) {
+                    if (empty($value)) {
                         $whereClause = $col . " IS NULL";
                     } else {
                         $valueIn = "";
-                        foreach($value as $val) {
+                        foreach ($value as $val) {
                             $valueIn .= $builder->createPositionalParameter($val) . ",";
                         }
                         $value = "(" . trim($valueIn, ',') . ")";
                         $whereClause = $col . " " . $operator . " " . $value;
                     }
-                } elseif(is_null($value)) {
+                } elseif (is_null($value)) {
                     $whereClause = $col . " " . $operator;
                 }
             }
 
-            if(empty($whereClause)) {
+            if (empty($whereClause)) {
                 // Add to binds array and add to WHERE clause
                 $whereClause = $col . " " . $operator . " " . $builder->createPositionalParameter($value) . "";
             }
@@ -351,20 +361,21 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function with($relations = null)
     {
-        if($relations === null) {
+        if ($relations === null) {
             return $this->with;
         }
 
         $this->with = array_unique(array_merge((array) $relations, $this->with));
+
         return $this;
     }
 
     /**
      * Search criteria (FULLTEXT, LIKE, or REGEX, depending on storage engine and driver)
      *
-     * @param mixed $fields Single string field or array of field names to use for searching
-     * @param string $query Search keywords or query
-     * @param array $options Array of options for search
+     * @param  mixed  $fields  Single string field or array of field names to use for searching
+     * @param  string $query   Search keywords or query
+     * @param  array  $options Array of options for search
      * @return $this
      */
     public function search($fields, $query, array $options = [])
@@ -378,20 +389,20 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         $whereType = ':like';
         $connection = $this->mapper()->connection($this->entityName());
         // Only on MySQL
-        if($connection instanceof \Spot\Adapter\Mysql) {
+        if ($connection instanceof \Spot\Adapter\Mysql) {
             // Only for MyISAM engine
-            if(isset($entityDatasourceOptions['engine'])) {
+            if (isset($entityDatasourceOptions['engine'])) {
                 $engine = $entityDatasourceOptions['engine'];
-                if('myisam' == strtolower($engine)) {
+                if ('myisam' == strtolower($engine)) {
                     $whereType = ':fulltext';
                     // Only if ALL included columns allow fulltext according to entity definition
-                    if(in_array($fields, array_keys($this->mapper()->fields($this->entityName())))) {
+                    if (in_array($fields, array_keys($this->mapper()->fields($this->entityName())))) {
                         // FULLTEXT
                         $whereType = ':fulltext';
                     }
 
                     // Boolean mode option
-                    if(isset($options['boolean']) && $options['boolean'] === true) {
+                    if (isset($options['boolean']) && $options['boolean'] === true) {
                         $whereType = ':fulltext_boolean';
                     }
                 }
@@ -407,40 +418,43 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * ORDER BY columns
      *
-     * @param array $fields Array of field names to use for sorting
+     * @param  array $fields Array of field names to use for sorting
      * @return $this
      */
     public function order(array $order)
     {
-        foreach($order as $field => $order) {
+        foreach ($order as $field => $order) {
             $this->builder()->addOrderBy($this->fieldWithAlias($field), $order);
         }
+
         return $this;
     }
 
     /**
      * GROUP BY clause
      *
-     * @param array $fields Array of field names to use for grouping
+     * @param  array $fields Array of field names to use for grouping
      * @return $this
      */
     public function group(array $fields = [])
     {
-        foreach($fields as $field) {
+        foreach ($fields as $field) {
             $this->builder()->addGroupBy($this->fieldWithAlias($field));
         }
+
         return $this;
     }
 
     /**
      * Having clause to filter results by a calculated value
      *
-     * @param array $having Array (like where) for HAVING statement for filter records by
+     * @param array  $having Array (like where) for HAVING statement for filter records by
      * @param string $type
      */
     public function having(array $having, $type ='AND')
     {
         $this->builder()->having(implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($having, false)));
+
         return $this;
     }
 
@@ -448,15 +462,16 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      * Limit executed query to specified amount of records
      * Implemented at adapter-level for databases that support it
      *
-     * @param int $limit Number of records to return
+     * @param int $limit  Number of records to return
      * @param int $offset Record to start at for limited result set
      */
     public function limit($limit, $offset = null)
     {
         $this->builder()->setMaxResults($limit);
-        if($offset !== null) {
+        if ($offset !== null) {
             $this->offset($offset);
         }
+
         return $this;
     }
 
@@ -469,6 +484,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function offset($offset)
     {
         $this->builder()->setFirstResult($offset);
+
         return $this;
     }
 
@@ -487,6 +503,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     {
         $countCopy = clone $this->builder();
         $stmt = $countCopy->select('COUNT(*)')->resetQueryPart('orderBy')->execute();
+
         return $stmt->fetchColumn(0);
     }
 
@@ -500,6 +517,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     {
         // Execute query and return result set for iteration
         $result = $this->execute();
+
         return ($result !== false) ? $result : [];
     }
 
@@ -511,6 +529,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function toArray($keyColumn = null, $valueColumn = null)
     {
         $result = $this->execute();
+
         return ($result !== false) ? $result->toArray($keyColumn, $valueColumn) : [];
     }
 
@@ -522,6 +541,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function first()
     {
         $result = $this->limit(1)->execute();
+
         return ($result !== false) ? $result->first() : false;
     }
 
@@ -553,9 +573,10 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function escape($string)
     {
-        if($this->_noQuote) {
+        if ($this->_noQuote) {
             return $string;
         }
+
         return $this->mapper()->connection()->quote($string);
     }
 
@@ -566,9 +587,10 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function escapeField($field)
     {
-        if($this->_noQuote) {
+        if ($this->_noQuote) {
             return $field;
         }
+
         return $this->mapper()->connection()->quoteIdentifier($field);
     }
 
@@ -578,6 +600,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function fieldWithAlias($field, $escaped = true)
     {
         $field = $this->_tableName . '.' . $field;
+
         return $escaped ? $this->escapeField($field) : $field;
     }
 
@@ -586,19 +609,21 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function offsetExists($key)
     {
         $results = $this->getIterator();
+
         return isset($results[$key]);
     }
 
     public function offsetGet($key)
     {
         $results = $this->getIterator();
+
         return $results[$key];
     }
 
     public function offsetSet($key, $value)
     {
         $results = $this->getIterator();
-        if($key === null) {
+        if ($key === null) {
             return $results[] = $value;
         } else {
             return $results[$key] = $value;
@@ -608,7 +633,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function offsetUnset($key)
     {
         $results = $this->getIterator();
-        if(is_int($key)) {
+        if (is_int($key)) {
             array_splice($results, $key, 1);
         } else {
             unset($results[$key]);
@@ -618,8 +643,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Run user-added callback
      *
-     * @param string $method Method name called
-     * @param array $args Array of arguments used in missing method call
+     * @param  string                 $method Method name called
+     * @param  array                  $args   Array of arguments used in missing method call
      * @throws BadMethodCallException
      */
     public function __call($method, $args)
@@ -627,20 +652,22 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         $scopes = $this->mapper()->scopes();
 
         // Custom methods
-        if(isset(self::$_customMethods[$method]) && is_callable(self::$_customMethods[$method])) {
+        if (isset(self::$_customMethods[$method]) && is_callable(self::$_customMethods[$method])) {
             $callback = self::$_customMethods[$method];
             // Pass the current query object as the first parameter
             array_unshift($args, $this);
+
             return call_user_func_array($callback, $args);
 
         // Scopes
-        } elseif(isset($scopes[$method])) {
+        } elseif (isset($scopes[$method])) {
             // Pass the current query object as the first parameter
             array_unshift($args, $this);
+
             return call_user_func_array($scopes[$method], $args);
 
         // Methods on Collection
-        } else if (method_exists('\\Spot\\Entity\\Collection', $method)) {
+        } elseif (method_exists('\\Spot\\Entity\\Collection', $method)) {
             return $this->execute()->$method($args[0]);
 
         // Error
