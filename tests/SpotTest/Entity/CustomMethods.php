@@ -20,13 +20,13 @@ class CustomMethods extends \Spot\Entity
     }
 
     // Custom setter
-    public function set_test1($value)
+    public function setTest1($value)
     {
         return $value . '_test';
     }
 
     // Custom getter
-    public function get_test1()
+    public function getTest1()
     {
         return $this->get('test1') . '_gotten';
     }

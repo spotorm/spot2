@@ -305,10 +305,12 @@ abstract class Entity
     {
         $v = null;
 
-        if (!in_array($field, $this->_inGetter) && method_exists($this, 'get_' . $field)) {
+        $camelCaseField = str_replace(' ', '', ucwords(str_replace('_', ' ', $field)));
+        $getterMethod = 'get' . $camelCaseField;
+        if (!in_array($field, $this->_inGetter) && method_exists($this, $getterMethod)) {
             // Custom getter method
             $this->_inGetter[$field] = true;
-            $v = call_user_func([$this, 'get_' . $field]);
+            $v = call_user_func([$this, $getterMethod]);
             unset($this->_inGetter[$field]);
         } else {
             // We can't use isset because it returns false for NULL values
@@ -338,9 +340,11 @@ abstract class Entity
     public function set($field, $value, $modified = true)
     {
         // Custom setter method
-        if (!in_array($field, $this->_inSetter) && method_exists($this, 'set_' . $field)) {
+        $camelCaseField = str_replace(' ', '', ucwords(str_replace('_', ' ', $field)));
+        $setterMethod = 'set' . $camelCaseField;
+        if (!in_array($field, $this->_inSetter) && method_exists($this, $setterMethod)) {
             $this->_inSetter[$field] = true;
-            $value = call_user_func([$this, 'set_' . $field], $value);
+            $value = call_user_func([$this, $setterMethod], $value);
             unset($this->_inSetter[$field]);
         }
 
