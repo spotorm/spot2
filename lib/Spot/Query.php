@@ -504,7 +504,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         $countCopy = clone $this->builder();
         $stmt = $countCopy->select('COUNT(*)')->resetQueryPart('orderBy')->execute();
 
-        return $stmt->fetchColumn(0);
+        return (int) $stmt->fetchColumn(0);
     }
 
     /**

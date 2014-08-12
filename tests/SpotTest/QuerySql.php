@@ -266,4 +266,28 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('SpotTest\Entity\Post', $posts[0]);
     }
+
+    public function testQueryCountIsInteger()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $posts = $mapper->all();
+
+        $this->assertSame(count($posts), $posts->count());
+    }
+
+    public function testQueryCountIsAccurate()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $posts = $mapper->all();
+        $postCount = count($posts);
+
+        $i = 0;
+        foreach($posts as $post) {
+            $i++;
+        }
+
+        $this->assertSame($postCount, $i);
+    }
 }
