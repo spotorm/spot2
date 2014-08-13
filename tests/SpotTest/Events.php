@@ -495,4 +495,59 @@ class Events extends \PHPUnit_Framework_TestCase
 
         $eventEmitter->removeAllListeners();
     }
+
+    public function testSaveEventsTriggeredOnCreate()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $eventEmitter = $mapper->eventEmitter();
+
+        $hooks = [];
+        $eventEmitter = $mapper->eventEmitter();
+        $eventEmitter->on('beforeSave', function ($post, $mapper) use (&$hooks) {
+            $hooks[] = 'before';
+        });
+        $eventEmitter->on('afterSave', function ($post, $mapper) use (&$hooks) {
+            $hooks[] = 'after';
+        });
+
+        $post = $mapper->create([
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1,
+            'date_created' => new \DateTime()
+        ]);
+
+        $this->assertEquals(['before', 'after'], $hooks);
+        $eventEmitter->removeAllListeners();
+    }
+
+    public function testSaveEventsTriggeredOnUpdate()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $eventEmitter = $mapper->eventEmitter();
+
+        $hooks = [];
+        $eventEmitter = $mapper->eventEmitter();
+        $eventEmitter->on('beforeSave', function ($post, $mapper) use (&$hooks) {
+            $hooks[] = 'before';
+        });
+        $eventEmitter->on('afterSave', function ($post, $mapper) use (&$hooks) {
+            $hooks[] = 'after';
+        });
+
+        $post = $mapper->create([
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1,
+            'date_created' => new \DateTime()
+        ]);
+
+        $post->status = 2;
+        $mapper->update($post);
+
+        $this->assertEquals(['before', 'after', 'before', 'after'], $hooks);
+        $eventEmitter->removeAllListeners();
+    }
 }

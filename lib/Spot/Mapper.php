@@ -617,19 +617,10 @@ class Mapper
             throw new InvalidArgumentException("Provided entity must be instance of " . $entityName . ", instance of " . get_class($entity) . " given.");
         }
 
-        // Run beforeSave to know whether or not we can continue
-        if (false === $eventEmitter->emit('beforeSave', [$entity, $this])) {
-            return false;
-        }
-
         if ($entity->isNew()) {
             $result = $this->insert($entity, $options);
         } else {
             $result = $this->update($entity, $options);
-        }
-
-        if (false === $eventEmitter->emit('afterSave', [$entity, $this, &$result])) {
-            $result = false;
         }
 
         return $result;
@@ -653,8 +644,11 @@ class Mapper
             throw new Exception(__METHOD__ . " Accepts either an entity object or entity data array");
         }
 
-        // Run beforeInsert to know whether or not we can continue
-        if (false === $this->eventEmitter()->emit('beforeInsert', [$entity, $this])) {
+        // Run beforeSave and beforeInsert to know whether or not we can continue
+        if (
+            false === $this->eventEmitter()->emit('beforeSave', [$entity, $this])
+            || false === $this->eventEmitter()->emit('beforeInsert', [$entity, $this])
+        ) {
             return false;
         }
 
@@ -724,8 +718,11 @@ class Mapper
                 $this->prepareEntity($entity);
             }
 
-            // Run afterInsert
-            if (false === $this->eventEmitter()->emit('afterInsert', [$entity, $this, &$result])) {
+            // Run afterSave and afterInsert
+            if (
+                false === $this->eventEmitter()->emit('afterSave', [$entity, $this, &$result])
+                || false === $this->eventEmitter()->emit('afterInsert', [$entity, $this, &$result])
+            ) {
                 $result = false;
             }
         } else {
@@ -743,8 +740,11 @@ class Mapper
      */
     public function update(Entity $entity, array $options = [])
     {
-        // Run beforeUpdate to know whether or not we can continue
-        if (false === $this->eventEmitter()->emit('beforeUpdate', [$entity, $this])) {
+        // Run beforeSave and beforeUpdate to know whether or not we can continue
+        if (
+            false === $this->eventEmitter()->emit('beforeSave', [$entity, $this])
+            || false === $this->eventEmitter()->emit('beforeUpdate', [$entity, $this])
+        ) {
             return false;
         }
 
@@ -774,8 +774,11 @@ class Mapper
         if (count($data) > 0) {
             $result = $this->connection()->update($this->table(), $data, array($this->primaryKeyField() => $this->primaryKey($entity)));
 
-            // Run afterUpdate
-            if (false === $this->eventEmitter()->emit('afterUpdate', [$entity, $this, &$result])) {
+            // Run afterSave and afterUpdate
+            if (
+                false === $this->eventEmitter()->emit('afterSave', [$entity, $this, &$result])
+                || false === $this->eventEmitter()->emit('afterUpdate', [$entity, $this, &$result])
+            ) {
                 $result = false;
             }
         } else {
