@@ -914,6 +914,8 @@ class Mapper
             // Re-throw exception so we don't bury it
             throw $e;
         }
+
+        return $result;
     }
 
     /**
