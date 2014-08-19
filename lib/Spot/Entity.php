@@ -382,6 +382,33 @@ abstract class Entity
     }
 
     /**
+     * Get primary key field name
+     *
+     * @return string Primary key field name
+     */
+    public function primaryKeyField()
+    {
+        $fields = static::fields();
+        foreach ($fields as $fieldName => $fieldAttrs) {
+            if (isset($fieldAttrs['primary'])) {
+                return $fieldName;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the value of the primary key field defined on this entity
+     *
+     * @return mixed Value of the primary key field
+     */
+    public function primaryKey()
+    {
+        $pkField = $this->primaryKeyField();
+        return $pkField ? $this->get($pkField) : false;
+    }
+
+    /**
      * String representation of the class
      */
     public function __toString()

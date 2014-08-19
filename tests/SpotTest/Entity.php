@@ -292,4 +292,20 @@ class Entity extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('test_test_gotten', $data['test1']);
     }
+
+    public function testGetPrimaryKeyField()
+    {
+        $entity = new \SpotTest\Entity\CustomMethods([
+            'test1' => 'test'
+        ]);
+        $this->assertEquals('id', $entity->primaryKeyField());
+    }
+
+    public function testGetPrimaryKeyFieldValue()
+    {
+        $entity = new \SpotTest\Entity\CustomMethods([
+            'test1' => 'test'
+        ]);
+        $this->assertEquals($entity->id, $entity->primaryKey());
+    }
 }
