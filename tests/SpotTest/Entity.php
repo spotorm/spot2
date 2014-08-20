@@ -308,4 +308,34 @@ class Entity extends \PHPUnit_Framework_TestCase
         ]);
         $this->assertEquals($entity->id, $entity->primaryKey());
     }
+
+    public function testJsonEncodeJsonSerializable()
+    {
+        $post = new \SpotTest\Entity\Post([
+            'title' => 'A Post',
+            'body' => 'A Body',
+            'status' => 0,
+            'data' => ['posts' => 'are cool', 'another field' => 'to serialize'],
+            'date_created' => new \DateTime()
+        ]);
+        $json = json_encode($post);
+        $data = json_decode($json, true);
+
+        $this->assertEquals('A Post', $data['title']);
+    }
+
+    public function testToStringReturnsJson()
+    {
+        $post = new \SpotTest\Entity\Post([
+            'title' => 'A Post',
+            'body' => 'A Body',
+            'status' => 0,
+            'data' => ['posts' => 'are cool', 'another field' => 'to serialize'],
+            'date_created' => new \DateTime()
+        ]);
+        $json = (string) $post;
+        $data = json_decode($json, true);
+
+        $this->assertEquals('A Post', $data['title']);
+    }
 }

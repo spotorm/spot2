@@ -6,7 +6,7 @@ namespace Spot;
 *
 * @package Spot
 */
-abstract class Entity
+abstract class Entity implements \JsonSerializable
 {
     protected static $table;
     protected static $tableOptions = [];
@@ -408,10 +408,18 @@ abstract class Entity
     }
 
     /**
-     * String representation of the class
+     * Return array for json_encode()
+     */
+    public function jsonSerialize()
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * String representation of the class (JSON)
      */
     public function __toString()
     {
-        return __CLASS__;
+        return json_encode($this->jsonSerialize());
     }
 }
