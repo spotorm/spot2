@@ -139,7 +139,6 @@ abstract class Entity
 
         // SET
         if (is_object($data) || is_array($data)) {
-            $fields = $this->fields();
             foreach ($data as $k => $v) {
                 $this->set($k, $v, $modified);
             }
