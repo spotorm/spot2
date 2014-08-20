@@ -1,8 +1,8 @@
 <?php
 namespace SpotTest\Entity;
 
-use Spot\Entity;
-use Spot\Mapper;
+use Spot\MapperInterface;
+use Spot\EntityInterface;
 
 /**
  * Post
@@ -21,7 +21,7 @@ class Tag extends \Spot\Entity
         ];
     }
 
-    public static function relations(Mapper $mapper, Entity $entity)
+    public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
         return [
             'posts' => $mapper->hasManyThrough($entity, 'SpotTest\Entity\Post', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id')

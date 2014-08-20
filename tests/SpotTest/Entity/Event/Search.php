@@ -1,8 +1,9 @@
 <?php
 namespace SpotTest\Entity\Event;
 
-use Spot\Mapper;
 use Spot\Entity;
+use Spot\EntityInterface;
+use Spot\MapperInterface;
 
 /**
  * Event Search Index
@@ -27,7 +28,7 @@ class Search extends Entity
         ];
     }
 
-    public static function relations(Mapper $mapper, Entity $entity)
+    public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
         return [
             'event' => $mapper->belongsTo($entity, 'SpotTest\Entity\Event', 'event_id')

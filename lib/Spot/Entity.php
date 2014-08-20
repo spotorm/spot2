@@ -6,7 +6,7 @@ namespace Spot;
 *
 * @package Spot
 */
-abstract class Entity implements \JsonSerializable
+abstract class Entity implements EntityInterface, \JsonSerializable
 {
     protected static $table;
     protected static $tableOptions = [];
@@ -17,7 +17,6 @@ abstract class Entity implements \JsonSerializable
     // Entity data storage
     protected $_data = [];
     protected $_dataModified = [];
-    protected $_relations = [];
 
     // Entity state
     protected $_isNew = true;
@@ -108,7 +107,7 @@ abstract class Entity implements \JsonSerializable
     /**
      * Return defined fields of the entity
      */
-    public static function relations(Mapper $mapper, self $entity)
+    public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
         return [];
     }

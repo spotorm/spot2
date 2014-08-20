@@ -2,7 +2,8 @@
 namespace SpotTest\Entity;
 
 use Spot\Entity;
-use Spot\Mapper;
+use Spot\MapperInterface;
+use Spot\EntityInterface;
 
 /**
  * Polymorphic Comment
@@ -26,7 +27,7 @@ class PolymorphicComment extends \Spot\Entity
         ];
     }
 
-    public static function relations(Mapper $mapper, Entity $entity)
+    public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
         return [
             'item' => $mapper->belongsTo($entity, 'SpotTest\Entity\\' . ucwords($entity->item_type), 'item_id')

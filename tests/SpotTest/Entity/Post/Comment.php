@@ -1,8 +1,8 @@
 <?php
 namespace SpotTest\Entity\Post;
 
-use Spot\Entity;
-use Spot\Mapper;
+use Spot\MapperInterface;
+use Spot\EntityInterface;
 
 /**
  * Post Comment
@@ -25,7 +25,7 @@ class Comment extends \Spot\Entity
         ];
     }
 
-    public static function relations(Mapper $mapper, Entity $entity)
+    public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
         return [
             'post' => $mapper->belongsTo($entity, 'SpotTest\Entity\Post', 'post_id')

@@ -2,7 +2,8 @@
 namespace SpotTest\Entity;
 
 use Spot\Entity;
-use Spot\Mapper;
+use Spot\MapperInterface;
+use Spot\EntityInterface;
 
 /**
  * PostTag
@@ -23,7 +24,7 @@ class PostTag extends Entity
         ];
     }
 
-    public static function relations(Mapper $mapper, Entity $entity)
+    public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
         return [
             'post' => $mapper->belongsTo($entity, 'SpotTest\Entity\Post', 'post_id'),
