@@ -8,7 +8,7 @@ use Doctrine\DBAL\Types\Type;
  *
  * @package Spot
  */
-class Mapper
+class Mapper implements MapperInterface
 {
     protected $locator;
     protected $entityName;
@@ -128,7 +128,7 @@ class Mapper
     /**
      * Load Relations for mapped entity
      */
-    public function loadRelations(Entity $entity)
+    public function loadRelations(EntityInterface $entity)
     {
         $entityName = $this->entity();
         $relations = $entityName::relations($this, $entity);
@@ -140,7 +140,7 @@ class Mapper
     /**
      * Relation: HasMany
      */
-    public function hasMany(Entity $entity, $entityName, $foreignKey, $localValue = null)
+    public function hasMany(EntityInterface $entity, $entityName, $foreignKey, $localValue = null)
     {
         if ($localValue === null) {
             $localValue = $this->primaryKey($entity);
@@ -152,7 +152,7 @@ class Mapper
     /**
      * Relation: HasManyThrough
      */
-    public function hasManyThrough(Entity $entity, $hasManyEntity, $throughEntity, $selectField, $whereField)
+    public function hasManyThrough(EntityInterface $entity, $hasManyEntity, $throughEntity, $selectField, $whereField)
     {
         $localPkField = $this->primaryKeyField();
         $localValue = $entity->$localPkField;
@@ -165,7 +165,7 @@ class Mapper
      *
      * HasOne assumes that the foreignKey will be on the foreignEntity.
      */
-    public function hasOne(Entity $entity, $foreignEntity, $foreignKey)
+    public function hasOne(EntityInterface $entity, $foreignEntity, $foreignKey)
     {
         $localKey = $this->primaryKeyField();
 
@@ -180,7 +180,7 @@ class Mapper
      * primary key. If this is not the case, you probably want to use the
      * 'hasOne' relationship instead.
      */
-    public function belongsTo(Entity $entity, $foreignEntity, $localKey)
+    public function belongsTo(EntityInterface $entity, $foreignEntity, $localKey)
     {
         $foreignMapper = $this->getMapper($foreignEntity);
         $foreignKey = $foreignMapper->primaryKeyField();
@@ -192,7 +192,7 @@ class Mapper
     /**
      * Prepare entity and load necessary objects on it
      */
-    public function prepareEntity(Entity $entity)
+    public function prepareEntity(EntityInterface $entity)
     {
         $this->loadRelations($entity);
     }
@@ -258,7 +258,7 @@ class Mapper
      *
      * @param object $entity Instance of an entity to find the primary key of
      */
-    public function primaryKey(Entity $entity)
+    public function primaryKey(EntityInterface $entity)
     {
         $pkField = $this->entityManager()->primaryKeyField();
 
@@ -607,7 +607,7 @@ class Mapper
      * @param \Spot\Entity $entity Entity object
      * @param array optional Array of save options
      */
-    public function save(Entity $entity, array $options = [])
+    public function save(EntityInterface $entity, array $options = [])
     {
         $eventEmitter = $this->eventEmitter();
 
@@ -738,7 +738,7 @@ class Mapper
      * @param object $entity Entity object
      * @params array $options Array of adapter-specific options
      */
-    public function update(Entity $entity, array $options = [])
+    public function update(EntityInterface $entity, array $options = [])
     {
         // Run beforeSave and beforeUpdate to know whether or not we can continue
         if (
@@ -951,7 +951,7 @@ class Mapper
     /**
      * Run set validation rules on fields
      */
-    public function validate(\Spot\Entity $entity)
+    public function validate(EntityInterface $entity)
     {
         $v = new \Valitron\Validator($entity->data());
 
