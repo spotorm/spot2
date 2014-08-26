@@ -18,6 +18,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     protected $_data = [];
     protected $_dataModified = [];
 
+    // Used internally so entity knows which fields are relations
+    public static $relationFields = [];
+
     // Entity state
     protected $_isNew = true;
     protected $_inGetter = [];
@@ -346,7 +349,10 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             unset($this->_inSetter[$field]);
         }
 
-        if ($modified) {
+        if (in_array($field, static::$relationFields)) {
+            // Set relation
+            $this->relation($field, $value);
+        } elseif ($modified) {
             $this->_dataModified[$field] = $value;
         } else {
             $this->_data[$field] = $value;
@@ -368,6 +374,13 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         if ($relationObj === null) {
             if (isset($relations[$objectId][$relationName])) {
                 return $relations[$objectId][$relationName];
+            }
+
+            return false;
+        } elseif ($relationObj === false) {
+            // Unset relation
+            if (isset($relations[$objectId][$relationName])) {
+                unset($relations[$objectId][$relationName]);
             }
 
             return false;
@@ -420,5 +433,16 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     public function __toString()
     {
         return json_encode($this->jsonSerialize());
+    }
+
+    /**
+     * Do some cleanup of stored relations so orphaned relations are not held
+     * in memory
+     */
+    public function __destruct()
+    {
+        foreach(static::$relationFields as $relation) {
+            $this->relation($relation, false);
+        }
     }
 }
