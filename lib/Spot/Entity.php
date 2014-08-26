@@ -56,6 +56,11 @@ abstract class Entity implements EntityInterface, \JsonSerializable
                 $this->_data[$field] = isset($opts['value']) ? $opts['value'] : null;
             }
         }
+
+        $entityName = get_class($this);
+        if (!isset(self::$relationFields[$entityName])) {
+            self::$relationFields[$entityName] = [];
+        }
     }
 
     /**
@@ -349,7 +354,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             unset($this->_inSetter[$field]);
         }
 
-        if (in_array($field, static::$relationFields)) {
+        if (in_array($field, static::$relationFields[get_class($this)])) {
             // Set relation
             $this->relation($field, $value);
         } elseif ($modified) {
@@ -441,7 +446,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      */
     public function __destruct()
     {
-        foreach(static::$relationFields as $relation) {
+        foreach(static::$relationFields[get_class($this)] as $relation) {
             $this->relation($relation, false);
         }
     }
