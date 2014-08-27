@@ -135,7 +135,6 @@ class Mapper implements MapperInterface
         foreach ($relations as $relation => $query) {
             $entity->relation($relation, $query);
         }
-        $entity::$relationFields[$entityName] = array_keys($relations);
     }
 
     /**

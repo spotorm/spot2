@@ -19,7 +19,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     protected $_dataModified = [];
 
     // Used internally so entity knows which fields are relations
-    public static $relationFields = [];
+    protected static $relationFields = [];
 
     // Entity state
     protected $_isNew = true;
@@ -354,7 +354,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             unset($this->_inSetter[$field]);
         }
 
-        if (in_array($field, static::$relationFields[get_class($this)])) {
+        if (in_array($field, self::$relationFields[get_class($this)])) {
             // Set relation
             $this->relation($field, $value);
         } elseif ($modified) {
@@ -392,6 +392,12 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         } else {
             // Set relation
             $relations[$objectId][$relationName] = $relationObj;
+
+            // Add to relation field array
+            $entityName = get_class($this);
+            if (!in_array($relationName, self::$relationFields[$entityName])) {
+                self::$relationFields[$entityName][] = $relationName;
+            }
         }
 
         return $relations[$objectId][$relationName];
@@ -446,8 +452,11 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      */
     public function __destruct()
     {
-        foreach(static::$relationFields[get_class($this)] as $relation) {
-            $this->relation($relation, false);
+        $entityName = get_class($this);
+        if (isset(self::$relationFields[$entityName])) {
+            foreach (self::$relationFields[$entityName] as $relation) {
+                $this->relation($relation, false);
+            }
         }
     }
 }
