@@ -519,7 +519,7 @@ class Mapper implements MapperInterface
      */
     public function query($sql, array $params = [])
     {
-        $result = $this->connection()->query($sql, $params);
+        $result = $this->connection()->executeQuery($sql, $params);
         if ($result) {
             return $this->collection($result);
         }

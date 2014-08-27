@@ -96,19 +96,6 @@ class Resolver
     /**
      * Find records with custom SQL query
      *
-     * @param  string          $sql   SQL query to execute
-     * @param  array           $binds Array of bound parameters to use as values for query
-     * @throws \Spot\Exception
-     */
-    public function query($sql, array $binds = array())
-    {
-        // 1. Perform query
-        // 2. Execute binds
-    }
-
-    /**
-     * Find records with custom SQL query
-     *
      * @param  string          $sql SQL query to execute
      * @throws \Spot\Exception
      */

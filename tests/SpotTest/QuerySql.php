@@ -290,4 +290,55 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($postCount, $i);
     }
+
+    public function testCustomQueryWithSQL()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $posts = $mapper->query("SELECT * FROM " . $mapper->table());
+        $this->assertInstanceOf('Spot\Entity\Collection', $posts);
+        $postCount = count($posts);
+
+        $i = 0;
+        foreach($posts as $post) {
+            $i++;
+            $this->assertInstanceOf('SpotTest\Entity\Post', $post);
+        }
+
+        $this->assertSame($postCount, $i);
+    }
+
+    public function testCustomQueryWithSqlAndIndexedParams()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $posts = $mapper->query("SELECT * FROM " . $mapper->table() . " WHERE status < ?", [10]);
+        $this->assertInstanceOf('Spot\Entity\Collection', $posts);
+        $postCount = count($posts);
+
+        $i = 0;
+        foreach($posts as $post) {
+            $i++;
+            $this->assertInstanceOf('SpotTest\Entity\Post', $post);
+        }
+
+        $this->assertSame($postCount, $i);
+    }
+
+    public function testCustomQueryWithSqlAndNamedParams()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $posts = $mapper->query("SELECT * FROM " . $mapper->table() . " WHERE status < :status", ['status' => 10]);
+        $this->assertInstanceOf('Spot\Entity\Collection', $posts);
+        $postCount = count($posts);
+
+        $i = 0;
+        foreach($posts as $post) {
+            $i++;
+            $this->assertInstanceOf('SpotTest\Entity\Post', $post);
+        }
+
+        $this->assertSame($postCount, $i);
+    }
 }
