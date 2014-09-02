@@ -33,9 +33,9 @@ class Laravel extends ServiceProvider
             $config = new Config();
             $config->addConnection('default', [
                 'dbname'   => $credentials['database'],
-                'user'     => $credentials['username'],
-                'password' => $credentials['password'],
-                'host'     => $credentials['host'],
+                'user'     => isset($credentials['username']) ? $credentials['username'] : null,
+                'password' => isset($credentials['password']) ? $credentials['password'] : null,
+                'host'     => isset($credentials['host'])     ? $credentials['host']     : null,
                 'driver'   => 'pdo_' . $credentials['driver']
             ]);
 
