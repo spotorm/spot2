@@ -146,6 +146,11 @@ class Mapper implements MapperInterface
             $localValue = $this->primaryKey($entity);
         }
 
+        if (!is_subclass_of($entityName, 'Spot\EntityInterface')) {
+            throw new \InvalidArgumentException("Related entity name must be a "
+                . "valid entity that extends Spot\Entity. Given '" .  $entityName . "'.");
+        }
+
         return new Relation\HasMany($this, $entityName, $foreignKey, $this->primaryKeyField(), $localValue);
     }
 
@@ -156,6 +161,16 @@ class Mapper implements MapperInterface
     {
         $localPkField = $this->primaryKeyField();
         $localValue = $entity->$localPkField;
+
+        if (!is_subclass_of($hasManyEntity, 'Spot\EntityInterface')) {
+            throw new \InvalidArgumentException("Related entity name must be a "
+                . "valid entity that extends Spot\Entity. Given '" .  $hasManyEntity . "'.");
+        }
+
+        if (!is_subclass_of($throughEntity, 'Spot\EntityInterface')) {
+            throw new \InvalidArgumentException("Related entity name must be a "
+                . "valid entity that extends Spot\Entity. Given '" .  $throughEntity . "'.");
+        }
 
         return new Relation\HasManyThrough($this, $hasManyEntity, $throughEntity, $selectField, $whereField, $localValue);
     }
@@ -168,6 +183,11 @@ class Mapper implements MapperInterface
     public function hasOne(EntityInterface $entity, $foreignEntity, $foreignKey)
     {
         $localKey = $this->primaryKeyField();
+
+        if (!is_subclass_of($foreignEntity, 'Spot\EntityInterface')) {
+            throw new \InvalidArgumentException("Related entity name must be a "
+                . "valid entity that extends Spot\Entity. Given '" .  $foreignEntity . "'.");
+        }
 
         // Return relation object so query can be lazy-loaded
         return new Relation\HasOne($this, $foreignEntity, $foreignKey, $localKey, $entity->$localKey);
@@ -182,6 +202,11 @@ class Mapper implements MapperInterface
      */
     public function belongsTo(EntityInterface $entity, $foreignEntity, $localKey)
     {
+        if (!is_subclass_of($foreignEntity, 'Spot\EntityInterface')) {
+            throw new \InvalidArgumentException("Related entity name must be a "
+                . "valid entity that extends Spot\Entity. Given '" .  $foreignEntity . "'.");
+        }
+
         $foreignMapper = $this->getMapper($foreignEntity);
         $foreignKey = $foreignMapper->primaryKeyField();
 

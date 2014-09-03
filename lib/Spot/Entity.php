@@ -431,6 +431,17 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     }
 
     /**
+     * Helper function so entity can be accessed via relation in a more
+     * consistent manner with 'entity()' without any errors (i.e. relation will
+     * not error if it already has a loaded entity object - it just returns
+     * $this)
+     */
+    public function entity()
+    {
+        return $this;
+    }
+
+    /**
      * Return array for json_encode()
      */
     public function jsonSerialize()
