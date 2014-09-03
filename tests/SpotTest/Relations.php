@@ -244,4 +244,40 @@ class Relations extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('SpotTest\Entity\Event', $event);
         $this->assertEquals($event->id, $eventId);
     }
+
+    /**
+     * @depends testEventInsert
+     */
+    public function testEventSearchEntityAccessibleWithEntityMethod($eventId)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $eventSearch = $mapper->first(['event_id' => $eventId]);
+        $event = $eventSearch->event->entity();
+        $this->assertInstanceOf('SpotTest\Entity\Event', $event);
+        $this->assertEquals($event->id, $eventId);
+    }
+
+    /**
+     * @depends testEventInsert
+     */
+    public function testEventSearchEntityMethodCalledOnEntityDoesNotError($eventId)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $eventSearch = $mapper->first(['event_id' => $eventId]);
+        $event = $eventSearch->event->entity()->entity();
+        $this->assertInstanceOf('SpotTest\Entity\Event', $event);
+        $this->assertEquals($event->id, $eventId);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testInvalidRelationClass()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $entity = $mapper->first();
+        $entity->fake = $mapper->hasOne($entity, 'Nonexistent\Entity', 'fake_field');
+
+        $entity->fake->something;
+    }
 }

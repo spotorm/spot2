@@ -63,11 +63,23 @@ class HasOne extends RelationAbstract implements \ArrayAccess
         return $this->result;
     }
 
+    /**
+     * Helper function to return the entity
+     */
+    public function entity()
+    {
+        return $this->execute();
+    }
+
     // Magic getter/setter passthru
     // ----------------------------------------------
     public function __get($key)
     {
-        $this->execute()->$key;
+        $entity = $this->execute();
+        if ($entity) {
+            return $entity->$key;
+        }
+        return null;
     }
 
     public function __set($key, $val)
