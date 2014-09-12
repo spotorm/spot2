@@ -36,7 +36,7 @@ interface EntityInterface
     /**
      * Return defined fields of the entity
      */
-    public static function relations(MapperInterface $mapper, self $entity);
+    public static function relations(MapperInterface $mapper, EntityInterface $entity);
 
     /**
      * Return scopes defined by this entity. Scopes are called from the
