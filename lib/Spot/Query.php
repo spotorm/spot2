@@ -275,7 +275,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                 case '~=':
                 case '=~':
                 case ':regex':
-                    $operator = "REGEX";
+                    $operator = "REGEXP";
                 break;
                 // LIKE
                 case ':like':

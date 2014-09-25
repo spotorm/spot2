@@ -130,6 +130,18 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertEquals(6, $mapper->where(['status :gte' => 5])->count());
     }
 
+    // Regexp
+    public function testOperatorRegexp()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        // "REGEXP" only supported by MySQL
+        if (!$mapper->connectionIs('mysql')) {
+            $this->markTestSkipped('Not supported in Sqlite nor Postgres.');
+        }
+        $this->assertEquals(10, $mapper->where(['title :regex' => '_title$'])->count());
+        $this->assertEquals(5, $mapper->where(['title :regex' => '^odd_'])->count());
+    }
+
     // Ordering
     public function testOrderBy()
     {
