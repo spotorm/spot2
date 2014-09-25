@@ -59,4 +59,22 @@ class Config extends \PHPUnit_Framework_TestCase
         $adapter = $cfg->addConnection('test_array', $dbalArray);
         $this->assertInstanceOf('Doctrine\DBAL\Connection', $adapter);
     }
+
+    public function testAddConnectionWithExistingDBALConnection()
+    {
+        $cfg = new \Spot\Config();
+        $dbalArray = [
+            'dbname' => 'spot_test',
+            'user' => 'test',
+            'password' => 'password',
+            'host' => 'localhost',
+            'driver' => 'pdo_mysql'
+        ];
+
+        $config = new \Doctrine\DBAL\Configuration();
+        $connection = \Doctrine\DBAL\DriverManager::getConnection($dbalArray, $config);
+
+        $adapter = $cfg->addConnection('test_dbalconnection', $connection);
+        $this->assertInstanceOf('Doctrine\DBAL\Connection', $adapter);
+    }
 }

@@ -1,6 +1,8 @@
 <?php
 namespace Spot;
 
+use Doctrine\DBAL;
+
 /**
  * @package Spot
  */
@@ -26,21 +28,25 @@ class Config implements \Serializable
             throw new Exception("Connection for '" . $name . "' already exists. Connection name must be unique.");
         }
 
-        if (is_array($dsn)) {
-            $connectionParams = $dsn;
+        if ($dsn instanceof DBAL\Connection) {
+            $connection = $dsn;
         } else {
-            $connectionParams = $this->parseDsn($dsn);
-            if ($connectionParams === false) {
-                throw new Exception("Unable to parse given DSN string");
+            if (is_array($dsn)) {
+                $connectionParams = $dsn;
+            } else {
+                $connectionParams = $this->parseDsn($dsn);
+                if ($connectionParams === false) {
+                    throw new Exception("Unable to parse given DSN string");
+                }
             }
-        }
 
-        $config = new \Doctrine\DBAL\Configuration();
-        $connection = \Doctrine\DBAL\DriverManager::getConnection($connectionParams, $config);
+            $config = new DBAL\Configuration();
+            $connection = DBAL\DriverManager::getConnection($connectionParams, $config);
 
-        // Set as default connection?
-        if (true === $default || null === $this->_defaultConnection) {
-            $this->_defaultConnection = $name;
+            // Set as default connection?
+            if (true === $default || null === $this->_defaultConnection) {
+                $this->_defaultConnection = $name;
+            }
         }
 
         // Store connection and return adapter instance
