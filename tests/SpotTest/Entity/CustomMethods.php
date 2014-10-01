@@ -15,7 +15,8 @@ class CustomMethods extends \Spot\Entity
         return [
             'id' => ['type' => 'integer', 'primary' => true, 'autoincrement' => true],
             'test1' => ['type' => 'text'],
-            'test2' => ['type' => 'text']
+            'test2' => ['type' => 'text'],
+            'test3' => ['type' => 'text']
         ];
     }
 
@@ -23,6 +24,12 @@ class CustomMethods extends \Spot\Entity
     public function setTest1($value)
     {
         return $value . '_test';
+    }
+
+    public function setTest2($value)
+    {
+        $this->test3 = $value . '_copy';
+        return $value;
     }
 
     // Custom getter
