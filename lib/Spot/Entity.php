@@ -227,7 +227,14 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             }
         }
 
-        return !!count($this->_dataModified);
+        /* Check if any of values really has changed. */
+        foreach (array_keys($this->_dataModified) as $field) {
+            if (true === $this->isModified($field)) {
+                return true;
+            }
+        };
+
+        return false;
     }
 
     /**

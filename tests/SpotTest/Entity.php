@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class Entity extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post', 'Author'];
+    private static $entities = ['Post', 'Author', 'CustomMethods'];
 
     public static function setupBeforeClass()
     {
@@ -291,6 +291,25 @@ class Entity extends \PHPUnit_Framework_TestCase
         $data = $entity->data();
 
         $this->assertEquals('test_test_gotten', $data['test1']);
+    }
+
+    public function testCustomSetterShouldNotTriggerModified()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\CustomMethods');
+
+        $entity = new \SpotTest\Entity\CustomMethods([
+            'test1' => 'test',
+            'test2' => 'copy'
+        ]);
+        $id = $mapper->save($entity);
+
+        unset($entity);
+
+        $entity = $mapper->get($id);
+        $this->assertFalse($entity->isModified('test1'));
+        $this->assertFalse($entity->isModified('test2'));
+        $this->assertFalse($entity->isModified('test3'));
+        $this->assertFalse($entity->isModified());
     }
 
     public function testGetPrimaryKeyField()
