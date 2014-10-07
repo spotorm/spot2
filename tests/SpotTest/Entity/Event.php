@@ -49,18 +49,6 @@ class Event extends \Spot\Entity
         ];
     }
 
-    public static function scopes()
-    {
-        return [
-            'free' => function ($query) {
-                return $query->where(['type' => 'free']);
-            },
-            'active' => function ($query) {
-                return $query->where(['status' => 1]);
-            }
-        ];
-    }
-
     public static function events(EventEmitter $eventEmitter)
     {
         $eventEmitter->on('beforeInsert', function ($entity, $mapper) {

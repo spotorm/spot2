@@ -258,19 +258,6 @@ class Manager
     }
 
     /**
-     * Get defined scopes
-     */
-    public function scopes()
-    {
-        if (empty($this->scopes)) {
-            $entityName = $this->entityName;
-            $this->scopes = $entityName::scopes();
-        }
-
-        return $this->scopes;
-    }
-
-    /**
      * Get value of primary key for given row result
      */
     public function primaryKeyField()

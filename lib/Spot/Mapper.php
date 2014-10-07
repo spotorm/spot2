@@ -271,11 +271,14 @@ class Mapper implements MapperInterface
     }
 
     /**
-     * Get defined scopes
+     * Return scopes defined by this mapper. Scopes are called from the
+     * Spot\Query object as a sort of in-context dynamic query method
+     *
+     * @return array Array of closures with method name as the key
      */
     public function scopes()
     {
-        return $this->entityManager()->scopes();
+        return [];
     }
 
     /**
