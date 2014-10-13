@@ -13,8 +13,8 @@
         }
     ],
     "require": {
-        "php": ">=5.4",
-        "vlucas/valitron": "1.x",
+        "php": ">=5.4.0",
+        "vlucas/valitron": "~1.1",
         "doctrine/dbal": "~2.4",
         "sabre/event": "~2.0"
     },
