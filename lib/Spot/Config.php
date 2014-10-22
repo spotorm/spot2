@@ -42,11 +42,11 @@ class Config implements \Serializable
 
             $config = new DBAL\Configuration();
             $connection = DBAL\DriverManager::getConnection($connectionParams, $config);
+        }
 
-            // Set as default connection?
-            if (true === $default || null === $this->_defaultConnection) {
-                $this->_defaultConnection = $name;
-            }
+        // Set as default connection?
+        if (true === $default || null === $this->_defaultConnection) {
+            $this->_defaultConnection = $name;
         }
 
         // Store connection and return adapter instance
