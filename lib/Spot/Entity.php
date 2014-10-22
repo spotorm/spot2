@@ -456,6 +456,58 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         return $this->toArray();
     }
 
+
+    /**
+     * Set errors if the field is not matching it's regex.
+     * If a field has a regex attribute and it does not match,
+     * then an error is set.
+     * @return void errors are set.
+     */
+    public function regexErrors() {
+
+      $fields = $this->fields();
+      foreach( $fields as $name => $field ) {
+        if( isset( $field['regex'] ) && ! empty( $field['regex'] ) ) {
+          if( ! preg_match( $field['regex'] , $this->$name ) ) {
+            $this->error( $name , 'regex_violation' );
+          }
+        }
+      }
+
+    }
+
+
+    /**
+     * Goes through the fields and if it is a unique field then it does a check.
+     * beforeSave would be a great time to call this?
+     *
+     * @param  MapperInterface $mapper The mapper to use,
+     * @return void errors are set
+     */
+    public function checkUnique( MapperInterface $mapper ) {
+
+      $fields = $this->fields();
+      foreach( $fields as $name => $field ) {
+        if( isset( $field['unique'] ) && $field['unique'] ) {
+
+          if( $this->isNew() ) {
+            $test = $mapper->where( [ $name => $this->$name ] )->first();
+            if( $test ) {
+              $this->error( $name , 'unique_violation' );
+            }
+          } else {
+            $pkey = $this->primaryKeyField();
+            $test = $mapper->where( [ $pkey . " !=" => $this->$pkey , $name => $this->$name ] )->first();
+            if( $test ) {
+              $this->error( $name , 'unique_violation' );
+            }
+          }
+        }
+      }
+    }
+
+
+
     /**
      * String representation of the class (JSON)
      */
