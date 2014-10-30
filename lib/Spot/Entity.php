@@ -70,8 +70,6 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     {
         if (null !== $tableName) {
             static::$table = $tableName;
-
-            return $this;
         }
 
         return static::$table;
@@ -84,8 +82,6 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     {
         if (null !== $tableOpts) {
             static::$tableOptions = $tableOpts;
-
-            return $this;
         }
 
         return static::$tableOptions;
