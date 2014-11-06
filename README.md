@@ -108,6 +108,9 @@ compliant autoloading.
 ```php
 namespace Entity;
 
+use Spot\EntityInterface as Entity;
+use Spot\MapperInterface as Mapper;
+
 class Post extends \Spot\Entity
 {
     protected static $table = 'posts';
