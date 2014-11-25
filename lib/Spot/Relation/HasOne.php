@@ -93,14 +93,14 @@ class HasOne extends RelationAbstract implements \ArrayAccess
     {
         $entity = $this->execute();
 
-        return isset($entity[$key]);
+        return isset($entity->$key);
     }
 
     public function offsetGet($key)
     {
         $entity = $this->execute();
 
-        return $entity[$key];
+        return $entity->$key;
     }
 
     public function offsetSet($key, $value)
@@ -110,13 +110,13 @@ class HasOne extends RelationAbstract implements \ArrayAccess
         if ($key === null) {
             return $entity[] = $value;
         } else {
-            return $entity[$key] = $value;
+            return $entity->$key = $value;
         }
     }
 
     public function offsetUnset($key)
     {
         $entity = $this->execute();
-        unset($entity[$key]);
+        unset($entity->$key);
     }
 }
