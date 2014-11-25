@@ -527,13 +527,14 @@ class Mapper implements MapperInterface
      * Get a new entity object, set given data on it, and save it
      *
      * @param  array          $data array of key/values to set on new Entity instance
+     * @param  array          $options array of save options that will be passed to insert()
      * @return object         Instance of $entityClass with $data set on it
      * @throws Spot\Exception
      */
-    public function create(array $data)
+    public function create(array $data, array $options = [])
     {
         $entity = $this->build($data);
-        if ($this->insert($entity)) {
+        if ($this->insert($entity, $options)) {
             return $entity;
         }
         throw new Exception("Unable to insert new " . get_class($entity) . " - Errors: " . var_export($entity->errors(), true));

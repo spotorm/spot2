@@ -64,6 +64,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
         $relationForeignKey = $this->foreignKey();
         $relationEntityKey = $this->entityKey();
         $collectionRelations = $this->query();
+        $collectionClass = $this->mapper()->getMapper($this->entityName())->collectionClass();
 
         // Divvy up related objects for each entity by foreign key value
         // ex. comment foreignKey 'post_id' will == entity primaryKey value
@@ -75,7 +76,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
         // Set relation collections back on each entity object
         foreach ($collection as $entity) {
             if (isset($entityRelations[$entity->$relationEntityKey])) {
-                $entityCollection = new Collection($entityRelations[$entity->$relationEntityKey]);
+                $entityCollection = new $collectionClass($entityRelations[$entity->$relationEntityKey]);
                 $entity->relation($relationName, $entityCollection);
             }
         }

@@ -108,6 +108,9 @@ compliant autoloading.
 ```php
 namespace Entity;
 
+use Spot\EntityInterface as Entity;
+use Spot\MapperInterface as Mapper;
+
 class Post extends \Spot\Entity
 {
     protected static $table = 'posts';
@@ -438,6 +441,9 @@ $mapper->hasOne(Entity $entity, $foreignEntity, $foreignKey)
 ```php
 namespace Entity;
 
+use Spot\EntityInterface as Entity;
+use Spot\MapperInterface as Mapper;
+
 class User extends \Spot\Entity
 {
     protected static $table = 'users';
@@ -485,6 +491,9 @@ $mapper->belongsTo(Entity $entity, $foreignEntity, $localKey)
 
 ```php
 namespace Entity;
+
+use Spot\EntityInterface as Entity;
+use Spot\MapperInterface as Mapper;
 
 class Post extends \Spot\Entity
 {
@@ -535,6 +544,9 @@ $mapper->hasMany(Entity $entity, $entityName, $foreignKey, $localValue = null)
 We start by adding a `comments` relation to our `Post` object:
 ```php
 namespace Entity;
+
+use Spot\EntityInterface as Entity;
+use Spot\MapperInterface as Mapper;
 
 class Post extends Spot\Entity
 {
