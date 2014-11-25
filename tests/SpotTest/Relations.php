@@ -280,4 +280,23 @@ class Relations extends \PHPUnit_Framework_TestCase
 
         $entity->fake->something;
     }
+
+    public function testLazyLoadRelationIsset()
+    {
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+
+        $author = $authorMapper->create([
+            'email'    => 'test1@test.com',
+            'password' => 'password',
+            'is_admin' => false,
+        ]);
+        $post = $postMapper->create([
+            'title'     => "Testing Property Access",
+            'body'      => "I hope array access is set correctly",
+            'author_id' => $author->id,
+        ]);
+
+        $this->assertTrue(isset($post->author));
+    }
 }
