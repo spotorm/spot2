@@ -304,7 +304,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      */
     public function __isset($key)
     {
-        return isset($this->_data[$key]) || isset($this->_dataModified[$key]);
+        $entityName = get_class($this);
+        return isset($this->_data[$key]) || isset($this->_dataModified[$key]) || in_array($key, self::$relationFields[$entityName]);
     }
 
     /**
