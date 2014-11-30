@@ -10,7 +10,9 @@ class Locator
     protected $mapper = [];
 
     /**
-     * Constructor Method - private to enforce singleton with getInstance()
+     * Constructor Method
+     * 
+     * @param \Spot\Config $config
      */
     public function __construct(Config $config)
     {
