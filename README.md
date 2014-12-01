@@ -13,6 +13,14 @@ Using Spot In Your Project
 Spot is a standalone ORM that can be used in any project. Follow the
 instructions below to get Spot setup in your project.
 
+Installation with Composer
+--------------------------
+
+```bash
+composer require vlucas/spot2
+```
+
+
 Connecting to a Database
 ------------------------
 
