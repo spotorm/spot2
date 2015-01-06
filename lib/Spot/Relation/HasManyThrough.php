@@ -81,8 +81,10 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
         $relationForeignKey = $this->foreignKey(); // tag_id
         $relationLocalKey = $this->localKey();     // post_id
         $relationEntityKey = $this->entityKey();
+        $relatedMapper = $this->mapper()->getMapper($this->entityName());
+        $relationRelatedForeignKey = $relatedMapper->primaryKeyField();
         $collectionRelations = $this->query()->execute();
-        $collectionClass = $this->mapper()->getMapper($this->entityName())->collectionClass();
+        $collectionClass = $relatedMapper->collectionClass();
 
         // HasManyThrough has to map out resulting key to original collection
         // keys since resulting relation objects won't have any reference to
@@ -94,7 +96,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
             /* $throughKeys[$throughLocalKey][] = $throughForeignKey; */
 
             foreach ($collectionRelations as $relatedEntity) {
-                $relatedEntityPk = $relatedEntity->$relationEntityKey;
+                $relatedEntityPk = $relatedEntity->$relationRelatedForeignKey;
                 if ($relatedEntityPk == $throughForeignKey) {
                     $entityRelations[$throughLocalKey][] = $relatedEntity;
                 }
