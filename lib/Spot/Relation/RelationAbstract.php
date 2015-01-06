@@ -122,6 +122,8 @@ abstract class RelationAbstract
         foreach ($collection as $entity) {
             if (isset($entityRelations[$entity->$relationEntityKey])) {
                 $entity->relation($relationName, $entityRelations[$entity->$relationEntityKey]);
+            } else {
+                $entity->relation($relationName, false);
             }
         }
 

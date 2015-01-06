@@ -78,6 +78,8 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
             if (isset($entityRelations[$entity->$relationEntityKey])) {
                 $entityCollection = new $collectionClass($entityRelations[$entity->$relationEntityKey]);
                 $entity->relation($relationName, $entityCollection);
+            } else {
+                $entity->relation($relationName, new $collectionClass());
             }
         }
 
