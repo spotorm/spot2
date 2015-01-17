@@ -109,7 +109,28 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         foreach ($posts as $post) {
             foreach ($post->comments as $comment) {
                 // Do nothing - just had to iterate to execute the queries
+                $this->assertEquals($post->id, $comment->post_id);
             }
+        }
+        $endCount = count($logger->queries);
+
+        // Eager-loaded relation should be only 2 queries
+        $this->assertEquals($startCount+2, $endCount);
+    }
+
+    public function testEagerLoadHasManyCounts()
+    {
+        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+
+        // Set SQL logger
+        $logger = new \Doctrine\DBAL\Logging\DebugStack();
+        $mapper->connection()->getConfiguration()->setSQLLogger($logger);
+
+        $startCount = count($logger->queries);
+
+        $posts = $mapper->all()->order(['date_created' => 'DESC'])->with(['comments']);
+        foreach ($posts as $post) {
+            $this->assertEquals(3, count($post->comments));
         }
         $endCount = count($logger->queries);
 
