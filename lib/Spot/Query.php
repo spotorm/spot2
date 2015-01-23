@@ -329,7 +329,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
             if (empty($whereClause)) {
                 if (is_array($value)) {
                     if (empty($value)) {
-                        $whereClause = $col . " IS NULL";
+                        $whereClause = $col . (($operator === 'NOT IN') ? " IS NOT NULL" : " IS NULL");
                     } else {
                         $valueIn = "";
                         foreach ($value as $val) {

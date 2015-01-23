@@ -179,6 +179,15 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $post->status);
     }
 
+    public function testArrayInEmpty()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $query = $mapper->where(['status' => []]);
+        $this->assertContains('IS NULL', $query->toSql());
+        $this->assertEquals(0, $query->count());
+    }
+
     public function testArrayInSingle()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
@@ -187,6 +196,15 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $query = $mapper->where(['status :in' => [2]]);
         $this->assertContains('IN', $query->toSql());
         $this->assertEquals(2, $query->first()->status);
+    }
+
+    public function testArrayNotInEmpty()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $query = $mapper->where(['status !=' => []]);
+        $this->assertContains('IS NOT NULL', $query->toSql());
+        $this->assertEquals(10, $query->count());
     }
 
     public function testArrayNotInSingle()
