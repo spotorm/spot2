@@ -559,7 +559,7 @@ class Mapper implements MapperInterface
     /**
      * Find all records
      *
-     * @return Spot\Query
+     * @return Query
      */
     public function all()
     {
@@ -571,7 +571,7 @@ class Mapper implements MapperInterface
      * If all parameters are empty, find all records
      *
      * @param  array      $conditions Array of conditions in column => value pairs
-     * @return Spot\Query
+     * @return Query
      */
     public function where(array $conditions = [])
     {
@@ -603,7 +603,7 @@ class Mapper implements MapperInterface
      * Begin a new database query - get query builder
      * Acts as a kind of factory to get the current adapter's query builder object
      *
-     * @return \Spot\Query
+     * @return Query
      */
     public function queryBuilder()
     {
@@ -619,7 +619,7 @@ class Mapper implements MapperInterface
      * @param string $entityName Name of the entity class
      * @param mixed  $fields     String for single field or array of fields
      *
-     * @return \Spot\Query
+     * @return Query
      */
     public function select($fields = "*")
     {
