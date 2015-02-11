@@ -332,6 +332,10 @@ $posts = $mapper->all()
     ->where(['status' => 'published'])
     ->order(['date_created' => 'DESC']);
 
+# All posts that are not published
+$posts = $mapper->all()
+    ->where(['status <>' => 'published'])
+
 # All posts created before 3 days ago
 $posts = $mapper->all()
     ->where(['date_created <' => new \DateTime('-3 days')]);
