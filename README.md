@@ -227,7 +227,7 @@ Boolean/Bit Types
 Date and Time Types
  * `date`
  * `datetime`
- * `datetimez`
+ * `datetimetz`
  * `time`
 
 Array Types
