@@ -89,8 +89,9 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     */
     public function merge(Collection $collection, $onlyUnique = true)
     {
+        $collectionData = $this->toArray();
         foreach ($collection as $entity) {
-            if ($onlyUnique && in_array($entity, $this->results)) {
+            if ($onlyUnique && in_array($entity->toArray(), $collectionData)) {
                 continue; // Skip - entity already exists in collection
             }
             $this->add($entity);
