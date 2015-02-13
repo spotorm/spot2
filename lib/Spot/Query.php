@@ -633,11 +633,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function offsetUnset($key)
     {
         $results = $this->getIterator();
-        if (is_int($key)) {
-            array_splice($results, $key, 1);
-        } else {
-            unset($results[$key]);
-        }
+        unset($results[$key]);
     }
 
     /**
