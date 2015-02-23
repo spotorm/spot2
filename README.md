@@ -26,7 +26,7 @@ Connecting to a Database
 
 The `Spot\Locator` object is the main point of access to spot that you will
 have to be able to access from everywhere you need to run queries or work with
-your entities. It is responsible for loading mappers and manging configuration.
+your entities. It is responsible for loading mappers and managing configuration.
 To create a Locator, you will need a `Spot\Config` object.
 
 The `Spot\Config` object stores and references database connections by name.
