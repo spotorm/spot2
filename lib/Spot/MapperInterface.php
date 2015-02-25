@@ -13,7 +13,7 @@ interface MapperInterface
     /**
      * Get config class from locator
      *
-     * @return Spot\Config
+     * @return \Spot\Config
      */
     public function config();
 
@@ -21,7 +21,7 @@ interface MapperInterface
      * Get mapper for specified entity
      *
      * @param  string      $entityName Name of Entity object to load mapper for
-     * @return Spot\Mapper
+     * @return \Spot\Mapper
      */
     public function getMapper($entityName);
 
@@ -173,8 +173,8 @@ interface MapperInterface
      * Get connection to use
      *
      * @param  string         $connectionName Named connection or entity class name
-     * @return Spot_Adapter
-     * @throws Spot_Exception
+     * @return \Doctrine\DBAL\Connection
+     * @throws \Spot\Exception
      */
     public function connection($connectionName = null);
 
@@ -187,7 +187,7 @@ interface MapperInterface
     public function connectionIs($type);
 
     /**
-     * Create collection from Spot\Query object
+     * Create collection from \Spot\Query object
      */
     public function collection($cursor, $with = []);
 
@@ -214,7 +214,7 @@ interface MapperInterface
      *
      * @param  array          $data array of key/values to set on new Entity instance
      * @return object         Instance of $entityClass with $data set on it
-     * @throws Spot\Exception
+     * @throws \Spot\Exception
      */
     public function create(array $data);
 
@@ -229,7 +229,7 @@ interface MapperInterface
     /**
      * Find all records
      *
-     * @return Spot\Query
+     * @return \Spot\Query
      */
     public function all();
 
@@ -238,7 +238,7 @@ interface MapperInterface
      * If all parameters are empty, find all records
      *
      * @param  array      $conditions Array of conditions in column => value pairs
-     * @return Spot\Query
+     * @return \Spot\Query
      */
     public function where(array $conditions = []);
 
