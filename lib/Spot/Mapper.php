@@ -391,7 +391,7 @@ class Mapper implements MapperInterface
             // Do type conversion
             $data = $this->convertToPHPValues($entityName, $data);
 
-            $entity = new $entityName($data, false);
+            $entity = new $entityName($data);
             $entity->isNew(false);
 
             $this->prepareEntity($entity);
