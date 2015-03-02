@@ -387,12 +387,11 @@ class Mapper implements MapperInterface
 
         // Fetch all results into new entity class
         // @todo Move this to collection class so entities will be lazy-loaded by Collection iteration
-        $entityFields = $this->fields();
         foreach ($cursor as $data) {
             // Do type conversion
             $data = $this->convertToPHPValues($entityName, $data);
 
-            $entity = new $entityName($data);
+            $entity = new $entityName($data, false);
             $entity->isNew(false);
 
             $this->prepareEntity($entity);
