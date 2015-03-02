@@ -1002,7 +1002,7 @@ class Mapper implements MapperInterface
             }
 
             // Unique field
-            if ($entity->isNew() && isset($fieldAttrs['unique']) && !empty($fieldAttrs['unique'])) {
+            if ($entity->isNew() && isset($fieldAttrs['unique']) && !empty($fieldAttrs['unique']) && $entity->$field !== null) {
                 if (is_string($fieldAttrs['unique'])) {
                     // Named group
                     $fieldKeyName = $fieldAttrs['unique'];
