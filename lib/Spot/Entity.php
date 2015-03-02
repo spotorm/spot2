@@ -46,7 +46,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     }
 
     /**
-     * Set all field values to their defualts or null
+     * Set all field values to their defaults or null
      */
     protected function initFields()
     {
