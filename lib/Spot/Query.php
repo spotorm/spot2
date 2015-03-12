@@ -281,6 +281,10 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                 case ':like':
                     $operator = "LIKE";
                 break;
+                // ILIKE
+                case ':ilike':
+                    $operator = "ILIKE";
+                break;
                 // FULLTEXT search
                 // MATCH(col) AGAINST(search)
                 case ':fulltext':
