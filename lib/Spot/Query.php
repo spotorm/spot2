@@ -224,7 +224,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * WHERE AND conditions
      *
-     * @param array $conditions Array of conditions for this clause
+     * @param array $where Array of conditions for this clause
      * @param string $type Keyword that will separate each condition - "AND", "OR"
      * @return $this|Query
      */
@@ -578,6 +578,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Convenience function passthrough for Collection
      *
+     * @param string|null $keyColumn
+     * @param string|null $valueColumn
      * @return array
      */
     public function toArray($keyColumn = null, $valueColumn = null)
@@ -653,6 +655,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Get field name with table alias appended
+     * @param string $field
+     * @param bool $escaped
+     * @return string
      */
     public function fieldWithAlias($field, $escaped = true)
     {
