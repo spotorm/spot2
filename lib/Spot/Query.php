@@ -30,7 +30,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     protected $_queryBuilder;
 
     /**
-     * @var
+     * @var boolean
      */
     protected $_noQuote;
 
@@ -42,7 +42,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     protected $with = [];
 
     /**
-     * Storage for query properties
+     * Storage for eager-loaded relations
      *
      * @var array
      */
