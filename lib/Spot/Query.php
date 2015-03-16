@@ -10,7 +10,7 @@ namespace Spot;
 class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 {
     /**
-     * @var Mapper
+     * @var \Spot\Mapper
      */
     protected $_mapper;
 
@@ -58,7 +58,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Constructor Method
      *
-     * @param Mapper $mapper
+     * @param \Spot\Mapper $mapper
      * @throws Exception
      * @internal param $Spot_Mapper
      * @internal param string $entityName Name of the entity to query on/for
@@ -86,6 +86,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Set field and value quoting on/off - maily used for testing output SQL
      * since quoting is different per platform
+     *
      * @param bool $noQuote
      * @return $this
      */
@@ -98,6 +99,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Return DBAL Query builder expression
+     *
+     * @return \Doctrine\DBAL\Query\Expression\ExpressionBuilder
      */
     public function expr()
     {
@@ -121,6 +124,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Get current adapter object
+     *
+     * @return \Spot\Mapper
      */
     public function mapper()
     {
@@ -129,6 +134,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Get current entity name query is to be performed on
+     *
+     * @return string
      */
     public function entityName()
     {
@@ -137,6 +144,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Select (passthrough to DBAL QueryBuilder)
+     *
      * @return $this
      */
     public function select()
@@ -148,6 +156,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Delete (passthrough to DBAL QueryBuilder)
+     *
      * @return $this
      */
     public function delete()
@@ -159,6 +168,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * From (passthrough to DBAL QueryBuilder)
+     *
      * @return $this
      */
     public function from()
@@ -170,6 +180,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Get all bound query parameters (passthrough to DBAL QueryBuilder)
+     *
+     * @return mixed
      */
     public function getParameters()
     {
@@ -178,6 +190,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Set query parameters (passthrough to DBAL QueryBuilder)
+     *
      * @return $this
      */
     public function setParameters()
