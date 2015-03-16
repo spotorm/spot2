@@ -107,8 +107,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Add a custom user method via closure or PHP callback
      *
-     * @param  string                   $method   Method name to add
-     * @param  callable                 $callback Callback or closure that will be executed when missing method call matching $method is made
+     * @param  string $method Method name to add
+     * @param  callable $callback Callback or closure that will be executed when missing method call matching $method is made
      * @throws \InvalidArgumentException
      */
     public static function addMethod($method, callable $callback)
@@ -308,37 +308,37 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                 case '<':
                 case ':lt':
                     $operator = '<';
-                break;
+                    break;
                 case '<=':
                 case ':lte':
                     $operator = '<=';
-                break;
+                    break;
                 case '>':
                 case ':gt':
                     $operator = '>';
-                break;
+                    break;
                 case '>=':
                 case ':gte':
                     $operator = '>=';
-                break;
+                    break;
                 // REGEX matching
                 case '~=':
                 case '=~':
                 case ':regex':
                     $operator = "REGEXP";
-                break;
+                    break;
                 // LIKE
                 case ':like':
                     $operator = "LIKE";
-                break;
+                    break;
                 // FULLTEXT search
                 // MATCH(col) AGAINST(search)
                 case ':fulltext':
                     $whereClause = "MATCH(" . $col . ") AGAINST(" . $builder->createPositionalParameter($value) . ")";
-                break;
+                    break;
                 case ':fulltext_boolean':
                     $whereClause = "MATCH(" . $col . ") AGAINST(" . $builder->createPositionalParameter($value) . " IN BOOLEAN MODE)";
-                break;
+                    break;
                 // In
                 case 'in':
                 case ':in':
@@ -346,7 +346,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                     if (!is_array($value)) {
                         throw new Exception("Use of IN operator expects value to be array. Got " . gettype($value) . ".");
                     }
-                break;
+                    break;
                 // Not equal
                 case '<>':
                 case '!=':
@@ -358,7 +358,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                     } elseif (is_null($value)) {
                         $operator = "IS NOT NULL";
                     }
-                break;
+                    break;
                 // Equals
                 case '=':
                 case ':eq':
@@ -368,11 +368,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
                     } elseif (is_null($value)) {
                         $operator = "IS NULL";
                     }
-                break;
+                    break;
                 // Unsupported operator
                 default:
                     throw new Exception("Unsupported operator '" . $operator . "' in WHERE clause");
-                break;
+                    break;
             }
 
             // If WHERE clause not already set by the code above...
@@ -416,7 +416,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
             return $this->with;
         }
 
-        $this->with = array_unique(array_merge((array) $relations, $this->with));
+        $this->with = array_unique(array_merge((array)$relations, $this->with));
 
         return $this;
     }
@@ -424,14 +424,14 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Search criteria (FULLTEXT, LIKE, or REGEX, depending on storage engine and driver)
      *
-     * @param  mixed  $fields  Single string field or array of field names to use for searching
-     * @param  string $query   Search keywords or query
-     * @param  array  $options Array of options for search
+     * @param  mixed $fields Single string field or array of field names to use for searching
+     * @param  string $query Search keywords or query
+     * @param  array $options Array of options for search
      * @return $this
      */
     public function search($fields, $query, array $options = [])
     {
-        $fields = (array) $fields;
+        $fields = (array)$fields;
         $entityDatasourceOptions = $this->mapper()->entityManager()->datasourceOptions($this->entityName());
         $fieldString = '`' . implode('`, `', $fields) . '`';
         $fieldTypes = $this->mapper()->fields($this->entityName());
@@ -499,11 +499,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Having clause to filter results by a calculated value
      *
-     * @param array  $having Array (like where) for HAVING statement for filter records by
+     * @param array $having Array (like where) for HAVING statement for filter records by
      * @param string $type
      * @return $this
      */
-    public function having(array $having, $type ='AND')
+    public function having(array $having, $type = 'AND')
     {
         $this->builder()->having(implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($having, false)));
 
@@ -514,7 +514,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      * Limit executed query to specified amount of records
      * Implemented at adapter-level for databases that support it
      *
-     * @param int $limit  Number of records to return
+     * @param int $limit Number of records to return
      * @param int $offset Record to start at for limited result set
      * @return $this
      */
@@ -558,7 +558,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         $countCopy = clone $this->builder();
         $stmt = $countCopy->select('COUNT(*)')->resetQueryPart('orderBy')->execute();
 
-        return (int) $stmt->fetchColumn(0);
+        return (int)$stmt->fetchColumn(0);
     }
 
     /**
@@ -731,18 +731,18 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
             return call_user_func_array($callback, $args);
 
-        // Scopes
+            // Scopes
         } elseif (isset($scopes[$method])) {
             // Pass the current query object as the first parameter
             array_unshift($args, $this);
 
             return call_user_func_array($scopes[$method], $args);
 
-        // Methods on Collection
+            // Methods on Collection
         } elseif (method_exists('\\Spot\\Entity\\Collection', $method)) {
             return $this->execute()->$method($args[0]);
 
-        // Error
+            // Error
         } else {
             throw new \BadMethodCallException("Method '" . __CLASS__ . "::" . $method . "' not found");
         }
