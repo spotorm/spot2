@@ -9,26 +9,61 @@ namespace Spot;
  */
 class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 {
+    /**
+     * @var Mapper
+     */
     protected $_mapper;
+
+    /**
+     * @var string
+     */
     protected $_entityName;
+
+    /**
+     * @var string
+     */
     protected $_tableName;
+
+    /**
+     * @var
+     */
     protected $_queryBuilder;
+
+    /**
+     * @var
+     */
     protected $_noQuote;
 
-    // Storage for query properties
+    /**
+     * Storage for query properties
+     *
+     * @var array
+     */
     protected $with = [];
+
+    /**
+     * Storage for query properties
+     *
+     * @var array
+     */
     protected $_data = [];
 
-    // Custom methods added by extensions or plugins
+    /**
+     * Custom methods added by extensions or plugins
+     *
+     * @var array
+     */
     protected static $_customMethods = [];
 
     /**
-     *  Constructor Method
+     * Constructor Method
      *
-     *  @param Spot_Mapper
-     *  @param string $entityName Name of the entity to query on/for
+     * @param Mapper $mapper
+     * @throws Exception
+     * @internal param $Spot_Mapper
+     * @internal param string $entityName Name of the entity to query on/for
      */
-    public function __construct(\Spot\Mapper $mapper)
+    public function __construct(Mapper $mapper)
     {
         $this->_mapper = $mapper;
         $this->_entityName = $mapper->entity();
@@ -51,6 +86,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Set field and value quoting on/off - maily used for testing output SQL
      * since quoting is different per platform
+     * @param bool $noQuote
+     * @return $this
      */
     public function noQuote($noQuote = true)
     {
@@ -72,7 +109,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      *
      * @param  string                   $method   Method name to add
      * @param  callable                 $callback Callback or closure that will be executed when missing method call matching $method is made
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public static function addMethod($method, callable $callback)
     {
@@ -100,6 +137,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Select (passthrough to DBAL QueryBuilder)
+     * @return $this
      */
     public function select()
     {
@@ -110,6 +148,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Delete (passthrough to DBAL QueryBuilder)
+     * @return $this
      */
     public function delete()
     {
@@ -120,6 +159,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * From (passthrough to DBAL QueryBuilder)
+     * @return $this
      */
     public function from()
     {
@@ -138,6 +178,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
     /**
      * Set query parameters (passthrough to DBAL QueryBuilder)
+     * @return $this
      */
     public function setParameters()
     {
@@ -149,8 +190,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * WHERE conditions
      *
-     * @param array  $conditions Array of conditions for this clause
-     * @param string $type       Keyword that will separate each condition - "AND", "OR"
+     * @param array $where Array of conditions for this clause
+     * @param string $type Keyword that will separate each condition - "AND", "OR"
+     * @return $this
      */
     public function where(array $where, $type = 'AND')
     {
@@ -165,8 +207,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * WHERE OR conditions
      *
-     * @param array  $conditions Array of conditions for this clause
-     * @param string $type       Keyword that will separate each condition - "AND", "OR"
+     * @param array $where Array of conditions for this clause
+     * @param string $type Keyword that will separate each condition - "AND", "OR"
+     * @return $this
      */
     public function orWhere(array $where, $type = 'AND')
     {
@@ -181,8 +224,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * WHERE AND conditions
      *
-     * @param array  $conditions Array of conditions for this clause
-     * @param string $type       Keyword that will separate each condition - "AND", "OR"
+     * @param array $conditions Array of conditions for this clause
+     * @param string $type Keyword that will separate each condition - "AND", "OR"
+     * @return $this|Query
      */
     public function andWhere(array $where, $type = 'AND')
     {
@@ -193,7 +237,10 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      * WHERE field + raw SQL
      *
      * @param string $field Field name for SQL statement (will be quoted)
-     * @param string $sql   SQL string to put in WHERE clause
+     * @param string $sql SQL string to put in WHERE clause
+     * @param array $params
+     * @return $this
+     * @throws Exception
      */
     public function whereFieldSql($field, $sql, array $params = [])
     {
@@ -218,6 +265,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      * WHERE conditions
      *
      * @param string $sql SQL string to put in WHERE clause
+     * @return $this
      */
     public function whereSql($sql)
     {
@@ -229,8 +277,10 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Parse array-syntax WHERE conditions and translate them to DBAL QueryBuilder syntax
      *
-     * @param  array $where Array of conditions for this clause
+     * @param array $where Array of conditions for this clause
+     * @param bool $useAlias
      * @return array SQL fragment strings for WHERE clause
+     * @throws Exception
      */
     private function parseWhereToSQLFragments(array $where, $useAlias = true)
     {
@@ -357,7 +407,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Relations to be eager-loaded
      *
-     * @param mixed $relations Array/string of relation(s) to be loaded.
+     * @param mixed|null $relations Array/string of relation(s) to be loaded.
+     * @return $this|array
      */
     public function with($relations = null)
     {
@@ -418,7 +469,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * ORDER BY columns
      *
-     * @param  array $fields Array of field names to use for sorting
+     * @param  array $order Array of field names to use for sorting
      * @return $this
      */
     public function order(array $order)
@@ -450,6 +501,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      *
      * @param array  $having Array (like where) for HAVING statement for filter records by
      * @param string $type
+     * @return $this
      */
     public function having(array $having, $type ='AND')
     {
@@ -464,6 +516,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      *
      * @param int $limit  Number of records to return
      * @param int $offset Record to start at for limited result set
+     * @return $this
      */
     public function limit($limit, $offset = null)
     {
@@ -480,6 +533,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      * Implemented at adapter-level for databases that support it
      *
      * @param int $offset Record to start at for limited result set
+     * @return $this
      */
     public function offset($offset)
     {
@@ -559,7 +613,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Get raw SQL string from built query
      *
-     * @param string $string
+     * @return string
      */
     public function toSql()
     {
@@ -570,6 +624,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      * Escape/quote direct user input
      *
      * @param string $string
+     * @return string
      */
     public function escape($string)
     {
@@ -583,7 +638,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Escape/quote direct user input
      *
-     * @param string $string
+     * @param string $field
+     * @return string
+     * @throws Exception
      */
     public function escapeField($field)
     {
@@ -604,8 +661,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         return $escaped ? $this->escapeField($field) : $field;
     }
 
-    // SPL - ArrayAccess functions - passthrough to collection
-    // -------------------------------------------------------
+    /**
+     * SPL - ArrayAccess
+     *
+     * @inheritdoc
+     */
     public function offsetExists($key)
     {
         $results = $this->getIterator();
@@ -613,6 +673,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         return isset($results[$key]);
     }
 
+    /**
+     * SPL - ArrayAccess
+     *
+     * @inheritdoc
+     */
     public function offsetGet($key)
     {
         $results = $this->getIterator();
@@ -620,6 +685,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         return $results[$key];
     }
 
+    /**
+     * SPL - ArrayAccess
+     *
+     * @inheritdoc
+     */
     public function offsetSet($key, $value)
     {
         $results = $this->getIterator();
@@ -630,6 +700,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         }
     }
 
+    /**
+     * SPL - ArrayAccess
+     *
+     * @inheritdoc
+     */
     public function offsetUnset($key)
     {
         $results = $this->getIterator();
@@ -639,9 +714,10 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     /**
      * Run user-added callback
      *
-     * @param  string                 $method Method name called
-     * @param  array                  $args   Array of arguments used in missing method call
-     * @throws BadMethodCallException
+     * @param  string $method Method name called
+     * @param  array $args Array of arguments used in missing method call
+     * @return mixed
+     * @throws \BadMethodCallException
      */
     public function __call($method, $args)
     {
