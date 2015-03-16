@@ -1,5 +1,6 @@
 <?php
 namespace Spot\Query;
+
 use Spot\Mapper;
 
 /**
@@ -25,11 +26,11 @@ class Resolver
     public function migrate()
     {
         // Mapper knows currently set entity
-        $entity       = $this->mapper->entity();
-        $table        = $entity::table();
-        $fields       = $this->mapper->entityManager()->fields();
+        $entity = $this->mapper->entity();
+        $table = $entity::table();
+        $fields = $this->mapper->entityManager()->fields();
         $fieldIndexes = $this->mapper->entityManager()->fieldKeys();
-        $connection   = $this->mapper->connection();
+        $connection = $this->mapper->connection();
 
         $schemaManager = $this->mapper->connection()->getSchemaManager();
         $tableObject = $schemaManager->listTableDetails($table);
@@ -63,13 +64,13 @@ class Resolver
      */
     public function migrateCreateSchema()
     {
-        $entityName   = $this->mapper->entity();
-        $table        = $entityName::table();
-        $fields       = $this->mapper->entityManager()->fields();
+        $entityName = $this->mapper->entity();
+        $table = $entityName::table();
+        $fields = $this->mapper->entityManager()->fields();
         $fieldIndexes = $this->mapper->entityManager()->fieldKeys();
 
         $schema = new \Doctrine\DBAL\Schema\Schema();
-        $table  = $schema->createTable($table);
+        $table = $schema->createTable($table);
 
         foreach ($fields as $field => $fieldInfo) {
             $fieldType = $fieldInfo['type'];
@@ -96,7 +97,7 @@ class Resolver
     /**
      * Find records with custom SQL query
      *
-     * @param  string          $sql SQL query to execute
+     * @param  string $sql SQL query to execute
      * @throws \Spot\Exception
      */
     public function read(\Spot\Query $query)
@@ -118,7 +119,7 @@ class Resolver
      * Create new row object with set properties
      *
      * @param string $table Table name
-     * @param array  $data  Array of data to save in 'field' => 'value' format
+     * @param array $data Array of data to save in 'field' => 'value' format
      */
     public function create($table, array $data)
     {
@@ -132,8 +133,8 @@ class Resolver
      * Update
      *
      * @param string $table Table name
-     * @param array  $data  Array of data to save in 'field' => 'value' format
-     * @param array  $data  Array of data for WHERE clause in 'field' => 'value' format
+     * @param array $data Array of data to save in 'field' => 'value' format
+     * @param array $data Array of data for WHERE clause in 'field' => 'value' format
      */
     public function update($table, array $data, array $where)
     {
@@ -145,7 +146,7 @@ class Resolver
     /**
      * Execute provided query and return result
      *
-     * @param  string          $sql SQL query to execute
+     * @param  string $sql SQL query to execute
      * @throws \Spot\Exception
      */
     public function exec(\Spot\Query $query)
@@ -157,7 +158,7 @@ class Resolver
      * Truncate Table
      *
      * @param string $table Table name
-     * @param array  $data  Array of data for WHERE clause in 'field' => 'value' format
+     * @param array $data Array of data for WHERE clause in 'field' => 'value' format
      */
     public function truncate($table, $cascade = false)
     {
