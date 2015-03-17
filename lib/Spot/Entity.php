@@ -130,11 +130,21 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      */
     public function data($data = null, $modified = true)
     {
+        $entityName = get_class($this);
+
         // GET
         if (null === $data || !$data) {
             $data = array_merge($this->_data, $this->_dataModified);
             foreach ($data as $k => &$v) {
                 $v = $this->__get($k, $v);
+            }
+
+            foreach (self::$relationFields[$entityName] as $relationField) {
+                $relation = $this->relation($relationField);
+
+                if ($relation instanceof Entity\Collection) {
+                    $data[$relationField] = $relation->toArray();
+                }
             }
 
             return $data;

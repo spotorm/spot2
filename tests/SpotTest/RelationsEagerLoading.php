@@ -201,4 +201,24 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         // (1 query more than other relations, for the join table)
         $this->assertEquals($startCount+3, $endCount);
     }
+
+    public function testEagerLoadHasManyThroughToArray()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->all()->with('tags')->first();
+
+        $result = $post->toArray();
+
+        $this->assertTrue(is_array($result['tags']));
+    }
+
+    public function testEagerLoadHasManyThroughToArrayShouldNotLoadRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->all()->first();
+
+        $result = $post->toArray();
+
+        $this->assertFalse(isset($result['tags']));
+    }
 }
