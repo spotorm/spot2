@@ -357,26 +357,4 @@ class Entity extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('A Post', $data['title']);
     }
-
-    public function testRelationsAreNotReturnedWithData()
-    {
-        $post = new \SpotTest\Entity\Post([
-            'title' => 'A Post',
-            'body' => 'A Body',
-            'status' => 0,
-            'data' => ['posts' => 'are cool', 'another field' => 'to serialize'],
-            'date_created' => new \DateTime()
-        ]);
-        $author = new \SpotTest\Entity\Author([
-            'email' => 'user@exmaple.com',
-            'password' => 'password'
-        ]);
-        $post->author = $author;
-
-        $data = $post->data();
-        $this->assertFalse(isset($data['author']));
-
-        $array = $post->toArray();
-        $this->assertFalse(isset($array['author']));
-    }
 }

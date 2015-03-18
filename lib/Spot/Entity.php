@@ -145,6 +145,10 @@ abstract class Entity implements EntityInterface, \JsonSerializable
                 if ($relation instanceof Entity\Collection) {
                     $data[$relationField] = $relation->toArray();
                 }
+
+                if ($relation instanceof EntityInterface) {
+                    $data[$relationField] = $relation->toArray();
+                }
             }
 
             return $data;

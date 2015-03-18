@@ -221,4 +221,44 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
         $this->assertFalse(isset($result['tags']));
     }
+
+    public function testEagerLoadBelongsToArray()
+    {
+        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $posts = $mapper->all()->with('author')->first();
+
+        $result = $posts->toArray();
+
+        $this->assertTrue(is_array($result['author']));
+    }
+
+    public function testEagerLoadBelongsToArrayShouldNotLoadRelation()
+    {
+        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $posts = $mapper->all()->first();
+
+        $result = $posts->toArray();
+
+        $this->assertFalse(isset($result['author']));
+    }
+
+    public function testEagerLoadHasOneToArray()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $events = $mapper->all()->with('search')->first();
+
+        $result = $events->toArray();
+
+        $this->assertTrue(is_array($result['search']));
+    }
+
+    public function testEagerLoadHasOneToArrayShouldNotLoadRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $events = $mapper->all()->first();
+
+        $result = $events->toArray();
+
+        $this->assertFalse(isset($result['search']));
+    }
 }
