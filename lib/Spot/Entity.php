@@ -142,11 +142,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             foreach (self::$relationFields[$entityName] as $relationField) {
                 $relation = $this->relation($relationField);
 
-                if ($relation instanceof Entity\Collection) {
-                    $data[$relationField] = $relation->toArray();
-                }
-
-                if ($relation instanceof EntityInterface) {
+                if ($relation instanceof Entity\Collection || $relation instanceof EntityInterface) {
                     $data[$relationField] = $relation->toArray();
                 }
             }
