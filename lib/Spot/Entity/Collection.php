@@ -6,19 +6,32 @@ use Spot\Entity;
 /**
  * Collection of Spot_Entity objects
  *
- * @package Spot
+ * @package Spot\Entity
+ * @author Vance Lucas <vance@vancelucas.com>
  */
 class Collection implements \Iterator, \Countable, \ArrayAccess
 {
+    /**
+     * @var array
+     */
     protected $results = [];
+
+    /**
+     * @var array
+     */
     protected $resultsIdentities = [];
+
+    /**
+     * @var null
+     */
     protected $entityName = null;
 
     /**
      * Constructor function
      *
-     * @param array $results           Array of pre-loaded Spot_Entity objects or Iterator that will fetch them lazily
+     * @param array $results Array of pre-loaded Spot_Entity objects or Iterator that will fetch them lazily
      * @param array $resultsIdentities Array of key values for given result set primary key
+     * @param string|null $entityName
      */
     public function __construct(array $results = [], array $resultsIdentities = [], $entityName = null)
     {
@@ -50,7 +63,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     /**
      * Returns first result in set
      *
-     * @return Spot\Entity The first result in the set
+     * @return \Spot\Entity The first result in the set
      */
     public function first()
     {
@@ -62,7 +75,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     /**
      * Add a single entity to the collection
      *
-     * @param object $entity to add
+     * @param \Spot\Entity $entity to add
      */
     public function add(Entity $entity)
     {
@@ -72,7 +85,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     /**
      * Return array of raw entity objects represented in collection
      *
-     * @param array Array of Entity objects in collection
+     * @return array
      */
     public function entities()
     {
@@ -80,13 +93,15 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     }
 
     /**
-    * Merge another collection into this collections set of entities
-    * This will only add entitys that don't already exist in the current
-    * collection
-    *
-    * @param Spot\Entity\Collection $collection
-    * @todo Implement faster uniqueness checking by hash, entity manager, primary key field, etc.
-    */
+     * Merge another collection into this collections set of entities
+     * This will only add entitys that don't already exist in the current
+     * collection
+     *
+     * @param \Spot\Entity\Collection $collection
+     * @param bool $onlyUnique
+     * @return $this
+     * @todo Implement faster uniqueness checking by hash, entity manager, primary key field, etc.
+     */
     public function merge(Collection $collection, $onlyUnique = true)
     {
         $collectionData = $this->toArray();
@@ -103,13 +118,13 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     /**
      * Return an array representation of the Collection.
      *
-     * @param  mixed $keyColumn
-     * @param  mixed $valueColumn
+     * @param  mixed|null $keyColumn
+     * @param  mixed|null $valueColumn
      * @return array If $keyColumn and $valueColumn are not set, or are both null
      *                           then this will return the array of entity objects
      * @return array If $keyColumn is not null, and the value column is null or undefined
      *                           then this will return an array of the values of the entities in the column defined
-     * @returns array   If $keyColumn and $valueColumn are both defined and not null
+     * @returns array If $keyColumn and $valueColumn are both defined and not null
      *                           then this will return an array where the key is defined by each entities value in $keyColumn
      *                           and the value will be the value of the each entity in $valueColumn
      *
@@ -124,14 +139,14 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
                 $return[] = $row->toArray();
             }
 
-        // Key column name
+            // Key column name
         } elseif (null !== $keyColumn && null === $valueColumn) {
             $return = [];
             foreach ($this->results as $row) {
                 $return[] = $row->$keyColumn;
             }
 
-        // Both key and valud columns filled in
+            // Both key and valud columns filled in
         } else {
             $return = [];
             foreach ($this->results as $row) {
@@ -143,19 +158,20 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     }
 
     /**
-    * Run a function on the set of entities
-    *
-    * @param string|array $function A callback of the function to run
-    */
+     * Run a function on the set of entities
+     *
+     * @param string|array $callback A callback of the function to run
+     * @return mixed
+     */
     public function run($callback)
     {
-         return call_user_func_array($callback, [$this->results]);
+        return call_user_func_array($callback, [$this->results]);
     }
 
     /**
      * Runs a function on every object in the query, returning the resulting array
      *
-     * @param function The function to run
+     * @param callable $func The function to run
      * @return mixed An array containing the result of running the passed function
      *               on each member of the collect
      */
@@ -171,9 +187,9 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
 
     /**
      * Runs a function on every object in the query, returning an array containing every
-     *  object for which the function returns true.
+     * object for which the function returns true.
      *
-     * @param function The function to run
+     * @param callable $func The function to run
      * @return mixed An array of Entity objects
      */
     public function filter($func)
@@ -189,65 +205,103 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     }
 
     /**
-    * Provides a string representation of the class
-    * Brackets contain the number of elements contained
-    * in the collection
-    *
-    */
+     * Provides a string representation of the class
+     * Brackets contain the number of elements contained
+     * in the collection
+     *
+     * @return string
+     *
+     */
     public function __toString()
     {
-        return __CLASS__ . "[".$this->count()."]";
+        return __CLASS__ . "[" . $this->count() . "]";
     }
 
-    // SPL - Countable functions
-    // ----------------------------------------------
     /**
-     * Get a count of all the records in the result set
+     * SPL - Countable
+     *
+     * @inheritdoc
      */
     public function count()
     {
         return count($this->results);
     }
 
-    // SPL - Iterator functions
-    // ----------------------------------------------
+    /**
+     * SPL - Iterator
+     *
+     * @inheritdoc
+     */
     public function current()
     {
         return current($this->results);
     }
 
+    /**
+     * SPL - Iterator
+     *
+     * @inheritdoc
+     */
     public function key()
     {
         return key($this->results);
     }
 
+    /**
+     * SPL - Iterator
+     *
+     * @inheritdoc
+     */
     public function next()
     {
         next($this->results);
     }
 
+    /**
+     * SPL - Iterator
+     *
+     * @inheritdoc
+     */
     public function rewind()
     {
         reset($this->results);
     }
 
+    /**
+     * SPL - Iterator
+     *
+     * @inheritdoc
+     */
     public function valid()
     {
-        return (current($this->results) !== FALSE);
+        return (current($this->results) !== false);
     }
 
-    // SPL - ArrayAccess functions
-    // ----------------------------------------------
+    /**
+     * SPL - ArrayAccess
+     *
+     * @inheritdoc
+     */
     public function offsetExists($key)
     {
         return isset($this->results[$key]);
     }
 
+    /**
+     * SPL - ArrayAccess
+     *
+     * @inheritdoc
+     */
     public function offsetGet($key)
     {
         return $this->results[$key];
     }
 
+    /**
+     * SPL - ArrayAccess
+     *
+     * @inheritdoc
+     */
     public function offsetSet($key, $value)
     {
         if ($key === null) {
@@ -257,6 +311,11 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
         }
     }
 
+    /**
+     * SPL - ArrayAccess
+     *
+     * @inheritdoc
+     */
     public function offsetUnset($key)
     {
         if (is_int($key)) {
