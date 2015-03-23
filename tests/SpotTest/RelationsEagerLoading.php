@@ -201,4 +201,64 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         // (1 query more than other relations, for the join table)
         $this->assertEquals($startCount+3, $endCount);
     }
+
+    public function testEagerLoadHasManyThroughToArray()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->all()->with('tags')->first();
+
+        $result = $post->toArray();
+
+        $this->assertTrue(is_array($result['tags']));
+    }
+
+    public function testEagerLoadHasManyThroughToArrayShouldNotLoadRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $mapper->all()->first();
+
+        $result = $post->toArray();
+
+        $this->assertFalse(isset($result['tags']));
+    }
+
+    public function testEagerLoadBelongsToArray()
+    {
+        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $posts = $mapper->all()->with('author')->first();
+
+        $result = $posts->toArray();
+
+        $this->assertTrue(is_array($result['author']));
+    }
+
+    public function testEagerLoadBelongsToArrayShouldNotLoadRelation()
+    {
+        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $posts = $mapper->all()->first();
+
+        $result = $posts->toArray();
+
+        $this->assertFalse(isset($result['author']));
+    }
+
+    public function testEagerLoadHasOneToArray()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $events = $mapper->all()->with('search')->first();
+
+        $result = $events->toArray();
+
+        $this->assertTrue(is_array($result['search']));
+    }
+
+    public function testEagerLoadHasOneToArrayShouldNotLoadRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $events = $mapper->all()->first();
+
+        $result = $events->toArray();
+
+        $this->assertFalse(isset($result['search']));
+    }
 }
