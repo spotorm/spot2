@@ -470,6 +470,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             $this->_inSetter[$field] = true;
             $value = call_user_func([$this, $setterMethod], $value);
             unset($this->_inSetter[$field]);
+            
+            return $value;
         }
 
         if (in_array($field, self::$relationFields[get_class($this)])) {
