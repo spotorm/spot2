@@ -2,35 +2,81 @@
 namespace Spot;
 
 /**
-* Entity object
-*
-* @package Spot
-*/
+ * Entity object
+ *
+ * @package Spot
+ * @author Vance Lucas <vance@vancelucas.com>
+ */
 abstract class Entity implements EntityInterface, \JsonSerializable
 {
+    /**
+     * Table name
+     * @var string|null
+     */
     protected static $table;
+
+    /**
+     * Datasource options
+     *
+     * @var array
+     */
     protected static $tableOptions = [];
+
+    /**
+     * @var bool
+     */
     protected static $mapper = false;
 
+    /**
+     * @var string
+     */
     protected $_objectId;
 
-    // Entity data storage
+    /**
+     * @var array
+     */
     protected $_data = [];
+
+    /**
+     * @var array
+     */
     protected $_dataModified = [];
 
-    // Used internally so entity knows which fields are relations
+    /**
+     * Used internally so entity knows which fields are relations
+     *
+     * @var array
+     */
     protected static $relationFields = [];
 
-    // Entity state
+    /**
+     * Entity state
+     *
+     * @var bool
+     */
     protected $_isNew = true;
+
+    /**
+     * @var array
+     */
     protected $_inGetter = [];
+
+    /**
+     * @var array
+     */
     protected $_inSetter = [];
 
-    // Entity error messages (may be present after save attempt)
+    /**
+     * Entity error messages (may be present after save attempt)
+     *
+     * @var array
+     */
     protected $_errors = [];
 
     /**
      * Constructor - allows setting of object properties with array on construct
+     *
+     * @param array $data
      */
     public function __construct(array $data = array())
     {
@@ -65,6 +111,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Table name getter/setter
+     *
+     * @param string|null $tableName
+     * @return string
      */
     public static function table($tableName = null)
     {
@@ -77,6 +126,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Datasource options getter/setter
+     *
+     * @param null|array $tableOpts
+     * @return array
      */
     public static function tableOptions($tableOpts = null)
     {
@@ -89,6 +141,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Mapper name getter
+     *
+     * @return bool
      */
     public static function mapper()
     {
@@ -97,6 +151,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Return defined fields of the entity
+     *
+     * @return array
      */
     public static function fields()
     {
@@ -105,11 +161,19 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Add events to this entity
+     *
+     * @param \Spot\EventEmitter $eventEmitter
      */
-    public static function events(EventEmitter $eventEmitter) { }
+    public static function events(EventEmitter $eventEmitter)
+    {
+    }
 
     /**
      * Return defined fields of the entity
+     *
+     * @param \Spot\MapperInterface $mapper
+     * @param \Spot\EntityInterface $entity
+     * @return array
      */
     public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
@@ -127,6 +191,10 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Gets and sets data on the current entity
+     *
+     * @param null|array $data
+     * @param bool $modified
+     * @return $this|array|null
      */
     public function data($data = null, $modified = true)
     {
@@ -165,7 +233,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     /**
      * Return array of field data with data from the field names listed removed
      *
-     * @param array List of field names to exclude in data list returned
+     * @param array $except List of field names to exclude in data list returned
+     * @return array
      */
     public function dataExcept(array $except)
     {
@@ -175,6 +244,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     /**
      * Gets data that has been modified since object construct,
      * optionally allowing for selecting a single field
+     *
+     * @param null|string $field
+     * @return array|boolean
      */
     public function dataModified($field = null)
     {
@@ -188,6 +260,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     /**
      * Gets data that has not been modified since object construct,
      * optionally allowing for selecting a single field
+     *
+     * @param null|string $field
+     * @return array|boolean
      */
     public function dataUnmodified($field = null)
     {
@@ -201,12 +276,13 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     /**
      * Is entity new (unsaved)?
      *
-     * @return boolean
+     * @param null $new
+     * @return bool
      */
     public function isNew($new = null)
     {
         if ($new !== null) {
-            $this->_isNew = (boolean) $new;
+            $this->_isNew = (boolean)$new;
         }
 
         return $this->_isNew;
@@ -215,6 +291,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     /**
      * Returns true if a field has been modified.
      * If no field name is passed in, return whether any fields have been changed
+     *
+     * @param null|string $field
+     * @return bool|null
      */
     public function isModified($field = null)
     {
@@ -245,6 +324,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Alias of self::data()
+     *
+     * @return array
      */
     public function toArray()
     {
@@ -254,7 +335,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     /**
      * Check if any errors exist
      *
-     * @param  string  $field OPTIONAL field name
+     * @param  string $field OPTIONAL field name
      * @return boolean
      */
     public function hasErrors($field = null)
@@ -269,8 +350,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     /**
      * Error message getter/setter
      *
-     * @param $field string|array String return errors with field key, array sets errors
-     * @return self|array|boolean Setter return self, getter returns array or boolean if key given and not found
+     * @param string|array $msgs string|array String return errors with field key, array sets errors
+     * @param bool $overwrite
+     * @return array|bool|Entity Setter return self, getter returns array or boolean if key given and not found
      */
     public function errors($msgs = null, $overwrite = true)
     {
@@ -278,7 +360,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         if (is_string($msgs)) {
             return isset($this->_errors[$msgs]) ? $this->_errors[$msgs] : [];
 
-        // Set error messages from given array
+            // Set error messages from given array
         } elseif (is_array($msgs)) {
             if ($overwrite) {
                 $this->_errors = $msgs;
@@ -294,7 +376,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      * Add an error to error messages array
      *
      * @param string $field Field name that error message relates to
-     * @param mixed  $msg   Error message text - String or array of messages
+     * @param mixed $msg Error message text - String or array of messages
      */
     public function error($field, $msg)
     {
@@ -311,15 +393,23 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Enable isset() for object properties
+     *
+     * @param string $key
+     * @return bool
      */
     public function __isset($key)
     {
         $entityName = get_class($this);
-        return isset($this->_data[$key]) || isset($this->_dataModified[$key]) || in_array($key, self::$relationFields[$entityName]);
+
+        return isset($this->_data[$key]) || isset($this->_dataModified[$key]) || in_array($key,
+            self::$relationFields[$entityName]);
     }
 
     /**
      * Getter for field properties
+     *
+     * @param string $field
+     * @return bool|mixed|null
      */
     public function &__get($field)
     {
@@ -345,6 +435,11 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
         return $v;
     }
+
+    /**
+     * @param string $field
+     * @return bool|mixed|null
+     */
     public function get($field)
     {
         return $this->__get($field);
@@ -352,11 +447,20 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Setter for field properties
+     *
+     * @param string $field
+     * @param mixed $value
      */
     public function __set($field, $value)
     {
         return $this->set($field, $value);
     }
+
+    /**
+     * @param string $field
+     * @param mixed $value
+     * @param bool $modified
+     */
     public function set($field, $value, $modified = true)
     {
         // Custom setter method
@@ -380,6 +484,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * Get/Set relation
+     * @param string $relationName
+     * @param null $relationObj
+     * @return boolean|mixed
      */
     public function relation($relationName, $relationObj = null)
     {
@@ -430,6 +537,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
                 return $fieldName;
             }
         }
+
         return false;
     }
 
@@ -441,6 +549,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     public function primaryKey()
     {
         $pkField = $this->primaryKeyField();
+
         return $pkField ? $this->get($pkField) : false;
     }
 
@@ -449,6 +558,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      * consistent manner with 'entity()' without any errors (i.e. relation will
      * not error if it already has a loaded entity object - it just returns
      * $this)
+     *
+     * @return $this
      */
     public function entity()
     {
@@ -456,7 +567,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     }
 
     /**
-     * Return array for json_encode()
+     * JsonSerializable
+     *
+     * @inheritdoc
      */
     public function jsonSerialize()
     {
@@ -465,6 +578,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
     /**
      * String representation of the class (JSON)
+     *
+     * @return string
      */
     public function __toString()
     {

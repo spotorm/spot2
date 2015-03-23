@@ -1,18 +1,26 @@
 <?php
 namespace Spot\Query;
+
 use Spot\Mapper;
+use Spot\Query;
 
 /**
  * Main query resolver
  *
  * @package Spot
+ * @author Vance Lucas <vance@vancelucas.com>
  */
 class Resolver
 {
+    /**
+     * @var \Spot\Mapper
+     */
     protected $mapper;
 
     /**
-     *  Constructor Method
+     * Constructor Method
+     *
+     * @param \Spot\Mapper $mapper
      */
     public function __construct(Mapper $mapper)
     {
@@ -21,15 +29,19 @@ class Resolver
 
     /**
      * Migrate table structure changes to database
+     *
+     * @return bool
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Spot\Exception
      */
     public function migrate()
     {
         // Mapper knows currently set entity
-        $entity       = $this->mapper->entity();
-        $table        = $entity::table();
-        $fields       = $this->mapper->entityManager()->fields();
+        $entity = $this->mapper->entity();
+        $table = $entity::table();
+        $fields = $this->mapper->entityManager()->fields();
         $fieldIndexes = $this->mapper->entityManager()->fieldKeys();
-        $connection   = $this->mapper->connection();
+        $connection = $this->mapper->connection();
 
         $schemaManager = $this->mapper->connection()->getSchemaManager();
         $tableObject = $schemaManager->listTableDetails($table);
@@ -60,16 +72,18 @@ class Resolver
 
     /**
      * Migrate create schema
+     *
+     * @return \Doctrine\DBAL\Schema\Schema
      */
     public function migrateCreateSchema()
     {
-        $entityName   = $this->mapper->entity();
-        $table        = $entityName::table();
-        $fields       = $this->mapper->entityManager()->fields();
+        $entityName = $this->mapper->entity();
+        $table = $entityName::table();
+        $fields = $this->mapper->entityManager()->fields();
         $fieldIndexes = $this->mapper->entityManager()->fieldKeys();
 
         $schema = new \Doctrine\DBAL\Schema\Schema();
-        $table  = $schema->createTable($table);
+        $table = $schema->createTable($table);
 
         foreach ($fields as $field => $fieldInfo) {
             $fieldType = $fieldInfo['type'];
@@ -96,10 +110,11 @@ class Resolver
     /**
      * Find records with custom SQL query
      *
-     * @param  string          $sql SQL query to execute
+     * @param \Spot\Query $query SQL query to execute
+     * @return \Spot\Entity\Collection
      * @throws \Spot\Exception
      */
-    public function read(\Spot\Query $query)
+    public function read(Query $query)
     {
         $stmt = $query->builder()->execute();
 
@@ -118,7 +133,7 @@ class Resolver
      * Create new row object with set properties
      *
      * @param string $table Table name
-     * @param array  $data  Array of data to save in 'field' => 'value' format
+     * @param array $data Array of data to save in 'field' => 'value' format
      */
     public function create($table, array $data)
     {
@@ -132,8 +147,10 @@ class Resolver
      * Update
      *
      * @param string $table Table name
-     * @param array  $data  Array of data to save in 'field' => 'value' format
-     * @param array  $data  Array of data for WHERE clause in 'field' => 'value' format
+     * @param array $data Array of data for WHERE clause in 'field' => 'value' format
+     * @param array $where
+     * @return
+     * @throws \Spot\Exception
      */
     public function update($table, array $data, array $where)
     {
@@ -145,10 +162,11 @@ class Resolver
     /**
      * Execute provided query and return result
      *
-     * @param  string          $sql SQL query to execute
+     * @param  \Spot\Query $query SQL query to execute
+     * @return \Doctrine\DBAL\Driver\Statement|int
      * @throws \Spot\Exception
      */
-    public function exec(\Spot\Query $query)
+    public function exec(Query $query)
     {
         return $query->builder()->execute();
     }
@@ -157,7 +175,10 @@ class Resolver
      * Truncate Table
      *
      * @param string $table Table name
-     * @param array  $data  Array of data for WHERE clause in 'field' => 'value' format
+     * @param bool $cascade
+     * @return
+     * @throws \Spot\Exception
+     * @internal param array $data Array of data for WHERE clause in 'field' => 'value' format
      */
     public function truncate($table, $cascade = false)
     {
@@ -182,6 +203,7 @@ class Resolver
      * Drop Table
      *
      * @param string $table Table name
+     * @return bool
      */
     public function dropTable($table)
     {

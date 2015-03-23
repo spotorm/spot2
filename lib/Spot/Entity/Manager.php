@@ -1,31 +1,70 @@
 <?php
 namespace Spot\Entity;
+
 use Spot;
 
 /**
  * Entity Manager for storing information about entities
  *
- * @package Spot
+ * @package Spot\Entity
+ * @author Vance Lucas <vance@vancelucas.com>
  */
 class Manager
 {
+    /**
+     * @var string|\Spot\Entity
+     */
     protected $entityName;
 
-    // Field and relation info
+    /**
+     * @var array
+     */
     protected $fields = [];
+
+    /**
+     * @var array
+     */
     protected $fieldsDefined = [];
+
+    /**
+     * @var array
+     */
     protected $fieldDefaultValues = [];
+
+    /**
+     * @var array
+     */
     protected $relations = [];
+
+    /**
+     * @var array
+     */
     protected $scopes = [];
+
+    /**
+     * @var
+     */
     protected $primaryKeyField;
 
-    // Table info
+    /**
+     * @var
+     */
     protected $table;
+
+    /**
+     * @var
+     */
     protected $tableOptions;
+
+    /**
+     * @var
+     */
     protected $mapper;
 
     /**
      * Entity to get information for
+     * @param string|\Spot\Entity $entityName
+     * @throws Spot\Exception
      */
     public function __construct($entityName)
     {
@@ -41,7 +80,7 @@ class Manager
     }
 
     /**
-     * Get formatted fields with all neccesary array keys and values.
+     * Get formatted fields with all necessary array keys and values.
      * Merges defaults with defined field values to ensure all options exist for each field.
      *
      * @return array Defined fields plus all defaults for full array of all possible options
@@ -63,7 +102,7 @@ class Manager
 
             // Table Options
             $entityTableOptions = $entityName::tableOptions();
-            $this->tableOptions = (array) $entityTableOptions;
+            $this->tableOptions = (array)$entityTableOptions;
 
             // Custom Mapper
             $this->mapper = $entityName::mapper();
@@ -78,7 +117,6 @@ class Manager
                 'notnull' => false,
                 'unsigned' => false,
                 'fulltext' => false,
-
                 'primary' => false,
                 'index' => false,
                 'unique' => false,
@@ -91,7 +129,7 @@ class Manager
                     'length' => 255
                 ],
                 'float' => [
-                    'length' => [10,2]
+                    'length' => [10, 2]
                 ],
                 'integer' => [
                     'length' => 10,
@@ -164,8 +202,8 @@ class Manager
      */
     public function fieldKeys()
     {
-        $entityName      = $this->entityName;
-        $table           = $entityName::table();
+        $entityName = $this->entityName;
+        $table = $entityName::table();
         $formattedFields = $this->fields();
 
         // Keys...
@@ -222,7 +260,7 @@ class Manager
     }
 
     /**
-     * Get field default values as defined in class field definitons
+     * Get field default values as defined in class field definitions
      *
      * @return array Array of field key => value pairs
      */
@@ -235,6 +273,9 @@ class Manager
         return $this->fieldDefaultValues;
     }
 
+    /**
+     *
+     */
     public function resetFields()
     {
         $this->fields = [];
@@ -273,6 +314,7 @@ class Manager
      * Check if field exists in defined fields
      *
      * @param string $field Field name to check for existence
+     * @return bool
      */
     public function fieldExists($field)
     {
