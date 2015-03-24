@@ -289,6 +289,10 @@ class Mapper implements MapperInterface
     public function primaryKey(EntityInterface $entity)
     {
         $pkField = $this->entityManager()->primaryKeyField();
+        
+        if (empty($pkField)) {
+            throw new Exception(get_class($entity) . " has no primary key field. Please mark one of its fields as autoincrement or primary.");
+        }
 
         return $entity->$pkField;
     }
