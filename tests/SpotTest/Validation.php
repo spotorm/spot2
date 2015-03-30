@@ -91,4 +91,17 @@ class Test_Validation extends PHPUnit_Framework_TestCase
         $this->assertTrue($entity->hasErrors());
         $this->assertContains("Email must be longer than 4", $entity->errors('email'));
     }
+
+    public function testDisabledValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Author');
+
+        $entity = new SpotTest\Entity\Author([
+            'email' => 't@t',
+            'password' => 'test'
+        ]);
+        $mapper->save($entity, ['validate' => false]);
+
+        $this->assertFalse($entity->hasErrors());
+    }
 }

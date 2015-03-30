@@ -289,7 +289,7 @@ class Mapper implements MapperInterface
     public function primaryKey(EntityInterface $entity)
     {
         $pkField = $this->entityManager()->primaryKeyField();
-        
+
         if (empty($pkField)) {
             throw new Exception(get_class($entity) . " has no primary key field. Please mark one of its fields as autoincrement or primary.");
         }
@@ -684,9 +684,11 @@ class Mapper implements MapperInterface
             return false;
         }
 
-        // Run validation
-        if (!$this->validate($entity)) {
-            return false;
+        // Run validation unless disabled via options
+        if (!isset($options['validate']) || (isset($options['validate']) && $options['validate'] !== false)) {
+            if (!$this->validate($entity)) {
+                return false;
+            }
         }
 
         // Ensure there is actually data to update
@@ -780,9 +782,11 @@ class Mapper implements MapperInterface
             return false;
         }
 
-        // Run validation
-        if (!$this->validate($entity)) {
-            return false;
+        // Run validation unless disabled via options
+        if (!isset($options['validate']) || (isset($options['validate']) && $options['validate'] !== false)) {
+            if (!$this->validate($entity)) {
+                return false;
+            }
         }
 
         // Prepare data
