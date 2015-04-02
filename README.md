@@ -593,7 +593,7 @@ class Comment extends \Spot\Entity
 {
     // ... snip ...
 
-    public static function relations()
+    public static function relations(Mapper $mapper, Entity $entity)
     {
         return [
             'post' => $mapper->belongsTo($entity, 'Entity\Post', 'post_id')
@@ -626,6 +626,9 @@ conditions for both sides of the relation.
 
 ```php
 namespace Entity;
+
+use Spot\EntityInterface as Entity;
+use Spot\MapperInterface as Mapper;
 
 class Post extends Spot\Entity
 {
