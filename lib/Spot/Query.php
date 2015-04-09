@@ -269,7 +269,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
             return $builder->createPositionalParameter($param);
         }, $sql);
-        $builder->andWhere($this->escapeField($field) . ' ' . $sql);
+        $builder->andWhere($field . ' ' . $sql);
 
         return $this;
     }
@@ -651,32 +651,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     }
 
     /**
-     * Escape/quote direct user input
-     *
-     * @param string $field
-     * @return string
-     * @throws Exception
-     */
-    public function escapeField($field)
-    {
-        if ($this->_noQuote) {
-            return $field;
-        }
-
-        return $this->mapper()->connection()->quoteIdentifier($field);
-    }
-
-    /**
      * Get field name with table alias appended
      * @param string $field
-     * @param bool $escaped
      * @return string
      */
-    public function fieldWithAlias($field, $escaped = true)
+    public function fieldWithAlias($field)
     {
-        $field = $this->_tableName . '.' . $field;
-
-        return $escaped ? $this->escapeField($field) : $field;
+        return $this->_tableName . '.' . $field;
     }
 
     /**
