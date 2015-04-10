@@ -17,6 +17,8 @@ class Resolver
      */
     protected $mapper;
 
+    protected $_noQuote;
+
     /**
      * Constructor Method
      *
@@ -25,6 +27,20 @@ class Resolver
     public function __construct(Mapper $mapper)
     {
         $this->mapper = $mapper;
+    }
+
+    /**
+     * Set field and value quoting on/off - maily used for testing output SQL
+     * since quoting is different per platform
+     *
+     * @param bool $noQuote
+     * @return $this
+     */
+    public function noQuote($noQuote = true)
+    {
+        $this->_noQuote = $noQuote;
+
+        return $this;
     }
 
     /**
@@ -83,7 +99,7 @@ class Resolver
         $fieldIndexes = $this->mapper->entityManager()->fieldKeys();
 
         $schema = new \Doctrine\DBAL\Schema\Schema();
-        $table = $schema->createTable($table);
+        $table = $schema->createTable($this->escapeIdentifier($table));
 
         foreach ($fields as $field => $fieldInfo) {
             $fieldType = $fieldInfo['type'];
@@ -138,7 +154,7 @@ class Resolver
     public function create($table, array $data)
     {
         $connection = $this->mapper->connection();
-        $result = $connection->insert($table, $data);
+        $result = $connection->insert($this->escapeIdentifier($table), $data);
 
         return $result;
     }
@@ -156,7 +172,7 @@ class Resolver
     {
         $connection = $this->mapper->connection();
 
-        return $connection->update($table, $data, $where);
+        return $connection->update($this->escapeIdentifier($table), $data, $where);
     }
 
     /**
@@ -185,6 +201,8 @@ class Resolver
         $mapper = $this->mapper;
         $connection = $mapper->connection();
 
+        $table = $this->escapeIdentifier($table);
+
         // SQLite doesn't support TRUNCATE
         if ($mapper->connectionIs("sqlite")) {
             $sql = "DELETE FROM " . $table;
@@ -210,11 +228,26 @@ class Resolver
         $result = false;
         $connection = $this->mapper->connection();
         try {
-            $result = $connection->getSchemaManager()->dropTable($table);
+            $result = $connection->getSchemaManager()->dropTable($this->escapeIdentifier($table));
         } catch (\Exception $e) {
             $result = false;
         }
 
         return $result;
+    }
+
+    /**
+     * Escape/quote identifier
+     *
+     * @param string $identifier
+     * @return string
+     */
+    public function escapeIdentifier($identifier)
+    {
+        if($this->_noQuote) {
+            return $identifier;
+        }
+
+        return $this->mapper->connection()->quoteIdentifier(trim($identifier));
     }
 }

@@ -9,6 +9,8 @@ namespace Spot;
  */
 class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 {
+    const ALL_FIELDS = '*';
+
     /**
      * @var \Spot\Mapper
      */
@@ -93,8 +95,21 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function noQuote($noQuote = true)
     {
         $this->_noQuote = $noQuote;
+        $this->reEscapeFrom();
 
         return $this;
+    }
+
+    /**
+     * Re-escape from part of query according to new noQuote value
+     */
+    protected function reEscapeFrom() {
+        $part = $this->builder()->getQueryPart('from');
+        $this->builder()->resetQueryPart('from');
+
+        foreach($part as $node) {
+            $this->from($this->unescapeIdentifier($node['table']), $this->unescapeIdentifier($node['alias']));
+        }
     }
 
     /**
@@ -149,7 +164,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function select()
     {
-        call_user_func_array([$this->builder(), 'select'], func_get_args());
+        call_user_func_array([$this->builder(), 'select'], $this->escapeMultipleIdentifiers(func_get_args()));
 
         return $this;
     }
@@ -161,7 +176,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function delete()
     {
-        call_user_func_array([$this->builder(), 'delete'], func_get_args());
+        call_user_func_array([$this->builder(), 'delete'], $this->escapeMultipleIdentifiers(func_get_args()));
 
         return $this;
     }
@@ -173,7 +188,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function from()
     {
-        call_user_func_array([$this->builder(), 'from'], func_get_args());
+        call_user_func_array([$this->builder(), 'from'], $this->escapeMultipleIdentifiers(func_get_args()));
 
         return $this;
     }
@@ -269,7 +284,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
             return $builder->createPositionalParameter($param);
         }, $sql);
-        $builder->andWhere($this->escapeField($field) . ' ' . $sql);
+        $builder->andWhere($field . ' ' . $sql);
 
         return $this;
     }
@@ -487,8 +502,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function order(array $order)
     {
-        foreach ($order as $field => $order) {
-            $this->builder()->addOrderBy($this->fieldWithAlias($field), $order);
+        foreach ($order as $field => $sorting) {
+            $this->builder()->addOrderBy($this->fieldWithAlias($field), $sorting);
         }
 
         return $this;
@@ -651,32 +666,63 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     }
 
     /**
-     * Escape/quote direct user input
+     * Escape/quote multiple identifiers
      *
-     * @param string $field
-     * @return string
-     * @throws Exception
+     * @param array $identifiers
+     * @return array
      */
-    public function escapeField($field)
+    protected function escapeMultipleIdentifiers(array $identifiers) {
+        array_walk($identifiers, function (&$identifier) {
+            $identifier = $this->escapeIdentifier($identifier);
+        });
+
+        return $identifiers;
+    }
+
+    /**
+     * Removes escape/quote character
+     *
+     * @param string $identifier
+     * @return string
+     */
+    public function unescapeIdentifier($identifier)
     {
-        if ($this->_noQuote) {
-            return $field;
+        if (strpos($identifier, ".") !== false) {
+            $parts = array_map(array($this, "unescapeIdentifier"), explode(".", $identifier));
+
+            return implode(".", $parts);
         }
 
-        return $this->mapper()->connection()->quoteIdentifier($field);
+        return trim($identifier, $this->mapper()->connection()->getDatabasePlatform()->getIdentifierQuoteCharacter());
+    }
+
+    /**
+     * Escape/quote identifier
+     *
+     * @param string $identifier
+     * @return string
+     */
+    public function escapeIdentifier($identifier)
+    {
+        if($this->_noQuote || $identifier === self::ALL_FIELDS) {
+            return $identifier;
+        }
+
+        if(strpos($identifier, ' ')) {
+            return $identifier; // complex expression, ain't quote it, do it manually!
+        }
+
+        return $this->mapper()->connection()->quoteIdentifier(trim($identifier));
     }
 
     /**
      * Get field name with table alias appended
      * @param string $field
-     * @param bool $escaped
      * @return string
      */
-    public function fieldWithAlias($field, $escaped = true)
+    public function fieldWithAlias($field)
     {
-        $field = $this->_tableName . '.' . $field;
-
-        return $escaped ? $this->escapeField($field) : $field;
+        return $this->escapeIdentifier($this->_tableName . '.' . $field);
     }
 
     /**
