@@ -277,6 +277,45 @@ class Events extends \PHPUnit_Framework_TestCase
         $eventEmitter->removeAllListeners('afterDelete');
     }
 
+    public function testDeleteHooksForArrayConditions()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $testcase = $this;
+
+        $post = new \SpotTest\Entity\Post([
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1,
+            'date_created' => new \DateTime()
+        ]);
+        $mapper->save($post);
+
+        $hooks = [];
+
+        $eventEmitter = $mapper->eventEmitter();
+        $eventEmitter->on('beforeDelete', function ($conditions, $mapper) use (&$hooks, &$testcase) {
+            $testcase->assertEquals($hooks, []);
+            $hooks[] = 'called beforeDelete';
+        });
+
+        $eventEmitter->on('afterDelete', function ($conditions, $mapper, $result) use (&$hooks, &$testcase) {
+            $testcase->assertEquals($hooks, ['called beforeDelete']);
+            $hooks[] = 'called afterDelete';
+        });
+
+        $this->assertEquals($hooks, []);
+
+        $mapper->delete([
+            $post->primaryKeyField() => $post->primaryKey()
+        ]);
+
+        $this->assertEquals($hooks, ['called beforeDelete', 'called afterDelete']);
+
+        $eventEmitter->removeAllListeners('beforeDelete');
+        $eventEmitter->removeAllListeners('afterDelete');
+    }
+
     public function testEntityHooks()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');

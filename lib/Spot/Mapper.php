@@ -859,30 +859,24 @@ class Mapper implements MapperInterface
      */
     public function delete($conditions = [])
     {
+        $entityOrArray = $conditions;
+
         if (is_object($conditions)) {
-            $entity = $conditions;
-            $entityName = get_class($entity);
-            $conditions = [$this->primaryKeyField() => $this->primaryKey($entity)];
-
-            // Run beforeDelete to know whether or not we can continue
-            if (false === $this->eventEmitter()->emit('beforeDelete', [$entity, $this])) {
-                return false;
-            }
-
-            $query = $this->queryBuilder()->delete($this->table())->where($conditions);
-            $result = $this->resolver()->exec($query);
-
-            // Run afterDelete
-            $this->eventEmitter()->emit('afterDelete', [$entity, $this, &$result]);
-
-            return $result;
-
-        // Passed array of conditions
-        } elseif (is_array($conditions)) {
-            $query = $this->queryBuilder()->delete($this->table())->where($conditions);
-
-            return $this->resolver()->exec($query);
+            $conditions = [$this->primaryKeyField() => $this->primaryKey($conditions)];
         }
+
+        // Run beforeDelete to know whether or not we can continue
+        if (false === $this->eventEmitter()->emit('beforeDelete', [$entityOrArray, $this])) {
+            return false;
+        }
+
+        $query = $this->queryBuilder()->delete($this->table())->where($conditions);
+        $result = $this->resolver()->exec($query);
+
+        // Run afterDelete
+        $this->eventEmitter()->emit('afterDelete', [$entityOrArray, $this, &$result]);
+
+        return $result;
     }
 
     /**
