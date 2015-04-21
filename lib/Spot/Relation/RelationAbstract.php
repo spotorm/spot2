@@ -27,7 +27,7 @@ abstract class RelationAbstract
     /**
      * Get Mapper object
      *
-     * @return Spot\Mapper
+     * @return \Spot\Mapper
      */
     public function mapper()
     {
@@ -97,9 +97,9 @@ abstract class RelationAbstract
      * Map relation results to original collection of entities
      *
      * @param string Relation name
-     * @param Spot\Collection Collection of original entities to map results of query back to
+     * @param \Spot\Collection Collection of original entities to map results of query back to
      *
-     * @return Spot\Collection
+     * @return \Spot\Collection
      */
     public function eagerLoadOnCollection($relationName, Collection $collection)
     {
