@@ -291,29 +291,40 @@ class Events extends \PHPUnit_Framework_TestCase
         ]);
         $mapper->save($post);
 
-        $hooks = [];
+        $entityHooks = [];
+        $arrayHooks = [];
 
         $eventEmitter = $mapper->eventEmitter();
-        $eventEmitter->on('beforeDelete', function ($conditions, $mapper) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, []);
-            $hooks[] = 'called beforeDelete';
+        $eventEmitter->on('beforeDelete', function ($conditions, $mapper) use (&$entityHooks) {
+            $entityHooks[] = 'called beforeDelete';
+        });
+        $eventEmitter->on('beforeDeleteConditions', function ($conditions, $mapper) use (&$arrayHooks, &$testcase) {
+            $testcase->assertEquals($arrayHooks, []);
+            $arrayHooks[] = 'called beforeDeleteConditions';
         });
 
-        $eventEmitter->on('afterDelete', function ($conditions, $mapper, $result) use (&$hooks, &$testcase) {
-            $testcase->assertEquals($hooks, ['called beforeDelete']);
-            $hooks[] = 'called afterDelete';
+        $eventEmitter->on('afterDelete', function ($conditions, $mapper, $result) use (&$entityHooks) {
+            $entityHooks[] = 'called afterDelete';
+        });
+        $eventEmitter->on('afterDeleteConditions', function ($conditions, $mapper, $result) use (&$arrayHooks, &$testcase) {
+            $testcase->assertEquals($arrayHooks, ['called beforeDeleteConditions']);
+            $arrayHooks[] = 'called afterDeleteConditions';
         });
 
-        $this->assertEquals($hooks, []);
+        $this->assertEquals($entityHooks, []);
+        $this->assertEquals($arrayHooks, []);
 
         $mapper->delete([
             $post->primaryKeyField() => $post->primaryKey()
         ]);
 
-        $this->assertEquals($hooks, ['called beforeDelete', 'called afterDelete']);
+        $this->assertEquals($entityHooks, []);
+        $this->assertEquals($arrayHooks, ['called beforeDeleteConditions', 'called afterDeleteConditions']);
 
         $eventEmitter->removeAllListeners('beforeDelete');
+        $eventEmitter->removeAllListeners('beforeDeleteConditions');
         $eventEmitter->removeAllListeners('afterDelete');
+        $eventEmitter->removeAllListeners('afterDeleteConditions');
     }
 
     public function testEntityHooks()

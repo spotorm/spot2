@@ -860,13 +860,18 @@ class Mapper implements MapperInterface
     public function delete($conditions = [])
     {
         $entityOrArray = $conditions;
+        $beforeEvent = 'beforeDelete';
+        $afterEvent = 'afterDelete';
 
         if (is_object($conditions)) {
             $conditions = [$this->primaryKeyField() => $this->primaryKey($conditions)];
+        } elseif (is_array($conditions)) {
+            $beforeEvent = 'beforeDeleteConditions';
+            $afterEvent = 'afterDeleteConditions';
         }
 
         // Run beforeDelete to know whether or not we can continue
-        if (false === $this->eventEmitter()->emit('beforeDelete', [$entityOrArray, $this])) {
+        if (false === $this->eventEmitter()->emit($beforeEvent, [$entityOrArray, $this])) {
             return false;
         }
 
@@ -874,7 +879,7 @@ class Mapper implements MapperInterface
         $result = $this->resolver()->exec($query);
 
         // Run afterDelete
-        $this->eventEmitter()->emit('afterDelete', [$entityOrArray, $this, &$result]);
+        $this->eventEmitter()->emit($afterEvent, [$entityOrArray, $this, &$result]);
 
         return $result;
     }
