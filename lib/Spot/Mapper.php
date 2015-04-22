@@ -41,7 +41,7 @@ class Mapper implements MapperInterface
     /**
      * Get config class from locator
      *
-     * @return Spot\Config
+     * @return \Spot\Config
      */
     public function config()
     {
@@ -52,7 +52,7 @@ class Mapper implements MapperInterface
      * Get mapper for specified entity
      *
      * @param  string      $entityName Name of Entity object to load mapper for
-     * @return Spot\Mapper
+     * @return \Spot\Mapper
      */
     public function getMapper($entityName)
     {
@@ -91,6 +91,8 @@ class Mapper implements MapperInterface
 
     /**
      * Entity manager class for storing information and meta-data about entities
+     *
+     * @return \Spot\Entity\Manager
      */
     public function entityManager()
     {
@@ -104,6 +106,8 @@ class Mapper implements MapperInterface
 
     /**
      * Event emitter for this mapper
+     *
+     * @return \Spot\EventEmitter
      */
     public function eventEmitter()
     {
@@ -346,8 +350,8 @@ class Mapper implements MapperInterface
      * Get connection to use
      *
      * @param  string         $connectionName Named connection or entity class name
-     * @return Spot_Adapter
-     * @throws Spot_Exception
+     * @return \Doctrine\DBAL\Connection
+     * @throws \Spot\Exception
      */
     public function connection($connectionName = null)
     {
@@ -532,7 +536,7 @@ class Mapper implements MapperInterface
      * @param  array          $data array of key/values to set on new Entity instance
      * @param  array          $options array of save options that will be passed to insert()
      * @return object         Instance of $entityClass with $data set on it
-     * @throws Spot\Exception
+     * @throws \Spot\Exception
      */
     public function create(array $data, array $options = [])
     {
@@ -641,8 +645,6 @@ class Mapper implements MapperInterface
      */
     public function save(EntityInterface $entity, array $options = [])
     {
-        $eventEmitter = $this->eventEmitter();
-
         // Check entity name
         $entityName = $this->entity();
         if (!($entity instanceof $entityName)) {

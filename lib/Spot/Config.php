@@ -18,8 +18,8 @@ class Config implements \Serializable
      * @param string  $dsn    DSN string for this connection
      * @param boolean $defaut Use this connection as the default? The first connection added is automatically set as the default, even if this flag is false.
      *
-     * @return Doctrine\DBAL\Connection
-     * @throws Spot\Exception
+     * @return \Doctrine\DBAL\Connection
+     * @throws \Spot\Exception
      */
     public function addConnection($name, $dsn, $default = false)
     {
@@ -59,8 +59,8 @@ class Config implements \Serializable
      * Get connection by name
      *
      * @param  string                   $name Unique name of the connection to be returned
-     * @return Doctrine\DBAL\Connection Spot adapter instance
-     * @throws Spot\Exception
+     * @return \Doctrine\DBAL\Connection
+     * @throws \Spot\Exception
      */
     public function connection($name = null)
     {
@@ -89,8 +89,8 @@ class Config implements \Serializable
     /**
      * Get default connection
      *
-     * @return Spot_Adapter_Interface Spot adapter instance
-     * @throws Spot_Exception
+     * @return \Doctrine\DBAL\Connection
+     * @throws \Spot\Exception
      */
     public function defaultConnection()
     {

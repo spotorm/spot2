@@ -22,7 +22,7 @@ class Locator
     /**
      * Get config class mapper was instantiated with
      *
-     * @return Spot\Config
+     * @return \Spot\Config
      */
     public function config($cfg = null)
     {
@@ -40,7 +40,7 @@ class Locator
      * Get mapper for specified entity
      *
      * @param  string      $entityName Name of Entity object to load mapper for
-     * @return Spot\Mapper
+     * @return \Spot\Mapper
      */
     public function mapper($entityName)
     {
