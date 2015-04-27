@@ -206,7 +206,6 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = $mapper->all()->with('tags')->first();
-
         $result = $post->toArray();
 
         $this->assertTrue(is_array($result['tags']));
@@ -260,5 +259,30 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
         $result = $events->toArray();
 
         $this->assertFalse(isset($result['search']));
+    }
+
+    public function testEagerLoadingEntityDepthIsLimitedToOneLevel()
+    {
+        // Retrieve a post
+        $post_mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $post = $post_mapper->get(1);
+
+        // And its comments
+        $comments = $post->comments->execute();
+        $post->relation('comments', $comments);
+
+        $comment_mapper = test_spot_mapper('\SpotTest\Entity\Post\Comment');
+        $comment = $comment_mapper->create([
+            'post_id' => 1,
+            'name'    => 'Testy McTester',
+            'email'   => 'test@test.com',
+            'body'    => "This is a test comment 4. Yay!"
+        ]);
+        $comment->relation('post', $post);
+        $comments->add($comment);
+
+        $result = $post->toArray();
+        $this->assertFalse(isset($result['comments'][0]['post']['comments']));
+        $this->assertCount(4, $result['comments']);
     }
 }
