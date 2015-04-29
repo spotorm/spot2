@@ -277,6 +277,56 @@ class Events extends \PHPUnit_Framework_TestCase
         $eventEmitter->removeAllListeners('afterDelete');
     }
 
+    public function testDeleteHooksForArrayConditions()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $testcase = $this;
+
+        $post = new \SpotTest\Entity\Post([
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1,
+            'date_created' => new \DateTime()
+        ]);
+        $mapper->save($post);
+
+        $entityHooks = [];
+        $arrayHooks = [];
+
+        $eventEmitter = $mapper->eventEmitter();
+        $eventEmitter->on('beforeDelete', function ($conditions, $mapper) use (&$entityHooks) {
+            $entityHooks[] = 'called beforeDelete';
+        });
+        $eventEmitter->on('beforeDeleteConditions', function ($conditions, $mapper) use (&$arrayHooks, &$testcase) {
+            $testcase->assertEquals($arrayHooks, []);
+            $arrayHooks[] = 'called beforeDeleteConditions';
+        });
+
+        $eventEmitter->on('afterDelete', function ($conditions, $mapper, $result) use (&$entityHooks) {
+            $entityHooks[] = 'called afterDelete';
+        });
+        $eventEmitter->on('afterDeleteConditions', function ($conditions, $mapper, $result) use (&$arrayHooks, &$testcase) {
+            $testcase->assertEquals($arrayHooks, ['called beforeDeleteConditions']);
+            $arrayHooks[] = 'called afterDeleteConditions';
+        });
+
+        $this->assertEquals($entityHooks, []);
+        $this->assertEquals($arrayHooks, []);
+
+        $mapper->delete([
+            $post->primaryKeyField() => $post->primaryKey()
+        ]);
+
+        $this->assertEquals($entityHooks, []);
+        $this->assertEquals($arrayHooks, ['called beforeDeleteConditions', 'called afterDeleteConditions']);
+
+        $eventEmitter->removeAllListeners('beforeDelete');
+        $eventEmitter->removeAllListeners('beforeDeleteConditions');
+        $eventEmitter->removeAllListeners('afterDelete');
+        $eventEmitter->removeAllListeners('afterDeleteConditions');
+    }
+
     public function testEntityHooks()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
