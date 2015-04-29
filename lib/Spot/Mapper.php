@@ -1050,7 +1050,7 @@ class Mapper implements MapperInterface
                 if (!is_array($value)) {
                     $value = [$field => $entity->$field];
                 }
-                if ($this->first($value) !== false) {
+                if (!in_array(null, $value, true) && $this->first($value) !== false) {
                     $entity->error($field, "" . ucwords(str_replace('_', ' ', $field)) . " '" . implode('-', $value) . "' is already taken.");
                 }
             }
