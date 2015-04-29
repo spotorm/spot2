@@ -648,7 +648,7 @@ class Mapper implements MapperInterface
         // Check entity name
         $entityName = $this->entity();
         if (!($entity instanceof $entityName)) {
-            throw new InvalidArgumentException("Provided entity must be instance of " . $entityName . ", instance of " . get_class($entity) . " given.");
+            throw new \InvalidArgumentException("Provided entity must be instance of " . $entityName . ", instance of " . get_class($entity) . " given.");
         }
 
         if ($entity->isNew()) {
