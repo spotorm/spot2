@@ -217,7 +217,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
                     }
 
                     if ($relation instanceof EntityInterface) {
-                        $data[$relationField] = $relation->toArray(false);
+                        $data[$relationField] = $relation->data(null, $modified, false);
                     }
                 }
             }
@@ -332,12 +332,11 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     /**
      * Alias of self::data()
      *
-     * @param boolean $loadRelations Determine if you want to load entity relations
      * @return array
      */
-    public function toArray($loadRelations = true)
+    public function toArray()
     {
-        return $this->data(null, true, $loadRelations);
+        return $this->data(null, true);
     }
 
     /**
