@@ -194,9 +194,10 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      *
      * @param null|array $data
      * @param bool $modified
+     * @param boolean $loadRelations Determine if you want to load entity relations
      * @return $this|array|null
      */
-    public function data($data = null, $modified = true)
+    public function data($data = null, $modified = true, $loadRelations = true)
     {
         $entityName = get_class($this);
 
@@ -207,11 +208,17 @@ abstract class Entity implements EntityInterface, \JsonSerializable
                 $v = $this->__get($k, $v);
             }
 
-            foreach (self::$relationFields[$entityName] as $relationField) {
-                $relation = $this->relation($relationField);
+            if ($loadRelations) {
+                foreach (self::$relationFields[$entityName] as $relationField) {
+                    $relation = $this->relation($relationField);
 
-                if ($relation instanceof Entity\Collection || $relation instanceof EntityInterface) {
-                    $data[$relationField] = $relation->toArray();
+                    if ($relation instanceof Entity\Collection) {
+                        $data[$relationField] = $relation->toArray();
+                    }
+
+                    if ($relation instanceof EntityInterface) {
+                        $data[$relationField] = $relation->data(null, $modified, false);
+                    }
                 }
             }
 
@@ -329,7 +336,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      */
     public function toArray()
     {
-        return $this->data();
+        return $this->data(null, true);
     }
 
     /**
