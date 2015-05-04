@@ -18,6 +18,9 @@
         "doctrine/dbal": "~2.4",
         "sabre/event": "~2.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "~4.6"
+    },
     "autoload": {
         "psr-0": {
             "Spot": "lib/"
