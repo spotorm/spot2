@@ -7,35 +7,63 @@ use Spot\Locator;
 
 class Laravel extends ServiceProvider
 {
-    protected $config = [];
+    /**
+     * Indicates if loading of the provider is deferred.
+     *
+     * @var bool
+     */
+    protected $defer = false;
 
-    public function __construct($app)
-    {
-        $this->app = $app;
-
-        $configObject = $this->app['config'];
-        $connections = $configObject->get('database.connections');
-        $config = $connections[$configObject->get('database.default')];
-
-        // Munge Laravel array structure to match expected Doctrine DBAL's
-        $config = [
-            'dbname'    => $config['database'],
-            'user'      => isset($config['username']) ? $config['username'] : null,
-            'password'  => isset($config['password']) ? $config['password'] : null,
-            'host'      => isset($config['host']) ? $config['host'] : null,
-            'driver'    => 'pdo_' . $config['driver']
-        ];
-        $this->config = $config;
-    }
-
+    /**
+     * Register the service provider.
+     *
+     * The register method is called immediately when the service provider
+     * is registered, there is no promise that services created by other
+     * providers are available when this method is called.
+     *
+     * @return void
+     */
     public function register()
     {
-        $this->app['spot'] = function () {
+        $this->app->bindShared('spot', function ($app) {
+
+            $connection = $app['config']->get('database.default');
+            $credentials = $app['config']->get('database.connections.' . $connection);
+
             $config = new Config();
-            $config->addConnection('default', $this->config);
+            $config->addConnection('default', [
+                'dbname'   => $credentials['database'],
+                'user'     => isset($credentials['username']) ? $credentials['username'] : null,
+                'password' => isset($credentials['password']) ? $credentials['password'] : null,
+                'host'     => isset($credentials['host'])     ? $credentials['host']     : null,
+                'driver'   => 'pdo_' . $credentials['driver']
+            ]);
 
             return new Locator($config);
-        };
+        });
     }
 
+    /**
+     * Bootstrap the application events.
+     *
+     * This method is called right before a request is routed. If actions
+     * in this provider rely on another service being registered, or you
+     * are overriding services bound by another provider, you should
+     * use this method.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+    }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
+        return array('spot');
+    }
 }
