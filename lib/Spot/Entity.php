@@ -424,13 +424,20 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
         $camelCaseField = str_replace(' ', '', ucwords(str_replace('_', ' ', $field)));
         $getterMethod = 'get' . $camelCaseField;
+
+        if (array_key_exists($field, $this->_dataModified)) {
+            $v =& $this->_dataModified[$field];
+        } elseif (array_key_exists($field, $this->_data)) {
+            $v =& $this->_data[$field];
+        } elseif ($relation = $this->relation($field)) {
+            $v =& $relation;
+        }
+
         if (!in_array($field, $this->_inGetter) && method_exists($this, $getterMethod)) {
             // Custom getter method
             $this->_inGetter[$field] = true;
-            $v = call_user_func([$this, $getterMethod], $this->getFieldValue($field));
+            $v = call_user_func([$this, $getterMethod], $v);
             unset($this->_inGetter[$field]);
-        } else {
-            $v = $this->getFieldValue($field);
         }
 
         return $v;
@@ -598,21 +605,5 @@ abstract class Entity implements EntityInterface, \JsonSerializable
                 $this->relation($relation, false);
             }
         }
-    }
-
-    protected function getFieldValue($field)
-    {
-        // We can't use isset because it returns false for NULL values
-        if (array_key_exists($field, $this->_dataModified)) {
-            $v =& $this->_dataModified[$field];
-        } elseif (array_key_exists($field, $this->_data)) {
-            $v =& $this->_data[$field];
-        } elseif ($relation = $this->relation($field)) {
-            $v =& $relation;
-        } else {
-            $v = null;
-        }
-
-        return $v;
     }
 }
