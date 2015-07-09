@@ -549,7 +549,6 @@ class Events extends \PHPUnit_Framework_TestCase
     public function testSaveEventsTriggeredOnCreate()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $eventEmitter = $mapper->eventEmitter();
 
         $hooks = [];
         $eventEmitter = $mapper->eventEmitter();
@@ -560,7 +559,7 @@ class Events extends \PHPUnit_Framework_TestCase
             $hooks[] = 'after';
         });
 
-        $post = $mapper->create([
+        $mapper->create([
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
@@ -569,6 +568,29 @@ class Events extends \PHPUnit_Framework_TestCase
         ]);
 
         $this->assertEquals(['before', 'after'], $hooks);
+        $eventEmitter->removeAllListeners();
+    }
+
+    public function testLoadEventCallOnGet()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $hooks = [];
+        $eventEmitter = $mapper->eventEmitter();
+
+        $eventEmitter->on('afterLoad', function ($post, $mapper) use (&$hooks) {
+            $hooks[] = 'after';
+        });
+
+        $mapper->create([
+            'title' => 'A title',
+            'body' => '<p>body</p>',
+            'status' => 1,
+            'author_id' => 1,
+            'date_created' => new \DateTime()
+        ]);
+
+        $this->assertEquals(['after'], $hooks);
         $eventEmitter->removeAllListeners();
     }
 
