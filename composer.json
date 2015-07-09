@@ -25,5 +25,8 @@
         "psr-0": {
             "Spot": "lib/"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.7"
     }
 }
