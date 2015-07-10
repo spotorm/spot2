@@ -22,8 +22,8 @@
         "phpunit/phpunit": "~4.6"
     },
     "autoload": {
-        "psr-0": {
-            "Spot": "lib/"
+        "psr-4": {
+            "Spot\\": "lib/"
         }
     },
     "require-dev": {
