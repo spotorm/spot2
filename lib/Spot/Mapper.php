@@ -220,10 +220,16 @@ class Mapper implements MapperInterface
 
     /**
      * Prepare entity and load necessary objects on it
+     * @param EntityInterface $entity
+     * @return bool|null
      */
     public function prepareEntity(EntityInterface $entity)
     {
         $this->loadRelations($entity);
+
+        if (false === $this->eventEmitter()->emit('afterLoad', [$entity, $this])) {
+            return false;
+        }
     }
 
     /**
@@ -810,7 +816,7 @@ class Mapper implements MapperInterface
         $data = $this->convertToDatabaseValues($entityName, $data);
 
         if (count($data) > 0) {
-            $result = $this->connection()->update($this->table(), $data, array($this->primaryKeyField() => $this->primaryKey($entity)));
+            $result = $this->connection()->update($this->table(), $data, [$this->primaryKeyField() => $this->primaryKey($entity)]);
 
             // Run afterSave and afterUpdate
             if (
@@ -907,7 +913,7 @@ class Mapper implements MapperInterface
      */
     protected function convertToPHPValues($entityName, array $data)
     {
-        $phpData = array();
+        $phpData = [];
         $fields = $entityName::fields();
         $platform = $this->connection()->getDatabasePlatform();
         $entityData = array_intersect_key($data, $fields);
@@ -1036,8 +1042,8 @@ class Mapper implements MapperInterface
                             $params = (array) $ruleName;
                             $ruleName = $rule;
                         }
-                        $params = array_merge(array($ruleName, $field), $params);
-                        call_user_func_array(array($v, 'rule'), $params);
+                        $params = array_merge([$ruleName, $field], $params);
+                        call_user_func_array([$v, 'rule'], $params);
                     }
                 }
             }
