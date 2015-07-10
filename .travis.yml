@@ -15,9 +15,11 @@ env:
   - SPOT_DB=pgsql
   - SPOT_DB=sqlite
 
+install:
+  - composer install
+
 # execute any number of scripts before the test run, custom env's are available as variables
 before_script:
-  - composer install
   - if [[ "$SPOT_DB" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS spot_test;" -uroot; fi
   - if [[ "$SPOT_DB" == "pgsql" ]]; then psql -c 'create database spot_test;' -U postgres; fi
 
