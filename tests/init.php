@@ -17,7 +17,7 @@ date_default_timezone_set('America/Chicago');
 
 // Setup available adapters for testing
 $cfg = new \Spot\Config();
-$dbDsn  = getenv('SPOT_DB_DSN');
+$dbDsn  = getenv('DSN');
 
 if (!empty($dbDsn)) {
     $cfg->addConnection('test', $dbDsn);
