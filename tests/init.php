@@ -10,14 +10,13 @@ ini_set('display_errors', 1);
 * Autoload test fixtures
 */
 $autoload = require dirname(dirname(__FILE__)) . '/vendor/autoload.php';
-$autoload->add('SpotTest', __DIR__);
 
 // Date setup
 date_default_timezone_set('America/Chicago');
 
 // Setup available adapters for testing
 $cfg = new \Spot\Config();
-$dbDsn  = getenv('DSN');
+$dbDsn  = getenv('SPOT_DB_DSN');
 
 if (!empty($dbDsn)) {
     $cfg->addConnection('test', $dbDsn);

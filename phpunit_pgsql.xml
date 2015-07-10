@@ -10,9 +10,14 @@
          syntaxCheck="false"
          bootstrap="./tests/init.php"
 >
+  <php>
+    <env name="SPOT_DB_TYPE" value="pgsql" />
+    <env name="SPOT_DB_DSN" value="pgsql://postgres@localhost/spot_test" />
+  </php>
+
   <testsuites>
-    <testsuite name="Spot">
-      <directory suffix=".php">./tests/SpotTest</directory>
+    <testsuite name="Spot2 ORM">
+      <directory suffix=".php">./tests</directory>
     </testsuite>
   </testsuites>
   <filter>
