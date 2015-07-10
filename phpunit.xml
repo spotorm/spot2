@@ -15,4 +15,9 @@
       <directory suffix=".php">./tests/SpotTest</directory>
     </testsuite>
   </testsuites>
+  <filter>
+    <whitelist addUncoveredFilesFromWhitelist="true" processUncoveredFilesFromWhitelist="false">
+      <directory suffix=".php">./lib</directory>
+    </whitelist>
+  </filter>
 </phpunit>
