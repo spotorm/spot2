@@ -15,21 +15,21 @@ php:
 
 # optionally specify a list of environments, for example to test different RDBMS
 env:
-  - SPOT_DB=mysql
-  - SPOT_DB=pgsql
-  - SPOT_DB=sqlite
+  - SPOT_DB_TYPE=mysql SPOT_DB_DSN=mysql://root@localhost/spot_test
+  - SPOT_DB_TYPE=pgsql SPOT_DB_DSN=pgsql://postgres@localhost/spot_test"
+  - SPOT_DB_TYPE=sqlite SPOT_DB_DSN=sqlite::memory
 
 install:
   - composer install
 
 # execute any number of scripts before the test run, custom env's are available as variables
 before_script:
-  - if [[ "$SPOT_DB" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS spot_test;" -uroot; fi
-  - if [[ "$SPOT_DB" == "pgsql" ]]; then psql -c 'create database spot_test;' -U postgres; fi
+  - if [[ "$SPOT_DB_TYPE" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS spot_test;" -uroot; fi
+  - if [[ "$SPOT_DB_TYPE" == "pgsql" ]]; then psql -c 'create database spot_test;' -U postgres; fi
 
 # omitting "script:" will default to phpunit
 # use the $SPOT_DB env variable to determine the phpunit.xml to use
-script: phpunit --configuration phpunit_$SPOT_DB.xml --coverage-text
+script: phpunit --configuration phpunit.xml --coverage-text
 
 # configure notifications (email, IRC, campfire etc)
 #notifications:
