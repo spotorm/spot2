@@ -205,7 +205,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         if (null === $data || !$data) {
             $data = array_merge($this->_data, $this->_dataModified);
             foreach ($data as $k => &$v) {
-                $v = $this->__get($k, $v);
+                $v = $this->__get($k);
             }
 
             if ($loadRelations) {
