@@ -28,4 +28,4 @@ before_script:
 
 # omitting "script:" will default to phpunit
 # use the $TYPE env variable to determine the phpunit.xml to use
-script: phpunit --configuration phpunit_$TYPE.xml --coverage-text
+script: vendor/bin/phpunit --configuration phpunit_$TYPE.xml --coverage-text
