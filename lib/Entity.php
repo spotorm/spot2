@@ -460,7 +460,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      */
     public function __set($field, $value)
     {
-        return $this->set($field, $value);
+        $this->set($field, $value);
     }
 
     /**
