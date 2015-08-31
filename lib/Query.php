@@ -9,6 +9,8 @@ namespace Spot;
  */
 class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 {
+    const ALL_FIELDS = '*';
+
     /**
      * @var \Spot\Mapper
      */
@@ -93,8 +95,22 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     public function noQuote($noQuote = true)
     {
         $this->_noQuote = $noQuote;
+        $this->reEscapeFrom();
 
         return $this;
+    }
+
+    /**
+     * Re-escape from part of query according to new noQuote value
+     */
+    protected function reEscapeFrom()
+    {
+        $part = $this->builder()->getQueryPart('from');
+        $this->builder()->resetQueryPart('from');
+
+        foreach($part as $node) {
+            $this->from($this->unescapeIdentifier($node['table']), $this->unescapeIdentifier($node['alias']));
+        }
     }
 
     /**
@@ -149,7 +165,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function select()
     {
-        call_user_func_array([$this->builder(), 'select'], func_get_args());
+        call_user_func_array([$this->builder(), 'select'], $this->escapeIdentifier(func_get_args()));
 
         return $this;
     }
@@ -161,7 +177,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function delete()
     {
-        call_user_func_array([$this->builder(), 'delete'], func_get_args());
+        call_user_func_array([$this->builder(), 'delete'], $this->escapeIdentifier(func_get_args()));
 
         return $this;
     }
@@ -173,7 +189,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function from()
     {
-        call_user_func_array([$this->builder(), 'from'], func_get_args());
+        call_user_func_array([$this->builder(), 'from'], $this->escapeIdentifier(func_get_args()));
 
         return $this;
     }
@@ -269,7 +285,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
             return $builder->createPositionalParameter($param);
         }, $sql);
-        $builder->andWhere($this->escapeField($field) . ' ' . $sql);
+        $builder->andWhere($this->escapeIdentifier($field) . ' ' . $sql);
 
         return $this;
     }
@@ -487,8 +503,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function order(array $order)
     {
-        foreach ($order as $field => $order) {
-            $this->builder()->addOrderBy($this->fieldWithAlias($field), $order);
+        foreach ($order as $field => $sorting) {
+            $this->builder()->addOrderBy($this->fieldWithAlias($field), $sorting);
         }
 
         return $this;
@@ -651,19 +667,46 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     }
 
     /**
-     * Escape/quote direct user input
+     * Removes escape/quote character
      *
-     * @param string $field
+     * @param string $identifier
      * @return string
-     * @throws Exception
      */
-    public function escapeField($field)
+    public function unescapeIdentifier($identifier)
     {
-        if ($this->_noQuote) {
-            return $field;
+        if (strpos($identifier, ".") !== false) {
+            $parts = array_map(array($this, "unescapeIdentifier"), explode(".", $identifier));
+
+            return implode(".", $parts);
         }
 
-        return $this->mapper()->connection()->quoteIdentifier($field);
+        return trim($identifier, $this->mapper()->connection()->getDatabasePlatform()->getIdentifierQuoteCharacter());
+    }
+
+    /**
+     * Escape/quote identifier
+     *
+     * @param string|array $identifier
+     * @return string|array
+     */
+    public function escapeIdentifier($identifier)
+    {
+        if (is_array($identifier)) {
+            array_walk($identifier, function(&$identifier) {
+                $identifier = $this->escapeIdentifier($identifier);
+            });
+            return $identifier;
+        }
+
+        if ($this->_noQuote || $identifier === self::ALL_FIELDS) {
+            return $identifier;
+        }
+
+        if (strpos($identifier, ' ') !== false || strpos($identifier, '(') !== false) {
+            return $identifier; // complex expression, ain't quote it, do it manually!
+        }
+
+        return $this->mapper()->connection()->quoteIdentifier(trim($identifier));
     }
 
     /**
@@ -676,7 +719,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
     {
         $field = $this->_tableName . '.' . $field;
 
-        return $escaped ? $this->escapeField($field) : $field;
+        return $escaped ? $this->escapeIdentifier($field) : $field;
     }
 
     /**

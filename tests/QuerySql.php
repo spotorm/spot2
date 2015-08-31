@@ -371,4 +371,47 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($postCount, $i);
     }
+
+    /**
+     * @dataProvider identifierProvider
+     */
+    public function testEscapingIdentifier($identifier, $expected)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $quote = $mapper->connection()->getDatabasePlatform()->getIdentifierQuoteCharacter();
+
+        $this->assertEquals(
+            sprintf($expected, $quote),
+            $mapper->where(['id !=' => null])->escapeIdentifier($identifier)
+        );
+    }
+
+    public function identifierProvider()
+    {
+        return [
+            ['table', '%1$stable%1$s'],
+            ['table.field', '%1$stable%1$s.%1$sfield%1$s'],
+            ['count field', 'count field'],
+            ['distinct(field)', 'distinct(field)'],
+            ['max(field) as max', 'max(field) as max'],
+        ];
+    }
+
+    public function testEscapingInQuery()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+
+        $expected = str_replace(
+            '`',
+            $mapper->connection()->getDatabasePlatform()->getIdentifierQuoteCharacter(),
+            'SELECT * FROM `test_posts` `test_posts` WHERE `test_posts`.`title` LIKE ? AND `test_posts`.`status` >= ?'
+        );
+
+        $query = $mapper->where(['title :like' => 'lorem', 'status >=' => 1])->toSql();
+
+        $this->assertEquals(
+            $expected,
+            $query
+        );
+    }
 }
