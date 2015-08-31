@@ -101,23 +101,25 @@ class Resolver
         $schema = new \Doctrine\DBAL\Schema\Schema();
         $table = $schema->createTable($this->escapeIdentifier($table));
 
-        foreach ($fields as $field => $fieldInfo) {
-            $fieldType = $fieldInfo['type'];
-            unset($fieldInfo['type']);
-            $table->addColumn($field, $fieldType, $fieldInfo);
+        foreach ($fields as $field) {
+            $fieldType = $field['type'];
+            unset($field['type']);
+            $table->addColumn($this->escapeIdentifier($field['column']), $fieldType, $field);
         }
 
         // PRIMARY
         if ($fieldIndexes['primary']) {
-            $table->setPrimaryKey($fieldIndexes['primary']);
+            $resolver = $this;
+            $primaryKeys = array_map(function($value) use($resolver) { return $resolver->escapeIdentifier($value); }, $fieldIndexes['primary']);
+            $table->setPrimaryKey($primaryKeys);
         }
         // UNIQUE
         foreach ($fieldIndexes['unique'] as $keyName => $keyFields) {
-            $table->addUniqueIndex($keyFields, $keyName);
+            $table->addUniqueIndex($keyFields, $this->escapeIdentifier($keyName));
         }
         // INDEX
         foreach ($fieldIndexes['index'] as $keyName => $keyFields) {
-            $table->addIndex($keyFields, $keyName);
+            $table->addIndex($keyFields, $this->escapeIdentifier($keyName));
         }
 
         return $schema;

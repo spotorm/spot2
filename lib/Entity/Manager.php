@@ -102,7 +102,7 @@ class Manager
 
             // Table Options
             $entityTableOptions = $entityName::tableOptions();
-            $this->tableOptions = (array)$entityTableOptions;
+            $this->tableOptions = (array) $entityTableOptions;
 
             // Custom Mapper
             $this->mapper = $entityName::mapper();
@@ -113,6 +113,7 @@ class Manager
                 'default' => null,
                 'value' => null,
                 'length' => null,
+                'column' => null,
                 'required' => false,
                 'notnull' => false,
                 'unsigned' => false,
@@ -162,6 +163,11 @@ class Manager
                 // Required = 'notnull' for DBAL
                 if (true === $fieldOpts['required']) {
                     $fieldOpts['notnull'] = true;
+                }
+
+                // Set column name to field name/key as default
+                if (null === $fieldOpts['column']) {
+                    $fieldOpts['column'] = $fieldName;
                 }
 
                 // Old Spot used 'serial' field to describe auto-increment
@@ -214,7 +220,9 @@ class Manager
             'index' => []
         ];
         $usedKeyNames = [];
-        foreach ($formattedFields as $fieldName => $fieldInfo) {
+        foreach ($formattedFields as $fieldInfo) {
+            $fieldName = $fieldInfo['column'];
+
             // Determine key field name (can't use same key name twice, so we have to append a number)
             $fieldKeyName = $table . '_' . $fieldName;
             while (in_array($fieldKeyName, $usedKeyNames)) {
