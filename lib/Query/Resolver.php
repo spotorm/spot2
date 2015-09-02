@@ -156,9 +156,7 @@ class Resolver
     public function create($table, array $data)
     {
         $connection = $this->mapper->connection();
-        $result = $connection->insert($this->escapeIdentifier($table), $data);
-
-        return $result;
+        return $connection->insert($this->escapeIdentifier($table), $this->dataWithFieldAliasMappings($data));
     }
 
     /**
@@ -173,8 +171,21 @@ class Resolver
     public function update($table, array $data, array $where)
     {
         $connection = $this->mapper->connection();
+        return $connection->update($this->escapeIdentifier($table), $this->dataWithFieldAliasMappings($data), $this->dataWithFieldAliasMappings($where));
+    }
 
-        return $connection->update($this->escapeIdentifier($table), $data, $where);
+    /**
+     * Taken given field name/value inputs and map them to their aliased names
+     */
+    public function dataWithFieldAliasMappings(array $data)
+    {
+        $fields = $this->mapper->entityManager()->fields();
+        $fieldMappings = [];
+        foreach($data as $field => $value) {
+            $fieldAlias = $this->escapeIdentifier(isset($fields[$field]) ? $fields[$field]['column'] : $field);
+            $fieldMappings[$fieldAlias] = $value;
+        }
+        return $fieldMappings;
     }
 
     /**

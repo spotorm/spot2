@@ -24,6 +24,11 @@ class Manager
     /**
      * @var array
      */
+    protected $fieldAliasMappings = [];
+
+    /**
+     * @var array
+     */
     protected $fieldsDefined = [];
 
     /**
@@ -168,6 +173,9 @@ class Manager
                 // Set column name to field name/key as default
                 if (null === $fieldOpts['column']) {
                     $fieldOpts['column'] = $fieldName;
+                } else {
+                    // Store user-specified field alias mapping
+                    $this->fieldAliasMappings[$fieldName] = $fieldOpts['column'];
                 }
 
                 // Old Spot used 'serial' field to describe auto-increment
@@ -199,6 +207,16 @@ class Manager
         }
 
         return $returnFields;
+    }
+
+    /**
+     * Field alias mappings (used for lookup)
+     *
+     * @return array Field alias => actual column name
+     */
+    public function fieldAliasMappings()
+    {
+        return $this->fieldAliasMappings;
     }
 
     /**
