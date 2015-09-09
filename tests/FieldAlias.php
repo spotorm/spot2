@@ -12,14 +12,14 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     public static function setupBeforeClass()
     {
         self::$legacyTable = new \SpotTest\Entity\Legacy();
-        foreach (['Legacy'] as $entity) {
+        foreach (['Legacy', 'PolymorphicComment'] as $entity) {
             test_spot_mapper('SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach (['Legacy'] as $entity) {
+        foreach (['Legacy', 'PolymorphicComment'] as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -81,5 +81,25 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($legacy->name, $savedLegacyItem->name);
         $this->assertEquals($legacy->number, $savedLegacyItem->number);
+    }
+
+    /**
+     * @depends testLegacyInsert
+     */
+    public function testLegacyRelations(Legacy $legacy)
+    {
+        // New Comment
+        $commentMapper = test_spot_mapper('SpotTest\Entity\PolymorphicComment');
+        $comment = new \SpotTest\Entity\PolymorphicComment([
+            'item_id' => $legacy->id,
+            'item_type' => 'legacy',
+            'name' => 'Testy McTesterpants',
+            'email' => 'tester@chester.com',
+            'body' => '<p>Comment Text</p>'
+        ]);
+        $commentMapper->save($comment);
+
+        $this->assertInstanceOf('Spot\Relation\HasMany', $legacy->polymorphic_comments);
+        $this->assertEquals(count($legacy->polymorphic_comments), 1);
     }
 }

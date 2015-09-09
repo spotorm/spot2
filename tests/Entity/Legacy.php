@@ -25,6 +25,13 @@ class Legacy extends Entity
         ];
     }
 
+    public static function relations(MapperInterface $mapper, EntityInterface $entity)
+    {
+        return [
+            'polymorphic_comments' => $mapper->hasMany($entity, 'SpotTest\Entity\PolymorphicComment', 'item_id')->where(['item_type' => 'legacy'])
+        ];
+    }
+
     /**
      * Helpers for field/column names - methods with public access so we can avoid duplication in tests
      */
