@@ -740,7 +740,9 @@ class Mapper implements MapperInterface
                     if ($pkFieldInfo && $pkFieldInfo['autoincrement'] === true) {
                         if ($this->connectionIs('pgsql')) {
                             // Allow custom sequence name
-                            $sequenceName = $table . '_' . $pkField . '_seq';
+                            $fieldAliasMappings = $this->entityManager()->fieldAliasMappings();
+                            $sequenceField = isset($fieldAliasMappings[$pkField]) ? $fieldAliasMappings[$pkField] : $pkField;
+                            $sequenceName = $this->resolver()->escapeIdentifier($table . '_' . $sequenceField . '_seq');
                             if (isset($pkFieldInfo['sequence_name'])) {
                                 $sequenceName = $pkFieldInfo['sequence_name'];
                             }
@@ -816,7 +818,7 @@ class Mapper implements MapperInterface
         $data = $this->convertToDatabaseValues($entityName, $data);
 
         if (count($data) > 0) {
-            $result = $this->connection()->update($this->table(), $data, [$this->primaryKeyField() => $this->primaryKey($entity)]);
+            $result = $this->resolver()->update($this->table(), $data, [$this->primaryKeyField() => $this->primaryKey($entity)]);
 
             // Run afterSave and afterUpdate
             if (
@@ -894,6 +896,10 @@ class Mapper implements MapperInterface
 
     /**
      * Prepare data to be dumped to the data store
+     *
+     * @param string $entityName
+     * @param array $data Key/value pairs of data to store
+     * @return array
      */
     protected function convertToDatabaseValues($entityName, array $data)
     {
@@ -909,15 +915,24 @@ class Mapper implements MapperInterface
     }
 
     /**
-     * Retrieve data from the data store
+     * Retrieve data from the data store and map it to PHP values
+     *
+     * @param string $entityName
+     * @param array $data Key/value pairs of data to store
+     * @return array
      */
     protected function convertToPHPValues($entityName, array $data)
     {
         $phpData = [];
         $fields = $entityName::fields();
+        $fieldAliasMappings = $this->entityManager()->fieldAliasMappings();
         $platform = $this->connection()->getDatabasePlatform();
         $entityData = array_intersect_key($data, $fields);
         foreach ($data as $field => $value) {
+            if ($fieldAlias = array_search($field, $fieldAliasMappings)) {
+                $field = $fieldAlias;
+            }
+
             // Field is in the Entity definitions
             if (isset($entityData[$field])) {
                 $typeHandler = Type::getType($fields[$field]['type']);

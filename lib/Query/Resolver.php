@@ -101,23 +101,25 @@ class Resolver
         $schema = new \Doctrine\DBAL\Schema\Schema();
         $table = $schema->createTable($this->escapeIdentifier($table));
 
-        foreach ($fields as $field => $fieldInfo) {
-            $fieldType = $fieldInfo['type'];
-            unset($fieldInfo['type']);
-            $table->addColumn($field, $fieldType, $fieldInfo);
+        foreach ($fields as $field) {
+            $fieldType = $field['type'];
+            unset($field['type']);
+            $table->addColumn($this->escapeIdentifier($field['column']), $fieldType, $field);
         }
 
         // PRIMARY
         if ($fieldIndexes['primary']) {
-            $table->setPrimaryKey($fieldIndexes['primary']);
+            $resolver = $this;
+            $primaryKeys = array_map(function($value) use($resolver) { return $resolver->escapeIdentifier($value); }, $fieldIndexes['primary']);
+            $table->setPrimaryKey($primaryKeys);
         }
         // UNIQUE
         foreach ($fieldIndexes['unique'] as $keyName => $keyFields) {
-            $table->addUniqueIndex($keyFields, $keyName);
+            $table->addUniqueIndex($keyFields, $this->escapeIdentifier($keyName));
         }
         // INDEX
         foreach ($fieldIndexes['index'] as $keyName => $keyFields) {
-            $table->addIndex($keyFields, $keyName);
+            $table->addIndex($keyFields, $this->escapeIdentifier($keyName));
         }
 
         return $schema;
@@ -154,9 +156,7 @@ class Resolver
     public function create($table, array $data)
     {
         $connection = $this->mapper->connection();
-        $result = $connection->insert($this->escapeIdentifier($table), $data);
-
-        return $result;
+        return $connection->insert($this->escapeIdentifier($table), $this->dataWithFieldAliasMappings($data));
     }
 
     /**
@@ -171,8 +171,21 @@ class Resolver
     public function update($table, array $data, array $where)
     {
         $connection = $this->mapper->connection();
+        return $connection->update($this->escapeIdentifier($table), $this->dataWithFieldAliasMappings($data), $this->dataWithFieldAliasMappings($where));
+    }
 
-        return $connection->update($this->escapeIdentifier($table), $data, $where);
+    /**
+     * Taken given field name/value inputs and map them to their aliased names
+     */
+    public function dataWithFieldAliasMappings(array $data)
+    {
+        $fields = $this->mapper->entityManager()->fields();
+        $fieldMappings = [];
+        foreach($data as $field => $value) {
+            $fieldAlias = $this->escapeIdentifier(isset($fields[$field]) ? $fields[$field]['column'] : $field);
+            $fieldMappings[$fieldAlias] = $value;
+        }
+        return $fieldMappings;
     }
 
     /**

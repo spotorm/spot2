@@ -317,6 +317,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
 
         $sqlFragments = [];
         foreach ($where as $column => $value) {
+
             $whereClause = "";
             // Column name with comparison operator
             $colData = explode(' ', $column);
@@ -717,6 +718,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function fieldWithAlias($field, $escaped = true)
     {
+        $fieldInfo = $this->_mapper->entityManager()->fields();
+
+        // Determine real field name (column alias support)
+        if (isset($fieldInfo[$field])) {
+            $field = $fieldInfo[$field]['column'];
+        }
+
         $field = $this->_tableName . '.' . $field;
 
         return $escaped ? $this->escapeIdentifier($field) : $field;

@@ -24,6 +24,11 @@ class Manager
     /**
      * @var array
      */
+    protected $fieldAliasMappings = [];
+
+    /**
+     * @var array
+     */
     protected $fieldsDefined = [];
 
     /**
@@ -102,7 +107,7 @@ class Manager
 
             // Table Options
             $entityTableOptions = $entityName::tableOptions();
-            $this->tableOptions = (array)$entityTableOptions;
+            $this->tableOptions = (array) $entityTableOptions;
 
             // Custom Mapper
             $this->mapper = $entityName::mapper();
@@ -113,6 +118,7 @@ class Manager
                 'default' => null,
                 'value' => null,
                 'length' => null,
+                'column' => null,
                 'required' => false,
                 'notnull' => false,
                 'unsigned' => false,
@@ -164,6 +170,14 @@ class Manager
                     $fieldOpts['notnull'] = true;
                 }
 
+                // Set column name to field name/key as default
+                if (null === $fieldOpts['column']) {
+                    $fieldOpts['column'] = $fieldName;
+                } else {
+                    // Store user-specified field alias mapping
+                    $this->fieldAliasMappings[$fieldName] = $fieldOpts['column'];
+                }
+
                 // Old Spot used 'serial' field to describe auto-increment
                 // fields, so accomodate that here
                 if (isset($fieldOpts['serial']) && $fieldOpts['serial'] === true) {
@@ -196,6 +210,16 @@ class Manager
     }
 
     /**
+     * Field alias mappings (used for lookup)
+     *
+     * @return array Field alias => actual column name
+     */
+    public function fieldAliasMappings()
+    {
+        return $this->fieldAliasMappings;
+    }
+
+    /**
      * Groups field keys into names arrays of fields with key name as index
      *
      * @return array Key-named associative array of field names in that index
@@ -214,7 +238,9 @@ class Manager
             'index' => []
         ];
         $usedKeyNames = [];
-        foreach ($formattedFields as $fieldName => $fieldInfo) {
+        foreach ($formattedFields as $fieldInfo) {
+            $fieldName = $fieldInfo['column'];
+
             // Determine key field name (can't use same key name twice, so we have to append a number)
             $fieldKeyName = $table . '_' . $fieldName;
             while (in_array($fieldKeyName, $usedKeyNames)) {
