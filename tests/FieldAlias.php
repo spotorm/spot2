@@ -62,6 +62,19 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     /**
      * @depends testLegacyInsert
      */
+    public function testLegacyEntityToArrayUsesFieldMappings(Legacy $legacy)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
+        $savedLegacyItem = $mapper->first();
+        $data = $savedLegacyItem->toArray();
+
+        $this->assertEquals($data['name'], 'Something Here');
+        $this->assertEquals($data['number'], 5);
+    }
+
+    /**
+     * @depends testLegacyInsert
+     */
     public function testLegacyUpdate(Legacy $legacy)
     {
         $legacy->name = 'Something ELSE Here';
