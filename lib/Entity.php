@@ -434,7 +434,8 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             if (array_key_exists($field, $this->_dataModified)) {
                 $v =& $this->_dataModified[$field];
             } elseif (array_key_exists($field, $this->_data)) {
-                // if the value is an array or an object, copy it to dataModified first                
+                // if the value is an array or an object, copy it to dataModified first 
+                // and return a reference to that
                 if (is_array($this->_data[$field]) || is_object($this->_data[$field])){
                     $this->_dataModified[$field] = $this->_data[$field]; 
                     $v =& $this->_dataModified[$field];
