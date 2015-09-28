@@ -36,7 +36,7 @@ class ArrayObjectTypes extends \PHPUnit_Framework_TestCase
     {
         $entity = $this->getEntity();
         $this->assertFalse($entity->isModified('fld_simple_array'));
-        $entity->fld_array['value'] = 'modified';
+        $entity->fld_simple_array['value'] = 'modified';
         $this->assertTrue($entity->isModified('fld_simple_array'));
     }
 
@@ -44,7 +44,7 @@ class ArrayObjectTypes extends \PHPUnit_Framework_TestCase
     {
         $entity = $this->getEntity();
         $this->assertFalse($entity->isModified('fld_json_array'));
-        $entity->fld_array['value'] = 'modified';
+        $entity->fld_json_array['value'] = 'modified';
         $this->assertTrue($entity->isModified('fld_json_array'));
     }
 
@@ -52,7 +52,7 @@ class ArrayObjectTypes extends \PHPUnit_Framework_TestCase
     {
         $entity = $this->getEntity();
         $this->assertFalse($entity->isModified('fld_object'));
-        $entity->fld_array['value'] = 'modified';
+        $entity->fld_object['value'] = 'modified';
         $this->assertTrue($entity->isModified('fld_object'));
     }
 
