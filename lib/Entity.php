@@ -1,4 +1,5 @@
 <?php
+
 namespace Spot;
 
 /**
@@ -9,6 +10,7 @@ namespace Spot;
  */
 abstract class Entity implements EntityInterface, \JsonSerializable
 {
+
     /**
      * Table name
      * @var string|null
@@ -166,6 +168,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      */
     public static function events(EventEmitter $eventEmitter)
     {
+        
     }
 
     /**
@@ -289,7 +292,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     public function isNew($new = null)
     {
         if ($new !== null) {
-            $this->_isNew = (boolean)$new;
+            $this->_isNew = (boolean) $new;
         }
 
         return $this->_isNew;
@@ -408,8 +411,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     {
         $entityName = get_class($this);
 
-        return isset($this->_data[$key]) || isset($this->_dataModified[$key]) || in_array($key,
-            self::$relationFields[$entityName]);
+        return isset($this->_data[$key]) || isset($this->_dataModified[$key]) || in_array($key, self::$relationFields[$entityName]);
     }
 
     /**
@@ -432,18 +434,21 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         } else {
             // We can't use isset because it returns false for NULL values
             if (array_key_exists($field, $this->_dataModified)) {
-                $v =& $this->_dataModified[$field];
+                $v = & $this->_dataModified[$field];
             } elseif (array_key_exists($field, $this->_data)) {
                 // if the value is an array or an object, copy it to dataModified first 
                 // and return a reference to that
-                if (is_array($this->_data[$field]) || is_object($this->_data[$field])){
-                    $this->_dataModified[$field] = $this->_data[$field]; 
-                    $v =& $this->_dataModified[$field];
+                if (is_array($this->_data[$field])) {
+                    $this->_dataModified[$field] = $this->_data[$field];
+                    $v = & $this->_dataModified[$field];
+                } elseif (is_object($this->_data[$field])) {
+                    $this->_dataModified[$field] = clone $this->_data[$field];
+                    $v = & $this->_dataModified[$field];
                 } else {
-                    $v =& $this->_data[$field];
+                    $v = & $this->_data[$field];
                 }
             } elseif ($relation = $this->relation($field)) {
-                $v =& $relation;
+                $v = & $relation;
             }
         }
 
@@ -613,4 +618,5 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             }
         }
     }
+
 }
