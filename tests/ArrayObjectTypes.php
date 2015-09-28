@@ -52,7 +52,7 @@ class ArrayObjectTypes extends \PHPUnit_Framework_TestCase
     {
         $entity = $this->getEntity();
         $this->assertFalse($entity->isModified('fld_object'));
-        $entity->fld_object['value'] = 'modified';
+        $entity->fld_object->value = 'modified';
         $this->assertTrue($entity->isModified('fld_object'));
     }
 
