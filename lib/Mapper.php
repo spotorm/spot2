@@ -638,7 +638,7 @@ class Mapper implements MapperInterface
     {
         $table = $this->table();
 
-        return $this->queryBuilder()->select($fields)->from($table, $table);
+        return $this->queryBuilder()->select($fields)->from($table);
     }
 
     /**
