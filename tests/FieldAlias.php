@@ -28,7 +28,7 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
         $query = $mapper->select()->noQuote()->where(['number' => 2, 'name' => 'legacy_crud']);
-        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNumberFieldColumnName() ." = ? AND test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_legacy  WHERE test_legacy." . self::$legacyTable->getNumberFieldColumnName() ." = ? AND test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ?", $query->toSql());
     }
 
     // Ordering
@@ -44,7 +44,7 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
         $query = $mapper->select()->noQuote()->where(['name' => 'test_group'])->group(['id']);
-        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY test_legacy." . self::$legacyTable->getIdFieldColumnName(), $query->toSql());
+        $this->assertEquals("SELECT * FROM test_legacy  WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY test_legacy." . self::$legacyTable->getIdFieldColumnName(), $query->toSql());
     }
 
     // Insert

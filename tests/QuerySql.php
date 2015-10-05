@@ -61,7 +61,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2, 'title' => 'even_title']);
-        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? AND test_posts.title = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status = ? AND test_posts.title = ?", $query->toSql());
     }
 
     public function testInsertPostTagWithUniqueConstraint()
@@ -93,7 +93,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2]);
-        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status = ?", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
 
@@ -102,7 +102,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status :eq' => 2]);
-        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status = ?", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
 
@@ -156,7 +156,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->group(['id']);
-        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? GROUP BY test_posts.id", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status = ? GROUP BY test_posts.id", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
 
@@ -175,7 +175,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => [2]]);
         $post = $query->first();
-        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status IN (?) LIMIT 1", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status IN (?) LIMIT 1", $query->toSql());
         $this->assertEquals(2, $post->status);
     }
 
