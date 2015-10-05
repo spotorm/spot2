@@ -115,11 +115,11 @@ class Resolver
         }
         // UNIQUE
         foreach ($fieldIndexes['unique'] as $keyName => $keyFields) {
-            $table->addUniqueIndex($keyFields, $this->escapeIdentifier($keyName));
+            $table->addUniqueIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)));
         }
         // INDEX
         foreach ($fieldIndexes['index'] as $keyName => $keyFields) {
-            $table->addIndex($keyFields, $this->escapeIdentifier($keyName));
+            $table->addIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)));
         }
 
         return $schema;
@@ -263,4 +263,15 @@ class Resolver
 
         return $this->mapper->connection()->quoteIdentifier(trim($identifier));
     }
+	
+	/**
+	 * Trim a leading schema name separated by a dot if present
+	 *
+	 * @param string $identifier
+	 * @return string
+	 */
+	public function trimSchemaName($identifier){
+		$components = explode('.', $identifier, 2); 
+		return end($components);
+	}
 }
