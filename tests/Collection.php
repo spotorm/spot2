@@ -51,4 +51,16 @@ class Collection extends \PHPUnit_Framework_TestCase
         $tags->merge($newTags);
         $this->assertEquals(3, count($tags));
     }
+
+    public function testCollectionJsonSerialize()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+
+        $tags = $mapper->all()->execute();
+
+        $data = json_encode($tags->toArray());
+        $json = json_encode($tags);
+
+        $this->assertSame($data, $json);
+    }
 }
