@@ -414,4 +414,16 @@ class QuerySql extends \PHPUnit_Framework_TestCase
             $query
         );
     }
+
+    public function testQueryJsonSerialize()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+
+        $tags = $mapper->all();
+
+        $data = json_encode($tags->toArray());
+        $json = json_encode($tags);
+
+        $this->assertSame($data, $json);
+    }
 }

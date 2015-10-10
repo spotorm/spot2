@@ -9,7 +9,7 @@ use Spot\Entity;
  * @package Spot\Entity
  * @author Vance Lucas <vance@vancelucas.com>
  */
-class Collection implements \Iterator, \Countable, \ArrayAccess
+class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializable
 {
     /**
      * @var array
@@ -155,6 +155,16 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
         }
 
         return $return;
+    }
+
+    /**
+     * JsonSerializable
+     *
+     * @inheritdoc
+     */
+    public function jsonSerialize()
+    {
+        return $this->toArray();
     }
 
     /**

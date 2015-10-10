@@ -7,7 +7,7 @@ namespace Spot;
  * @package Spot
  * @author Vance Lucas <vance@vancelucas.com>
  */
-class Query implements \Countable, \IteratorAggregate, \ArrayAccess
+class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerializable
 {
     const ALL_FIELDS = '*';
 
@@ -617,6 +617,16 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess
         $result = $this->execute();
 
         return ($result !== false) ? $result->toArray($keyColumn, $valueColumn) : [];
+    }
+
+    /**
+     * JsonSerializable
+     *
+     * @inheritdoc
+     */
+    public function jsonSerialize()
+    {
+        return $this->toArray();
     }
 
     /**
