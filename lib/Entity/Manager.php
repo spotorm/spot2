@@ -165,9 +165,14 @@ class Manager
                     $fieldOpts = array_merge($fieldDefaults, $fieldOpts);
                 }
 
-                // Required = 'notnull' for DBAL
+                // Required = 'notnull' for DBAL unless manually set in schema
                 if (true === $fieldOpts['required']) {
-                    $fieldOpts['notnull'] = true;
+                    // If notnull is set in schema use it
+                    if (isset($this->fieldsDefined[$fieldName]['notnull'])) {
+                        $fieldOpts['notnull'] = $this->fieldsDefined[$fieldName]['notnull'];
+                    } else {
+                        $fieldOpts['notnull'] = true;
+                    }
                 }
 
                 // Set column name to field name/key as default
