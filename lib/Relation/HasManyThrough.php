@@ -132,9 +132,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
      */
     public function count()
     {
-        $results = $this->execute();
-
-        return $results ? count($results) : 0;
+        return $this->query()->count();
     }
 
     /**
