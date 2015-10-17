@@ -1010,8 +1010,12 @@ class Mapper implements MapperInterface
 
     /**
      * Run set validation rules on fields
+     *
+     * @param EntityInterface $entity
+     * @param array $options
+     * @return boolean
      */
-    public function validate(EntityInterface $entity)
+    public function validate(EntityInterface $entity, array $options = [])
     {
         $v = new \Valitron\Validator($entity->data());
 
@@ -1078,6 +1082,11 @@ class Mapper implements MapperInterface
             }
         }
 
+        //Relations validation
+        if (isset($options['relations']) && $options['relations'] === true) {
+            $this->validateRelations($entity);
+        }
+
         if (!$v->validate()) {
             $entity->errors($v->errors(), false);
         }
@@ -1089,5 +1098,68 @@ class Mapper implements MapperInterface
 
         // Return error result
         return !$entity->hasErrors();
+    }
+
+    /**
+     * Validate related entities using relations
+     * @param EntityInterface $entity
+     * @return EntityInterface
+     */
+    protected function validateRelations($entity)
+    {
+        $relations = $entity->relations($this, $entity);
+        foreach ($relations as $relationName => $relation) {
+            if ($relation instanceof Relation\HasOne || $relation instanceof Relation\BelongsTo) {
+                $relatedEntity = $entity->$relationName;
+                if ($relatedEntity instanceof EntityInterface) {
+                    $errorsRelated = $this->validateRelatedEntity($relatedEntity, $entity, $relation);
+                    if (count($errorsRelated)) {
+                        $entity->errors([$relationName => $errorsRelated]);
+                    }
+                }
+            } else if ($relation instanceof Relation\HasMany || $relation instanceof Relation\HasManyThrough) {
+                $relatedEntities = $entity->$relationName;
+                //No point in validating Queries since they are not modified
+                if ((is_array($relatedEntities) || $relatedEntities instanceof Entity\Collection) && count($relatedEntities)) {
+                    $errors = [];
+                    foreach ($relatedEntities as $key => $related) {
+                        $errorsRelated = $this->validateRelatedEntity($related, $entity, $relation);
+
+                        if (count($errorsRelated)) {
+                            $errors[$key] = $errorsRelated;
+                        }
+                    }
+                    if (count($errors)) {
+                        $entity->errors([$relationName => $errors]);
+                    }
+                }
+            }
+        }
+
+        return $entity;
+    }
+
+    /**
+     * Validate related entity if it is new or modified only
+     * @param \Spot\EntityInterface $relatedEntity
+     * @param \Spot\EntityInterface $entity
+     * @param \Spot\Relation\RelationAbstract $relation
+     * @return array Related entity errors
+     */
+    protected function validateRelatedEntity(EntityInterface $relatedEntity, EntityInterface $entity, \Spot\Relation\RelationAbstract $relation)
+    {
+        $tainted = $relatedEntity->isNew() || $relatedEntity->isModified();
+
+        $errorsRelated = [];
+        
+        if ($tainted && !$this->getMapper(get_class($relatedEntity))->validate($relatedEntity)) {
+            $errorsRelated = $relatedEntity->errors();
+            //Disable validation on foreign key field it will be filled up later on when the new entity is persisted
+            if (($relation instanceof Relation\HasMany || $relation instanceof Relation\HasOne) && $entity->isNew() ) {
+                unset($errorsRelated[$relation->foreignKey()]);
+            }
+        }
+
+        return $errorsRelated;
     }
 }
