@@ -50,6 +50,7 @@ class Scopes extends \PHPUnit_Framework_TestCase
             'author_id' => 1,
             ]);
         $query = $mapper->get(1)->comments->yesterday()->query();
-        $this->assertEquals("SELECT * FROM `test_post_comments` WHERE (`test_post_comments`.`post_id` = ?) AND (`test_post_comments`.`date_created` > ? AND `test_post_comments`.`date_created` < ?) ORDER BY `test_post_comments`.`date_created` ASC", $query->toSql());
+        $sql = str_replace(['`', '"'], '', $query->toSql());
+        $this->assertEquals("SELECT * FROM test_post_comments WHERE (test_post_comments.post_id = ?) AND (test_post_comments.date_created > ? AND test_post_comments.date_created < ?) ORDER BY test_post_comments.date_created ASC", $sql);
     }
 }
