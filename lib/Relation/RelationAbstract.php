@@ -169,7 +169,7 @@ abstract class RelationAbstract
      */
     public function __call($func, $args)
     {
-        if (method_exists('Spot\Query', $func)) {
+        if (method_exists('Spot\Query', $func) || in_array($func, array_keys($this->mapper()->getMapper($this->entityName())->scopes()))) {
             // See if method exists on Query object, and if it does, add query
             // modification to queue to be executed after query is built and
             // ready so that query is not executed immediately
