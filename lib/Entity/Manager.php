@@ -126,7 +126,10 @@ class Manager
                 'primary' => false,
                 'index' => false,
                 'unique' => false,
-                'autoincrement' => false
+                'autoincrement' => false,
+                'foreignkey' => false,
+                'onUpdate' => null,
+                'onDelete' => null
             ];
 
             // Type default overrides for specific field types
