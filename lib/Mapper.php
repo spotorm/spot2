@@ -288,7 +288,8 @@ class Mapper implements MapperInterface
      */
     public function scopes()
     {
-        return [];
+        $entityClass = $this->entityName;
+        return $entityClass::scopes();
     }
 
     /**
