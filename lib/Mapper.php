@@ -695,14 +695,20 @@ class Mapper implements MapperInterface
 
         // Run validation unless disabled via options
         if (!isset($options['validate']) || (isset($options['validate']) && $options['validate'] !== false)) {
-            if (!$this->validate($entity)) {
+            if (!$this->validate($entity, $options)) {
                 return false;
             }
         }
 
         // Ensure there is actually data to update
-        $data = $entity->data();
+        $data = $entity->data(null, true, false);
         if (count($data) > 0) {
+
+            if (isset($options['relations']) && $options['relations'] === true) {
+                $this->saveBelongsToRelations($entity, $options);
+                $data = $entity->data(null, true, false);
+            }
+            
             $pkField = $this->primaryKeyField();
             $pkFieldInfo = $this->fieldInfo($pkField);
 
@@ -760,6 +766,10 @@ class Mapper implements MapperInterface
             $entity->isNew(false);
             $entity->data($entity->data(), false);
 
+            if (isset($options['relations']) && $options['relations'] === true) {
+                $this->saveHasRelations($entity, $options);
+            }
+
             if ($result) {
                 $this->prepareEntity($entity);
             }
@@ -796,9 +806,13 @@ class Mapper implements MapperInterface
 
         // Run validation unless disabled via options
         if (!isset($options['validate']) || (isset($options['validate']) && $options['validate'] !== false)) {
-            if (!$this->validate($entity)) {
+            if (!$this->validate($entity, $options)) {
                 return false;
             }
+        }
+
+        if (isset($options['relations']) && $options['relations'] === true) {
+            $this->saveBelongsToRelations($entity, $options);
         }
 
         // Prepare data
@@ -822,6 +836,10 @@ class Mapper implements MapperInterface
         if (count($data) > 0) {
             $result = $this->resolver()->update($this->table(), $data, [$this->primaryKeyField() => $this->primaryKey($entity)]);
             $entity->data($entity->data(), false);
+            if (isset($options['relations']) && $options['relations'] === true) {
+                $this->saveHasRelations($entity, $options);
+            }
+            
             // Run afterSave and afterUpdate
             if (
                 false === $this->eventEmitter()->emit('afterSave', [$entity, $this, &$result])
@@ -831,6 +849,10 @@ class Mapper implements MapperInterface
             }
         } else {
             $result = true;
+
+            if (isset($options['relations']) && $options['relations'] === true) {
+                $this->saveHasRelations($entity, $options);
+            }
         }
 
         return $result;
@@ -862,6 +884,100 @@ class Mapper implements MapperInterface
         }
 
         return $entity;
+    }
+
+    /**
+     * Save related entities that have been assigned or loaded (only HasOne, HasMany and HasManyThrough relations)
+     * See saveBelongsToRelations.
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param array $options
+     * @return mixed
+     * @throws \InvalidArgumentException
+     */
+    public function saveHasRelations(EntityInterface $entity, array $options = [])
+    {
+        if ($entity->isNew()) {
+            throw new \InvalidArgumentException("The provided entity is new. The entity must be persisted before saving relations.");
+        }
+
+        $relations = $entity->relations($this, $entity);
+
+        $lastResult = false;
+        foreach ($relations as $relationName => $relation) {
+            if ($relation instanceof Relation\HasManyThrough) {
+                $relatedEntities = $entity->relation($relationName);
+                if (is_array($relatedEntities) || $relatedEntities instanceof Entity\Collection) {
+                    $throughMapper = $this->getMapper($relation->throughEntityName());
+                    $relatedMapper = $this->getMapper($relation->entityName());
+                    foreach ($relatedEntities as $related) {
+                        if ($related->isNew() || $related->isModified()) {
+                            $lastResult = $relatedMapper->save($related, $options);
+                        }
+                        if (!count($throughMapper->where([$relation->localKey() => $entity->primaryKey(), $relation->foreignKey() => $related->primaryKey()]))) {
+                            $lastResult = $throughMapper->create([$relation->localKey() => $entity->primaryKey(), $relation->foreignKey() => $related->primaryKey()]);
+                        }
+                    }
+                }
+            } else if ($relation instanceof Relation\HasMany) {
+                $relatedEntities = $entity->relation($relationName);
+                if (is_array($relatedEntities) || $relatedEntities instanceof Entity\Collection) {
+                    $relatedMapper = $this->getMapper($relation->entityName());
+                    foreach ($relatedEntities as $related) {
+                        if ($related->isNew() || $related->isModified()) {
+                            //Update the foreign key to match the main entity primary key
+                            $related->set($relation->foreignKey(), $entity->primaryKey());
+                            $lastResult = $relatedMapper->save($related, $options);
+                        }
+                    }
+                }
+            } else if ($relation instanceof Relation\HasOne) {
+                $relatedEntity = $entity->relation($relationName);
+                if ($relatedEntity instanceof EntityInterface) {
+                    if ($relatedEntity->isNew() || $relatedEntity->isModified()) {
+                        $relatedMapper = $this->getMapper($relation->entityName());
+                        //Update the foreign key to match the main entity primary key
+                        $relatedEntity->set($relation->foreignKey(), $entity->primaryKey());
+                        $lastResult = $relatedMapper->save($relatedEntity, $options);
+                    }
+                }
+            }
+        }
+
+        return $lastResult;
+    }
+
+    /**
+     * Save related entities that have been assigned or loaded (only BelongsTo relations)
+     * See saveHasRelations.
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param array $options
+     * @return mixed
+     */
+    public function saveBelongsToRelations(EntityInterface $entity, array $options = [])
+    {
+
+        $relations = $entity->relations($this, $entity);
+
+        $lastResult = false;
+        foreach ($relations as $relationName => $relation) {
+            if ($relation instanceof Relation\BelongsTo) {
+                $relatedEntity = $entity->relation($relationName);
+                if ($relatedEntity instanceof EntityInterface) {
+                    if ($relatedEntity->isNew() || $relatedEntity->isModified()) {
+                        $relatedMapper = $this->getMapper($relation->entityName());
+                        $lastResult = $relatedMapper->save($relatedEntity, $options);
+                         //Update the local key to match the related entity primary key
+                        if ($entity->get($relation->localKey()) !== $relatedEntity->primaryKey()) {
+                            $entity->set($relation->localKey(), $relatedEntity->primaryKey());
+                        }
+                    }
+                }
+            }
+        }
+
+        return $lastResult;
     }
 
     /**
@@ -1082,13 +1198,13 @@ class Mapper implements MapperInterface
             }
         }
 
+        if (!$v->validate()) {
+            $entity->errors($v->errors(), false);
+        }
+        
         //Relations validation
         if (isset($options['relations']) && $options['relations'] === true) {
             $this->validateRelations($entity);
-        }
-
-        if (!$v->validate()) {
-            $entity->errors($v->errors(), false);
         }
 
         // Run afterValidate to run additional/custom validations
@@ -1114,7 +1230,7 @@ class Mapper implements MapperInterface
                 if ($relatedEntity instanceof EntityInterface) {
                     $errorsRelated = $this->validateRelatedEntity($relatedEntity, $entity, $relation);
                     if (count($errorsRelated)) {
-                        $entity->errors([$relationName => $errorsRelated]);
+                        $entity->errors([$relationName => $errorsRelated], false);
                     }
                 }
             } else if ($relation instanceof Relation\HasMany || $relation instanceof Relation\HasManyThrough) {
@@ -1130,7 +1246,7 @@ class Mapper implements MapperInterface
                         }
                     }
                     if (count($errors)) {
-                        $entity->errors([$relationName => $errors]);
+                        $entity->errors([$relationName => $errors], false);
                     }
                 }
             }
@@ -1155,11 +1271,18 @@ class Mapper implements MapperInterface
         if ($tainted && !$this->getMapper(get_class($relatedEntity))->validate($relatedEntity)) {
             $errorsRelated = $relatedEntity->errors();
             //Disable validation on foreign key field it will be filled up later on when the new entity is persisted
-            if (($relation instanceof Relation\HasMany || $relation instanceof Relation\HasOne) && $entity->isNew() ) {
+            if (($relation instanceof Relation\HasMany || $relation instanceof Relation\HasOne) && $relatedEntity->isNew()) {
                 unset($errorsRelated[$relation->foreignKey()]);
             }
+            $relatedEntity->errors($errorsRelated);
         }
 
+        if ($relation instanceof Relation\BelongsTo && $entity->isNew()) {
+            $errors = $entity->errors();
+            unset($errors[$relation->localKey()]);
+            $entity->errors($errors);
+        }
+        
         return $errorsRelated;
     }
 }

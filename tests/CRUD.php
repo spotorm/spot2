@@ -8,14 +8,14 @@ class CRUD extends \PHPUnit_Framework_TestCase
 {
     public static function setupBeforeClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
+        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting', 'Event', 'Event\Search'] as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
+        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting', 'Event', 'Event\Search'] as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -274,5 +274,90 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
         $result = $postMapper->save($post, ['strict' => false]);
         $this->assertTrue((boolean) $result);
+    }
+
+    public function testHasOneRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $search = new Entity\Event\Search(['body' => 'Some body content']);
+        $event = $mapper->build([
+            'title' => 'Test',
+            'description' => 'Test description',
+            'type' => 'free',
+            'token' => 'some-token',
+            'date_start' => new \DateTime
+        ]);
+        $event->relation('search', $search);
+        $mapper->save($event, ['relations' => true]);
+
+        $this->assertEquals($event->id, $search->event_id);
+        $this->assertEquals($event->search->id, $search->id);
+    }
+
+    public function testBelongsToRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $author = new \SpotTest\Entity\Author(['email' => 'test@example.com', 'password' => '123456']);
+        $post = $mapper->build([
+            'title' => 'Test',
+            'body' => 'Test description',
+        ]);
+        $post->relation('author', $author);
+        $mapper->save($post, ['relations' => true]);
+        
+        $this->assertEquals($post->author_id, $author->id);
+        $this->assertFalse($post->isNew());
+        $this->assertFalse($author->isNew());
+    }
+
+    public function testHasManyRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $comments = [];
+        for ($i = 1; $i < 3; $i++) {
+            $comments[] = new \SpotTest\Entity\Post\Comment([
+                'name' => 'John Doe',
+                'email'  => 'test@example.com',
+                'body' => '#'.$i.': Lorem ipsum is dolor.',
+            ]);
+        }
+        $post = $mapper->build([
+            'title' => 'Test',
+            'body' => 'Test description',
+            'author_id' => 5
+        ]);
+        $post->relation('comments', new \Spot\Entity\Collection($comments));
+        $mapper->save($post, ['relations' => true]);
+        $this->assertFalse($post->isNew());
+        foreach ($post->comments as $comment) {
+            $this->assertFalse($comment->isNew());
+            $this->assertEquals($comment->post_id, $post->id);
+        }
+    }
+
+    public function testHasManyThroughRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $tags = [];
+        for ($i = 1; $i < 3; $i++) {
+            $tags[] = new \SpotTest\Entity\Tag([
+                'name' => 'Tag #'.$i
+            ]);
+        }
+        $post = $mapper->build([
+            'title' => 'Test',
+            'body' => 'Test description',
+            'author_id' => 5
+        ]);
+        $post->relation('tags', new \Spot\Entity\Collection($tags));
+        $mapper->save($post, ['relations' => true]);
+
+        $this->assertFalse($post->isNew());
+        $i = 1;
+        foreach ($post->tags as $tag) {
+            $this->assertFalse($tag->isNew());
+            $this->assertEquals($tag->name, 'Tag #'.$i);
+            $i++;
+        }
     }
 }
