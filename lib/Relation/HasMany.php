@@ -94,7 +94,12 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
      */
     public function count()
     {
-        return $this->query()->count();
+        if ($this->result === null) {
+            $count = $this->query()->count();
+        } else {
+            $count = count($this->result);
+        }
+        return $count;
     }
 
     /**
