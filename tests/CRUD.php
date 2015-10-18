@@ -8,14 +8,14 @@ class CRUD extends \PHPUnit_Framework_TestCase
 {
     public static function setupBeforeClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting', 'Event', 'Event\Search'] as $entity) {
+        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting', 'Event', 'Event\Search', 'PolymorphicComment'] as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting', 'Event', 'Event\Search'] as $entity) {
+        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting', 'Event', 'Event\Search', 'PolymorphicComment'] as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -279,6 +279,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
     public function testHasOneRelationValidation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $searchMapper = test_spot_mapper('SpotTest\Entity\Event\Search');
         $search = new Entity\Event\Search(['body' => 'Some body content']);
         $event = $mapper->build([
             'title' => 'Test',
@@ -292,6 +293,13 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($event->id, $search->event_id);
         $this->assertEquals($event->search->id, $search->id);
+
+        //Check that old related entity gets deleted when updating relationship
+        $search2 = new Entity\Event\Search(['body' => 'body2']);
+        $event->relation('search', $search2);
+        $mapper->save($event, ['relations' => true]);
+        
+        $this->assertEquals($searchMapper->get($search->primaryKey()), false);
     }
 
     public function testBelongsToRelationValidation()
@@ -308,11 +316,18 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $this->assertEquals($post->author_id, $author->id);
         $this->assertFalse($post->isNew());
         $this->assertFalse($author->isNew());
+
+        $author2 = new \SpotTest\Entity\Author(['email' => 'test2@example.com', 'password' => '123456789']);
+        $post->relation('author', $author2);
+        $mapper->save($post, ['relations' => true]);
+        
+        $this->assertEquals($post->author_id, $author2->id);
     }
 
     public function testHasManyRelationValidation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $commentMapper = test_spot_mapper('SpotTest\Entity\Post\Comment');
         $comments = [];
         for ($i = 1; $i < 3; $i++) {
             $comments[] = new \SpotTest\Entity\Post\Comment([
@@ -333,11 +348,24 @@ class CRUD extends \PHPUnit_Framework_TestCase
             $this->assertFalse($comment->isNew());
             $this->assertEquals($comment->post_id, $post->id);
         }
+        //Test comment deleted from DB when removed from relation
+        $removedComment = array_shift($comments);
+        $post->relation('comments', new \Spot\Entity\Collection($comments));
+        $mapper->save($post, ['relations' => true]);
+        $this->assertEquals($commentMapper->get($removedComment->primaryKey()), false);
+
+        //Test all comments removed when relation set to false
+        $post->relation('comments', false);
+        $mapper->save($post, ['relations' => true]);
+        foreach ($comments as $comment) {
+            $this->assertEquals($commentMapper->get($comment->primaryKey()), false);
+        }
     }
 
     public function testHasManyThroughRelationValidation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
         $tags = [];
         for ($i = 1; $i < 3; $i++) {
             $tags[] = new \SpotTest\Entity\Tag([
@@ -353,11 +381,23 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $mapper->save($post, ['relations' => true]);
 
         $this->assertFalse($post->isNew());
+        $this->assertEquals($postTagMapper->all()->count(), 2);
         $i = 1;
         foreach ($post->tags as $tag) {
             $this->assertFalse($tag->isNew());
             $this->assertEquals($tag->name, 'Tag #'.$i);
             $i++;
         }
+
+        //Test comment deleted from DB when removed from relation
+        $removedTag = array_shift($tags);
+        $post->relation('tags', new \Spot\Entity\Collection($tags));
+        $mapper->save($post, ['relations' => true]);
+        $this->assertEquals($postTagMapper->where(['tag_id' => $removedTag->primaryKey()])->count(), 0);
+
+        //Test all comments removed when relation set to false
+        $post->relation('tags', false);
+        $mapper->save($post, ['relations' => true]);
+        $this->assertEquals($postTagMapper->all()->count(), 0);
     }
 }
