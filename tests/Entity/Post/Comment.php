@@ -1,15 +1,18 @@
 <?php
 namespace SpotTest\Entity\Post;
 
-use Spot\MapperInterface;
+use DateTime;
+use Spot\Entity;
 use Spot\EntityInterface;
+use Spot\MapperInterface;
+use Spot\Query;
 
 /**
  * Post Comment
  *
  * @package Spot
  */
-class Comment extends \Spot\Entity
+class Comment extends Entity
 {
     protected static $table = 'test_post_comments';
 
@@ -24,6 +27,16 @@ class Comment extends \Spot\Entity
             'date_created'  => ['type' => 'datetime']
         ];
     }
+
+    public static function scopes()
+    {
+        return [
+            'yesterday' => function (Query $query) {
+                return $query->where(['date_created :gt' => new DateTime('yesterday'), 'date_created :lt' => new DateTime('today')]);
+            }
+        ];
+    }
+
 
     public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {

@@ -5,6 +5,7 @@ use Spot\Entity;
 use Spot\EntityInterface;
 use Spot\MapperInterface;
 use Spot\EventEmitter;
+use Spot\Query;
 
 /**
  * Post
@@ -53,6 +54,15 @@ class Post extends Entity
                 }
             });
         }
+    }
+
+    public static function scopes()
+    {
+        return [
+            'active' => function (Query $query) {
+                return $query->where(['status' => 1]);
+            }
+        ];
     }
 
     public function mock_save_hook()
