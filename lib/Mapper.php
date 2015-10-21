@@ -1044,7 +1044,7 @@ class Mapper implements MapperInterface
             }
 
             // Run only if field required
-            if ($entity->$field !== null && $fieldAttrs['required'] === true) {
+            if ($entity->$field !== null || $fieldAttrs['required'] === true) {
                 // Field with 'options'
                 if (isset($fieldAttrs['options']) && is_array($fieldAttrs['options'])) {
                     $v->rule('in', $field, $fieldAttrs['options']);
