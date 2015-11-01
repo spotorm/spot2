@@ -127,7 +127,7 @@ class Manager
                 'index' => false,
                 'unique' => false,
                 'autoincrement' => false,
-                'foreignkey' => false,
+                'foreignkey' => true,
                 'onUpdate' => null,
                 'onDelete' => null
             ];

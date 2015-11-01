@@ -303,7 +303,7 @@ class Resolver
 
                 if (!is_null($fieldInfo['onDelete'])) {
                     $onDelete = $fieldInfo['onDelete'];
-                } else if ($fieldInfo['required']) {
+                } else if ($fieldInfo['notnull']) {
                     $onDelete = "CASCADE";
                 } else {
                     $onDelete = "SET NULL";
