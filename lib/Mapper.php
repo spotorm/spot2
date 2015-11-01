@@ -758,6 +758,7 @@ class Mapper implements MapperInterface
             // Update primary key on entity object
             $entity->$pkField = $result;
             $entity->isNew(false);
+            $entity->data($entity->data(), false);
 
             if ($result) {
                 $this->prepareEntity($entity);
@@ -820,7 +821,7 @@ class Mapper implements MapperInterface
 
         if (count($data) > 0) {
             $result = $this->resolver()->update($this->table(), $data, [$this->primaryKeyField() => $this->primaryKey($entity)]);
-
+            $entity->data($entity->data(), false);
             // Run afterSave and afterUpdate
             if (
                 false === $this->eventEmitter()->emit('afterSave', [$entity, $this, &$result])

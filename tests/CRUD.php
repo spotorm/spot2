@@ -239,6 +239,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
         $result = $postMapper->update($post, ['strict' => false]);
         $this->assertTrue((boolean) $result);
+        $this->assertTrue( ! $post->isModified());
     }
 
     /**
