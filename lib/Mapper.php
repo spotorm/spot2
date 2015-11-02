@@ -905,84 +905,8 @@ class Mapper implements MapperInterface
 
         $lastResult = false;
         foreach ($relations as $relationName => $relation) {
-            if ($relation instanceof Relation\HasManyThrough) {
-                $relatedEntities = $entity->relation($relationName);
-                $oldEntities = $relation->execute();
-                if (is_array($relatedEntities) || $relatedEntities instanceof Entity\Collection) {
-                    $throughMapper = $this->getMapper($relation->throughEntityName());
-                    $relatedMapper = $this->getMapper($relation->entityName());
-                    $relatedIds = [];
-                    foreach ($relatedEntities as $related) {
-                        if ($related->isNew() || $related->isModified()) {
-                            $lastResult = $relatedMapper->save($related, $options);
-                        }
-                        $relatedIds[] = $related->primaryKey();
-                        if (!count($throughMapper->where([$relation->localKey() => $entity->primaryKey(), $relation->foreignKey() => $related->primaryKey()]))) {
-                            $lastResult = $throughMapper->create([$relation->localKey() => $entity->primaryKey(), $relation->foreignKey() => $related->primaryKey()]);
-                        }
-                    }
-                    $deletedIds = [];
-                    foreach ($oldEntities as $oldRelatedEntity) {
-                        if (!in_array($oldRelatedEntity, $relatedIds)) {
-                            $deletedIds[] = $oldRelatedEntity->primaryKey();
-                        }
-                    }
-                    if (!empty($deletedIds)) {
-                        $throughMapper->delete([$relation->localKey() => $entity->primaryKey(), $relation->foreignKey().' :in' => $deletedIds]);
-                    }
-                } else if ($relatedEntities === false) {
-                    //Relation was deleted, remove all
-                    $throughMapper = $this->getMapper($relation->throughEntityName());
-                    $throughMapper->delete([$relation->localKey() => $entity->primaryKey()]);
-                }
-            } else if ($relation instanceof Relation\HasMany) {
-                $relatedEntities = $entity->relation($relationName);
-                $deletedIds = [];
-                $relatedMapper = $this->getMapper($relation->entityName());
-                if (is_array($relatedEntities) || $relatedEntities instanceof Entity\Collection) {
-                    $oldEntities = $relation->execute();
-                    $relatedIds = [];
-                    foreach ($relatedEntities as $related) {
-                        if ($related->isNew() || $related->isModified()) {
-                            //Update the foreign key to match the main entity primary key
-                            $related->set($relation->foreignKey(), $entity->primaryKey());
-                            $lastResult = $relatedMapper->save($related, $options);
-                        }
-                        $relatedIds[] = $related->id;
-                    }
-
-                    foreach ($oldEntities as $oldRelatedEntity) {
-                        if (!in_array($oldRelatedEntity, $relatedIds)) {
-                            $deletedIds[] = $oldRelatedEntity->primaryKey();
-                        }
-                    }
-                }
-                if (count($deletedIds) || $relatedEntities === false) {
-                    $conditions = [$relation->foreignKey() => $entity->primaryKey()];
-                    if (count($deletedIds)) {
-                        $conditions[$relation->localKey().' :in'] = $deletedIds;
-                    }
-                    if ($relatedMapper->entityManager()->fields()[$relation->foreignKey()]['notnull']) {
-                        $relatedMapper->delete($conditions);
-                    } else {
-                        $relatedMapper->queryBuilder()->builder()->update($relatedMapper->table())->set($relation->foreignKey(), null)->where($conditions);
-                    }
-                }
-            } else if ($relation instanceof Relation\HasOne) {
-                $relatedEntity = $entity->relation($relationName);
-                $relatedMapper = $this->getMapper($relation->entityName());
-                if ($relatedEntity === false || $relation->{$relatedEntity->primaryKeyField()} !== $relatedEntity->primaryKey()) {
-                    if ($relatedMapper->entityManager()->fields()[$relation->foreignKey()]['notnull']) {
-                        $relatedMapper->delete([$relation->foreignKey() => $entity->primaryKey()]);
-                    } else {
-                        $relatedMapper->upsert([$relation->foreignKey() => null], [$relation->foreignKey() => $entity->primaryKey()]);
-                    }
-                }
-                if ($relatedEntity instanceof EntityInterface && ($relatedEntity->isNew() || $relatedEntity->isModified())) {
-                    //Update the foreign key to match the main entity primary key
-                    $relatedEntity->set($relation->foreignKey(), $entity->primaryKey());
-                    $lastResult = $relatedMapper->save($relatedEntity, $options);
-                } 
+            if (! $relation instanceof Relation\BelongsTo) {
+                $lastResult = $relation->save($entity, $relationName, $options);
             }
         }
 
@@ -1005,31 +929,7 @@ class Mapper implements MapperInterface
         $lastResult = false;
         foreach ($relations as $relationName => $relation) {
             if ($relation instanceof Relation\BelongsTo) {
-                $relatedEntity = $entity->relation($relationName);
-                if ($relatedEntity instanceof EntityInterface) {
-                    if ($relatedEntity->isNew() || $relatedEntity->isModified()) {
-                        $relatedMapper = $this->getMapper($relation->entityName());
-
-                        $lastResult = $relatedMapper->save($relatedEntity, $options);
-                         //Update the local key to match the related entity primary key
-                        if ($entity->get($relation->localKey()) !== $relatedEntity->primaryKey()) {
-                            $relatedRelations = $entity->relations($relatedMapper, $relatedEntity);
-
-                            //Check if it was a hasOne or a hasMany relation,
-                            //if hasOne, we must unset old value
-                            foreach ($relatedRelations as $relatedRelation) {
-                                if ($relatedRelation instanceof Relation\HasOne && $relatedRelation->foreignKey() === $relation->localKey()) {
-                                    if ($relatedMapper->entityManager()->fields()[$relatedRelation->foreignKey()]['notnull']) {
-                                        $relatedMapper->delete([$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
-                                    } else {
-                                        $relatedMapper->upsert([$relatedRelation->foreignKey() => null], [$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
-                                    }
-                                }
-                            }
-                            $entity->set($relation->localKey(), $relatedEntity->primaryKey());
-                        }
-                    }
-                }
+                $lastResult = $relation->save($entity, $relationName, $options);
             }
         }
 
