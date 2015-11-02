@@ -35,6 +35,7 @@ class Insert extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($result !== false);
         $this->assertTrue($post->id !== null);
+        $this->assertTrue( ! $post->isModified());
     }
 
     public function testInsertPostEntitySequencesAreCorrect()
