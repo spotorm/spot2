@@ -491,13 +491,15 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             unset($this->_inSetter[$field]);
         }
 
-        if (in_array($field, self::$relationFields[get_class($this)])) {
+        if (array_key_exists($field, $this->_data) || !in_array($field, self::$relationFields[get_class($this)])) {
+            if ($modified) {
+                $this->_dataModified[$field] = $value;
+            } else {
+                $this->_data[$field] = $value;
+            }
+        } elseif (in_array($field, self::$relationFields[get_class($this)])) {
             // Set relation
             $this->relation($field, $value);
-        } elseif ($modified) {
-            $this->_dataModified[$field] = $value;
-        } else {
-            $this->_data[$field] = $value;
         }
     }
 
