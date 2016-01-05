@@ -89,7 +89,7 @@ class Test_Validation extends PHPUnit_Framework_TestCase
         $mapper->save($entity);
 
         $this->assertTrue($entity->hasErrors());
-        $this->assertContains("must be at least 4 long", $entity->errors('email'));
+        $this->assertContains("Email must be at least 4 long", $entity->errors('email'));
     }
 
     public function testDisabledValidation()
