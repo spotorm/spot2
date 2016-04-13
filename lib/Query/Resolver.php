@@ -3,6 +3,8 @@ namespace Spot\Query;
 
 use Spot\Mapper;
 use Spot\Query;
+use Doctrine\DBAL\Schema\Table;
+use Spot\Relation\BelongsTo;
 
 /**
  * Main query resolver
@@ -121,6 +123,8 @@ class Resolver
         foreach ($fieldIndexes['index'] as $keyName => $keyFields) {
             $table->addIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)));
         }
+        // FOREIGN KEYS
+        $this->addForeignKeys($table);
 
         return $schema;
     }
@@ -264,14 +268,52 @@ class Resolver
         return $this->mapper->connection()->quoteIdentifier(trim($identifier));
     }
 	
-	/**
-	 * Trim a leading schema name separated by a dot if present
-	 *
-	 * @param string $identifier
-	 * @return string
-	 */
-	public function trimSchemaName($identifier){
-		$components = explode('.', $identifier, 2); 
-		return end($components);
-	}
+    /**
+     * Trim a leading schema name separated by a dot if present
+     *
+     * @param string $identifier
+     * @return string
+     */
+    public function trimSchemaName($identifier){
+            $components = explode('.', $identifier, 2);
+            return end($components);
+    }
+
+    /**
+     * Add foreign keys from BelongsTo relations to the table schema
+     * @param Table $table
+     * @return Table
+     */
+    protected function addForeignKeys(Table $table)
+    {
+        $relations = $this->mapper->entityManager()->relations();
+        $fields = $this->mapper->entityManager()->fields();
+        foreach ($relations as $relationName => $relation) {
+            if ($relation instanceof BelongsTo) {
+
+                $fieldInfo = $fields[$relation->localKey()];
+
+                if ($fieldInfo['foreignkey'] === false) {
+                    continue;
+                }
+
+                $foreignTable = $relation->mapper()->getMapper($relation->entityName())->table();
+
+                $onUpdate = !is_null($fieldInfo['onUpdate']) ? $fieldInfo['onUpdate'] :"CASCADE";
+
+                if (!is_null($fieldInfo['onDelete'])) {
+                    $onDelete = $fieldInfo['onDelete'];
+                } else if ($fieldInfo['notnull']) {
+                    $onDelete = "CASCADE";
+                } else {
+                    $onDelete = "SET NULL";
+                }
+
+                $fkName = $this->mapper->table().'_fk_'.$relationName;
+                $table->addForeignKeyConstraint($foreignTable, [$relation->localKey()], [$relation->foreignKey()], ["onDelete" => $onDelete, "onUpdate" => $onUpdate], $fkName);
+            }
+        }
+
+        return $table;
+    }
 }
