@@ -267,7 +267,7 @@ class Resolver
 
         return $this->mapper->connection()->quoteIdentifier(trim($identifier));
     }
-	
+
     /**
      * Trim a leading schema name separated by a dot if present
      *
@@ -298,7 +298,9 @@ class Resolver
                     continue;
                 }
 
-                $foreignTable = $relation->mapper()->getMapper($relation->entityName())->table();
+                $foreignTableMapper = $relation->mapper()->getMapper($relation->entityName());
+                $foreignTableMapper->migrate();
+                $foreignTable = $foreignTableMapper->table();
 
                 $onUpdate = !is_null($fieldInfo['onUpdate']) ? $fieldInfo['onUpdate'] :"CASCADE";
 
