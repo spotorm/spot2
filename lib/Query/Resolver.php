@@ -309,8 +309,15 @@ class Resolver
                     $onDelete = "SET NULL";
                 }
 
+                $fieldAliasMappings = $this->mapper->entityManager()->fieldAliasMappings();
+                if ($fieldAliasMappings[$relation->localKey()] !== null) {
+                    $localKey = $fieldAliasMappings[$relation->localKey()];
+                } else {
+                    $localKey = $relation->localKey();
+                }
+
                 $fkName = $this->mapper->table().'_fk_'.$relationName;
-                $table->addForeignKeyConstraint($foreignTable, [$relation->localKey()], [$relation->foreignKey()], ["onDelete" => $onDelete, "onUpdate" => $onUpdate], $fkName);
+                $table->addForeignKeyConstraint($foreignTable, [$localKey], [$relation->foreignKey()], ["onDelete" => $onDelete, "onUpdate" => $onUpdate], $fkName);
             }
         }
 
