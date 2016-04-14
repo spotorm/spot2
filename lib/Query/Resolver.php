@@ -286,7 +286,8 @@ class Resolver
      */
     protected function addForeignKeys(Table $table)
     {
-        $relations = $this->mapper->entityManager()->relations();
+        $entityName = $this->mapper->entity();
+        $relations = $entityName::relations($this->mapper, new $entityName);
         $fields = $this->mapper->entityManager()->fields();
         foreach ($relations as $relationName => $relation) {
             if ($relation instanceof BelongsTo) {
