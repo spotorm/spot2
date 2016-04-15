@@ -275,7 +275,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $result = $postMapper->save($post, ['strict' => false]);
         $this->assertTrue((boolean) $result);
     }
-
+    
     public function testHasOneRelationValidation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Event');
@@ -299,7 +299,9 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $event->relation('search', $search2);
         $mapper->save($event, ['relations' => true]);
         
-        $this->assertEquals($searchMapper->get($search->primaryKey()), false);
+        $queryHasOne = $searchMapper->where(['event_id' => $event->id]);
+        $this->assertEquals(count($queryHasOne), 1);
+        $this->assertEquals($queryHasOne->first()->get('body'), 'body2');
     }
 
     public function testBelongsToRelationValidation()
