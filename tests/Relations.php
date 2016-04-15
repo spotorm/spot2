@@ -301,6 +301,7 @@ class Relations extends \PHPUnit_Framework_TestCase
         $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
 
         $author = $authorMapper->create([
+            'id' => 2,
             'email'    => $email,
             'password' => 'password',
             'is_admin' => false,
@@ -320,6 +321,7 @@ class Relations extends \PHPUnit_Framework_TestCase
         $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
 
         $author = $authorMapper->create([
+            'id' => 3,
             'email'    => 'test1@test.com',
             'password' => 'password',
             'is_admin' => false,
