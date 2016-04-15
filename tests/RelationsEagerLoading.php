@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post', 'Post\Comment', 'Author', 'Tag', 'PostTag', 'Event', 'Event\Search'];
+    private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author', 'Event\Search', 'Event'];
 
     public static function setupBeforeClass()
     {

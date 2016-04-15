@@ -6,9 +6,11 @@ namespace SpotTest;
  */
 class QuerySql extends \PHPUnit_Framework_TestCase
 {
+    private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author'];
+
     public static function setupBeforeClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('SpotTest\Entity\\' . $entity)->migrate();
         }
 
@@ -52,7 +54,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 
     public static function tearDownAfterClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -66,11 +68,41 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 
     public function testInsertPostTagWithUniqueConstraint()
     {
+        $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $tag = $tagMapper->build([
+            'id' => 55,
+            'name' => 'Example Tag'
+        ]);
+        $result = $tagMapper->insert($tag);
+
+        if (!$result) {
+            throw new \Exception("Unable to create tag: " . var_export($tag->data(), true));
+        }
+
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->build([
+            'id' => 55,
+            'title' => 'Example Title',
+            'author_id' => 1,
+            'body' => '<p>body</p>',
+            'status' => 0,
+            'date_created' => new \DateTime()
+        ]);
+        $result = $postMapper->insert($post);
+
+        if (!$result) {
+            throw new \Exception("Unable to create post: " . var_export($post->data(), true));
+        }
+
         $mapper = test_spot_mapper('SpotTest\Entity\PostTag');
         $posttag_id = $mapper->insert([
             'post_id' => 55,
             'tag_id' => 55
         ]);
+
+        $mapper->delete(['id' => $posttag_id]);
+        $postMapper->delete($post);
+        $tagMapper->delete($tag);
     }
 
     public function testQueryInstance()

@@ -13,6 +13,19 @@ class Entity extends \PHPUnit_Framework_TestCase
         foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
+
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $author = $authorMapper->build([
+            'id' => 1,
+            'email' => 'example@example.com',
+            'password' => 't00r',
+            'is_admin' => false
+        ]);
+        $result = $authorMapper->insert($author);
+
+        if (!$result) {
+            throw new \Exception("Unable to create author: " . var_export($author->data(), true));
+        }
     }
 
     public static function tearDownAfterClass()

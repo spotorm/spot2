@@ -6,16 +6,31 @@ namespace SpotTest;
  */
 class Scopes extends \PHPUnit_Framework_TestCase
 {
+    private static $entities = ['Post\Comment', 'Post', 'Event\Search', 'Event', 'Author'];
+
     public static function setupBeforeClass()
     {
-        foreach (['Post', 'Post\Comment', 'Event', 'Event\Search', 'Author'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+        }
+
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $author = $authorMapper->build([
+            'id' => 1,
+            'email' => 'example@example.com',
+            'password' => 't00r',
+            'is_admin' => false
+        ]);
+        $result = $authorMapper->insert($author);
+
+        if (!$result) {
+            throw new \Exception("Unable to create author: " . var_export($author->data(), true));
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach (['Post', 'Post\Comment', 'Event', 'Event\Search', 'Author'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }

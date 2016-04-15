@@ -6,16 +6,31 @@ namespace SpotTest;
  */
 class CRUD extends \PHPUnit_Framework_TestCase
 {
+    private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author', 'Setting'];
+
     public static function setupBeforeClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+        }
+
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $author = $authorMapper->build([
+            'id' => 1,
+            'email' => 'example@example.com',
+            'password' => 't00r',
+            'is_admin' => false
+        ]);
+        $result = $authorMapper->insert($author);
+
+        if (!$result) {
+            throw new \Exception("Unable to create author: " . var_export($author->data(), true));
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -122,7 +137,33 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testPostTagUpsert()
     {
-        $postMapper = test_spot_mapper('SpotTest\Entity\PostTag');
+        $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $tag = $tagMapper->build([
+            'id' => 2145,
+            'name' => 'Example Tag'
+        ]);
+        $result = $tagMapper->insert($tag);
+
+        if (!$result) {
+            throw new \Exception("Unable to create tag: " . var_export($tag->data(), true));
+        }
+
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->build([
+            'id' => 1295,
+            'title' => 'Example Title',
+            'author_id' => 1,
+            'body' => '<p>body</p>',
+            'status' => 0,
+            'date_created' => new \DateTime()
+        ]);
+        $result = $postMapper->insert($post);
+
+        if (!$result) {
+            throw new \Exception("Unable to create post: " . var_export($post->data(), true));
+        }
+
+        $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
         $data = [
             'tag_id' => 2145,
             'post_id' => 1295
@@ -132,9 +173,9 @@ class CRUD extends \PHPUnit_Framework_TestCase
         ];
 
         // Posttags has unique constraint on tag+post, so insert will fail the second time
-        $result = $postMapper->upsert($data, $where);
-        $result2 = $postMapper->upsert(array_merge($data, ['random' => 'blah blah']), $where);
-        $postTag = $postMapper->first($where);
+        $result = $postTagMapper->upsert($data, $where);
+        $result2 = $postTagMapper->upsert(array_merge($data, ['random' => 'blah blah']), $where);
+        $postTag = $postTagMapper->first($where);
 
         $this->assertTrue((boolean) $result);
         $this->assertTrue((boolean) $result2);
