@@ -764,7 +764,7 @@ class Mapper implements MapperInterface
             // Update primary key on entity object
             $entity->$pkField = $result;
             $entity->isNew(false);
-            $entity->data($entity->data(), false);
+            $entity->data($entity->data(null, true, false), false);
 
             if (isset($options['relations']) && $options['relations'] === true) {
                 $this->saveHasRelations($entity, $options);
@@ -835,7 +835,7 @@ class Mapper implements MapperInterface
 
         if (count($data) > 0) {
             $result = $this->resolver()->update($this->table(), $data, [$this->primaryKeyField() => $this->primaryKey($entity)]);
-            $entity->data($entity->data(), false);
+            $entity->data($entity->data(null, true, false), false);
             if (isset($options['relations']) && $options['relations'] === true) {
                 $this->saveHasRelations($entity, $options);
             }
