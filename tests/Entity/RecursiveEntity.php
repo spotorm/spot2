@@ -42,8 +42,8 @@ class RecursiveEntity extends Entity
             'parent_id' => [
                 'type' => 'integer', 'index' => true,
             ],
-            'sibling_id' => [
-                'type' => 'integer', 'index' => true,
+            'siblingId' => [
+                'type' => 'integer', 'index' => true, 'column' => 'sibling_id'
             ],
         ];
     }
@@ -53,8 +53,8 @@ class RecursiveEntity extends Entity
         return [
             'children' => $mapper->hasMany($entity, 'SpotTest\Entity\RecursiveEntity', 'parent_id'),
             'parent' => $mapper->belongsTo($entity, 'SpotTest\Entity\RecursiveEntity', 'parent_id'),
-            'my_sibling' => $mapper->belongsTo($entity, 'SpotTest\Entity\RecursiveEntity', 'sibling_id'),
-            'sibling' => $mapper->hasOne($entity, 'SpotTest\Entity\RecursiveEntity', 'sibling_id')
+            'my_sibling' => $mapper->belongsTo($entity, 'SpotTest\Entity\RecursiveEntity', 'siblingId'),
+            'sibling' => $mapper->hasOne($entity, 'SpotTest\Entity\RecursiveEntity', 'siblingId')
         ];
     }
 }
