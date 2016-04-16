@@ -2,6 +2,7 @@
 namespace Spot\Relation;
 
 use Spot\Mapper;
+use Spot\EntityInterface;
 use Spot\Entity\Collection;
 
 /**
@@ -80,6 +81,48 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
     public function entity()
     {
         return $this->execute();
+    }
+
+
+    /**
+     * Save related entities
+     *
+     * @param ntityInterface $entity Entity to save relation from
+     * @param string $relationName Name of the relation to save
+     * @param array $options Options to pass to the mappers
+     * @return boolean
+     */
+    public function save(EntityInterface $entity, $relationName, $options = [])
+    {
+        $lastResult = false;
+        $relatedEntity = $entity->relation($relationName);
+
+        if ($relatedEntity instanceof EntityInterface) {
+            if ($relatedEntity->isNew() || $relatedEntity->isModified()) {
+                $relatedMapper = $this->mapper()->getMapper($this->entityName());
+
+                $lastResult = $relatedMapper->save($relatedEntity, $options);
+                 //Update the local key to match the related entity primary key
+                if ($entity->get($this->localKey()) !== $relatedEntity->primaryKey()) {
+                    $relatedRelations = $entity->relations($relatedMapper, $relatedEntity);
+
+                    //Check if it was a hasOne or a hasMany relation,
+                    //if hasOne, we must unset old value
+                    foreach ($relatedRelations as $relatedRelation) {
+                        if ($relatedRelation instanceof Relation\HasOne && $relatedRelation->foreignKey() === $this->localKey()) {
+                            if ($relatedMapper->entityManager()->fields()[$relatedRelation->foreignKey()]['notnull']) {
+                                $lastResult = $relatedMapper->delete([$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
+                            } else {
+                                $lastResult = $relatedMapper->upsert([$relatedRelation->foreignKey() => null], [$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
+                            }
+                        }
+                    }
+                    $entity->set($this->localKey(), $relatedEntity->primaryKey());
+                }
+            }
+        }
+
+        return $lastResult;
     }
 
     // Magic getter/setter passthru

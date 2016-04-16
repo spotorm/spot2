@@ -3,6 +3,7 @@ namespace Spot\Relation;
 
 use Spot\Mapper;
 use Spot\Entity;
+use Spot\EntityInterface;
 use Spot\Entity\Collection;
 
 /**
@@ -84,6 +85,53 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
         }
 
         return $collection;
+    }
+
+    /**
+     * Save related entities
+     *
+     * @param EntityInterface $entity Entity to save relation from
+     * @param string $relationName Name of the relation to save
+     * @param array $options Options to pass to the mappers
+     * @return boolean
+     */
+    public function save(EntityInterface $entity, $relationName, $options = [])
+    {
+        $relatedEntities = $entity->relation($relationName);
+        $deletedIds = [];
+        $lastResult = false;
+        $relatedMapper = $this->mapper()->getMapper($this->entityName());
+        if (is_array($relatedEntities) || $relatedEntities instanceof Entity\Collection) {
+            $oldEntities = $this->execute();
+            $relatedIds = [];
+            foreach ($relatedEntities as $related) {
+                if ($related->isNew() || $related->isModified()) {
+                    //Update the foreign key to match the main entity primary key
+                    $related->set($this->foreignKey(), $entity->primaryKey());
+                    $lastResult = $relatedMapper->save($related, $options);
+                }
+                $relatedIds[] = $related->id;
+            }
+
+            foreach ($oldEntities as $oldRelatedEntity) {
+                if (!in_array($oldRelatedEntity, $relatedIds)) {
+                    $deletedIds[] = $oldRelatedEntity->primaryKey();
+                }
+            }
+        }
+        if (count($deletedIds) || $relatedEntities === false) {
+            $conditions = [$this->foreignKey() => $entity->primaryKey()];
+            if (count($deletedIds)) {
+                $conditions[$this->localKey().' :in'] = $deletedIds;
+            }
+            if ($relatedMapper->entityManager()->fields()[$this->foreignKey()]['notnull']) {
+                $relatedMapper->delete($conditions);
+            } else {
+                $relatedMapper->queryBuilder()->builder()->update($relatedMapper->table())->set($this->foreignKey(), null)->where($conditions);
+            }
+        }
+
+        return $lastResult;
     }
 
     /**

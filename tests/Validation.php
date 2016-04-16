@@ -104,4 +104,48 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($entity->hasErrors());
     }
+
+    public function testHasOneRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $search = new SpotTest\Entity\Event\Search();
+        $event = $mapper->build([]);
+        $event->relation('search', $search);
+        $mapper->validate($event, ['relations' => true]);
+
+        $this->assertTrue(isset($event->errors()['search']));
+    }
+
+    public function testBelongsToRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $author = new SpotTest\Entity\Author();
+        $post = $mapper->build([]);
+        $post->relation('author', $author);
+        $mapper->validate($post, ['relations' => true]);
+
+        $this->assertTrue(isset($post->errors()['author']));
+    }
+
+    public function testHasManyRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $comment = new SpotTest\Entity\Post\Comment();
+        $post = $mapper->build([]);
+        $post->relation('comments', new \Spot\Entity\Collection([$comment]));
+        $mapper->validate($post, ['relations' => true]);
+
+        $this->assertTrue(isset($post->errors()['comments'][0]));
+    }
+
+    public function testHasManyThroughRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $tag = new SpotTest\Entity\Tag();
+        $post = $mapper->build([]);
+        $post->relation('tags', new \Spot\Entity\Collection([$tag]));
+        $mapper->validate($post, ['relations' => true]);
+
+        $this->assertTrue(isset($post->errors()['tags'][0]));
+    }
 }

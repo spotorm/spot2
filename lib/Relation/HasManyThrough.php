@@ -3,6 +3,7 @@ namespace Spot\Relation;
 
 use Spot\Mapper;
 use Spot\Entity;
+use Spot\EntityInterface;
 use Spot\Entity\Collection;
 
 /**
@@ -123,6 +124,53 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
     {
         return $this->throughEntityName;
     }
+
+
+    /**
+     * Save related entities
+     *
+     * @param EntityInterface $entity Entity to save relation from
+     * @param string $relationName Name of the relation to save
+     * @param array $options Options to pass to the mappers
+     * @return boolean
+     */
+    public function save(EntityInterface $entity, $relationName, $options = [])
+    {
+        $deletedIds = [];
+        $lastResult = false;
+        $relatedMapper = $this->mapper()->getMapper($this->entityName());
+        $relatedEntities = $entity->relation($relationName);
+        $oldEntities = $this->execute();
+        if (is_array($relatedEntities) || $relatedEntities instanceof Entity\Collection) {
+            $throughMapper = $this->mapper()->getMapper($this->throughEntityName());
+            $relatedMapper = $this->mapper()->getMapper($this->entityName());
+            $relatedIds = [];
+            foreach ($relatedEntities as $related) {
+                if ($related->isNew() || $related->isModified()) {
+                    $lastResult = $relatedMapper->save($related, $options);
+                }
+                $relatedIds[] = $related->primaryKey();
+                if (!count($throughMapper->where([$this->localKey() => $entity->primaryKey(), $this->foreignKey() => $related->primaryKey()]))) {
+                    $lastResult = $throughMapper->create([$this->localKey() => $entity->primaryKey(), $this->foreignKey() => $related->primaryKey()]);
+                }
+            }
+            $deletedIds = [];
+            foreach ($oldEntities as $oldRelatedEntity) {
+                if (!in_array($oldRelatedEntity, $relatedIds)) {
+                    $deletedIds[] = $oldRelatedEntity->primaryKey();
+                }
+            }
+            if (!empty($deletedIds)) {
+                $throughMapper->delete([$this->localKey() => $entity->primaryKey(), $this->foreignKey().' :in' => $deletedIds]);
+            }
+        } else if ($relatedEntities === false) {
+            //Relation was deleted, remove all
+            $throughMapper = $this->mapper()->getMapper($this->throughEntityName());
+            $throughMapper->delete([$this->localKey() => $entity->primaryKey()]);
+        }
+        return $lastResult;
+    }
+
 
     /**
      * SPL Countable function
