@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class ForeignKeys extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post', 'Author'];
+    private static $entities = ['Post', 'Author', 'RecursiveEntity'];
 
     public static function setupBeforeClass()
     {
