@@ -316,7 +316,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $result = $postMapper->save($post, ['strict' => false]);
         $this->assertTrue((boolean) $result);
     }
-    
+
     public function testHasOneRelationValidation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Event');
@@ -339,7 +339,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $search2 = new Entity\Event\Search(['body' => 'body2']);
         $event->relation('search', $search2);
         $mapper->save($event, ['relations' => true]);
-        
+
         $queryHasOne = $searchMapper->where(['event_id' => $event->id]);
         $this->assertEquals(count($queryHasOne), 1);
         $this->assertEquals($queryHasOne->first()->get('body'), 'body2');
@@ -348,22 +348,22 @@ class CRUD extends \PHPUnit_Framework_TestCase
     public function testBelongsToRelationValidation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $author = new \SpotTest\Entity\Author(['email' => 'test@example.com', 'password' => '123456']);
+        $author = new \SpotTest\Entity\Author(['id' => 2, 'email' => 'test@example.com', 'password' => '123456']);
         $post = $mapper->build([
             'title' => 'Test',
             'body' => 'Test description',
         ]);
         $post->relation('author', $author);
         $mapper->save($post, ['relations' => true]);
-        
+
         $this->assertEquals($post->author_id, $author->id);
         $this->assertFalse($post->isNew());
         $this->assertFalse($author->isNew());
 
-        $author2 = new \SpotTest\Entity\Author(['email' => 'test2@example.com', 'password' => '123456789']);
+        $author2 = new \SpotTest\Entity\Author(['id' => 3, 'email' => 'test2@example.com', 'password' => '123456789']);
         $post->relation('author', $author2);
         $mapper->save($post, ['relations' => true]);
-        
+
         $this->assertEquals($post->author_id, $author2->id);
     }
 
@@ -382,7 +382,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $post = $mapper->build([
             'title' => 'Test',
             'body' => 'Test description',
-            'author_id' => 5
+            'author_id' => 1
         ]);
         $post->relation('comments', new \Spot\Entity\Collection($comments));
         $mapper->save($post, ['relations' => true]);
@@ -418,7 +418,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $post = $mapper->build([
             'title' => 'Test',
             'body' => 'Test description',
-            'author_id' => 5
+            'author_id' => 1
         ]);
         $post->relation('tags', new \Spot\Entity\Collection($tags));
         $mapper->save($post, ['relations' => true]);
