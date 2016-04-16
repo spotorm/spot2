@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class Events extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'];
+    private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author'];
 
     public static function setupBeforeClass()
     {
@@ -20,7 +20,7 @@ class Events extends \PHPUnit_Framework_TestCase
                 'name' => "Title {$i}"
             ]);
         }
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 4; $i++) {
             $author_id = test_spot_mapper('SpotTest\Entity\Author')->insert([
                 'email' => $i.'user@somewhere.com',
                 'password' => 'securepassword'
@@ -156,7 +156,7 @@ class Events extends \PHPUnit_Framework_TestCase
             'title' => 'A title',
             'body' => '<p>body</p>',
             'status' => 1,
-            'author_id' => 1234,
+            'author_id' => 4,
             'date_created' => new \DateTime()
         ]);
 
@@ -165,7 +165,7 @@ class Events extends \PHPUnit_Framework_TestCase
             $post->status = 2;
         });
         $mapper->save($post);
-        $post = $mapper->first(['author_id' => 1234]);
+        $post = $mapper->first(['author_id' => 4]);
         $this->assertEquals(2, $post->status);
 
         $eventEmitter->removeAllListeners('beforeInsert');
@@ -216,6 +216,12 @@ class Events extends \PHPUnit_Framework_TestCase
     public function testUpdateHookUpdatesProperly()
     {
         $author_id = __LINE__;
+        $author = test_spot_mapper('SpotTest\Entity\Author')->insert([
+            'id' => $author_id,
+            'email' => $author_id.'user@somewhere.com',
+            'password' => 'securepassword'
+        ]);
+
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $testcase = $this;
 

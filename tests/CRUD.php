@@ -6,16 +6,31 @@ namespace SpotTest;
  */
 class CRUD extends \PHPUnit_Framework_TestCase
 {
+    private static $entities = ['PolymorphicComment', 'PostTag', 'Post\Comment', 'Post', 'Tag', 'Author', 'Setting', 'Event\Search', 'Event'];
+
     public static function setupBeforeClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting', 'Event', 'Event\Search', 'PolymorphicComment'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+        }
+
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $author = $authorMapper->build([
+            'id' => 1,
+            'email' => 'example@example.com',
+            'password' => 't00r',
+            'is_admin' => false
+        ]);
+        $result = $authorMapper->insert($author);
+
+        if (!$result) {
+            throw new \Exception("Unable to create author: " . var_export($author->data(), true));
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting', 'Event', 'Event\Search', 'PolymorphicComment'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -122,7 +137,33 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testPostTagUpsert()
     {
-        $postMapper = test_spot_mapper('SpotTest\Entity\PostTag');
+        $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $tag = $tagMapper->build([
+            'id' => 2145,
+            'name' => 'Example Tag'
+        ]);
+        $result = $tagMapper->insert($tag);
+
+        if (!$result) {
+            throw new \Exception("Unable to create tag: " . var_export($tag->data(), true));
+        }
+
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->build([
+            'id' => 1295,
+            'title' => 'Example Title',
+            'author_id' => 1,
+            'body' => '<p>body</p>',
+            'status' => 0,
+            'date_created' => new \DateTime()
+        ]);
+        $result = $postMapper->insert($post);
+
+        if (!$result) {
+            throw new \Exception("Unable to create post: " . var_export($post->data(), true));
+        }
+
+        $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
         $data = [
             'tag_id' => 2145,
             'post_id' => 1295
@@ -132,9 +173,9 @@ class CRUD extends \PHPUnit_Framework_TestCase
         ];
 
         // Posttags has unique constraint on tag+post, so insert will fail the second time
-        $result = $postMapper->upsert($data, $where);
-        $result2 = $postMapper->upsert(array_merge($data, ['random' => 'blah blah']), $where);
-        $postTag = $postMapper->first($where);
+        $result = $postTagMapper->upsert($data, $where);
+        $result2 = $postTagMapper->upsert(array_merge($data, ['random' => 'blah blah']), $where);
+        $postTag = $postTagMapper->first($where);
 
         $this->assertTrue((boolean) $result);
         $this->assertTrue((boolean) $result2);
@@ -275,7 +316,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $result = $postMapper->save($post, ['strict' => false]);
         $this->assertTrue((boolean) $result);
     }
-    
+
     public function testHasOneRelationValidation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Event');
@@ -298,7 +339,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $search2 = new Entity\Event\Search(['body' => 'body2']);
         $event->relation('search', $search2);
         $mapper->save($event, ['relations' => true]);
-        
+
         $queryHasOne = $searchMapper->where(['event_id' => $event->id]);
         $this->assertEquals(count($queryHasOne), 1);
         $this->assertEquals($queryHasOne->first()->get('body'), 'body2');
@@ -307,22 +348,22 @@ class CRUD extends \PHPUnit_Framework_TestCase
     public function testBelongsToRelationValidation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $author = new \SpotTest\Entity\Author(['email' => 'test@example.com', 'password' => '123456']);
+        $author = new \SpotTest\Entity\Author(['id' => 2, 'email' => 'test@example.com', 'password' => '123456']);
         $post = $mapper->build([
             'title' => 'Test',
             'body' => 'Test description',
         ]);
         $post->relation('author', $author);
         $mapper->save($post, ['relations' => true]);
-        
+
         $this->assertEquals($post->author_id, $author->id);
         $this->assertFalse($post->isNew());
         $this->assertFalse($author->isNew());
 
-        $author2 = new \SpotTest\Entity\Author(['email' => 'test2@example.com', 'password' => '123456789']);
+        $author2 = new \SpotTest\Entity\Author(['id' => 3, 'email' => 'test2@example.com', 'password' => '123456789']);
         $post->relation('author', $author2);
         $mapper->save($post, ['relations' => true]);
-        
+
         $this->assertEquals($post->author_id, $author2->id);
     }
 
@@ -341,7 +382,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $post = $mapper->build([
             'title' => 'Test',
             'body' => 'Test description',
-            'author_id' => 5
+            'author_id' => 1
         ]);
         $post->relation('comments', new \Spot\Entity\Collection($comments));
         $mapper->save($post, ['relations' => true]);
@@ -377,7 +418,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $post = $mapper->build([
             'title' => 'Test',
             'body' => 'Test description',
-            'author_id' => 5
+            'author_id' => 1
         ]);
         $post->relation('tags', new \Spot\Entity\Collection($tags));
         $mapper->save($post, ['relations' => true]);

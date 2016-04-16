@@ -267,7 +267,7 @@ class Resolver
 
         return $this->mapper->connection()->quoteIdentifier(trim($identifier));
     }
-	
+
     /**
      * Trim a leading schema name separated by a dot if present
      *
@@ -286,7 +286,9 @@ class Resolver
      */
     protected function addForeignKeys(Table $table)
     {
-        $relations = $this->mapper->entityManager()->relations();
+        $entityName = $this->mapper->entity();
+        $entity = new $entityName;
+        $relations = $entityName::relations($this->mapper, $entity);
         $fields = $this->mapper->entityManager()->fields();
         foreach ($relations as $relationName => $relation) {
             if ($relation instanceof BelongsTo) {
@@ -297,7 +299,27 @@ class Resolver
                     continue;
                 }
 
-                $foreignTable = $relation->mapper()->getMapper($relation->entityName())->table();
+                $foreignTableMapper = $relation->mapper()->getMapper($relation->entityName());
+                $foreignTable = $foreignTableMapper->table();
+
+                $foreignSchemaManager = $foreignTableMapper->connection()->getSchemaManager();
+                $foreignTableObject = $foreignSchemaManager->listTableDetails($foreignTable);
+
+                $foreignTableColumns = $foreignTableObject->getColumns();
+                $foreignTableNotExists = empty($foreignTableColumns);
+                $foreignKeyNotExists = !array_key_exists($relation->foreignKey(), $foreignTableColumns);
+                // We need to use the is_a() function because the there is some inconsistency in entity names (leading slash)
+                $notRecursiveForeignKey = !is_a($entity, $relation->entityName());
+
+                /* Migrate foreign table if:
+                 *  - the foreign table not exists
+                 *  - the foreign key not exists
+                 *  - the foreign table is not the same as the current table (recursion check)
+                 * This migration eliminates the 'Integrity constraint violation' error
+                 */
+                if (($foreignTableNotExists || $foreignKeyNotExists) && $notRecursiveForeignKey){
+                    $foreignTableMapper->migrate();
+                }
 
                 $onUpdate = !is_null($fieldInfo['onUpdate']) ? $fieldInfo['onUpdate'] :"CASCADE";
 
@@ -309,8 +331,16 @@ class Resolver
                     $onDelete = "SET NULL";
                 }
 
+                // Field alias support
+                $fieldAliasMappings = $this->mapper->entityManager()->fieldAliasMappings();
+                if (isset($fieldAliasMappings[$relation->localKey()])) {
+                    $localKey = $fieldAliasMappings[$relation->localKey()];
+                } else {
+                    $localKey = $relation->localKey();
+                }
+
                 $fkName = $this->mapper->table().'_fk_'.$relationName;
-                $table->addForeignKeyConstraint($foreignTable, [$relation->localKey()], [$relation->foreignKey()], ["onDelete" => $onDelete, "onUpdate" => $onUpdate], $fkName);
+                $table->addForeignKeyConstraint($foreignTable, [$localKey], [$relation->foreignKey()], ["onDelete" => $onDelete, "onUpdate" => $onUpdate], $fkName);
             }
         }
 

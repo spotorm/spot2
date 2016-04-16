@@ -6,12 +6,25 @@ namespace SpotTest;
  */
 class Insert extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post', 'Author', 'Event', 'Event\Search', 'NoSerial'];
+    private static $entities = ['Post', 'Author', 'Event\Search', 'Event', 'NoSerial'];
 
     public static function setupBeforeClass()
     {
         foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+        }
+
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $author = $authorMapper->build([
+            'id' => 1,
+            'email' => 'example@example.com',
+            'password' => 't00r',
+            'is_admin' => false
+        ]);
+        $result = $authorMapper->insert($author);
+
+        if (!$result) {
+            throw new \Exception("Unable to create author: " . var_export($author->data(), true));
         }
     }
 
@@ -79,7 +92,7 @@ class Insert extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
         $post = [
             'title' => "Test Post 101",
-            'author_id' => 101,
+            'author_id' => 1,
             'body' => "<p>Test Post 101</p><p>It's really quite lovely.</p>",
             'date_created' => new \DateTime()
         ];
@@ -93,7 +106,7 @@ class Insert extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
         $post = [
             'title' => "Test Post 100",
-            'author_id' => 100,
+            'author_id' => 1,
             'body' => "<p>Test Post 100</p>",
             'date_created' => new \DateTime()
         ];
@@ -109,7 +122,7 @@ class Insert extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
         $post = [
             'title' => "Test Post 101",
-            'author_id' => 101,
+            'author_id' => 1,
             'body' => "<p>Test Post 101</p>",
             'date_created' => new \DateTime()
         ];
@@ -125,7 +138,7 @@ class Insert extends \PHPUnit_Framework_TestCase
         $post = new \SpotTest\Entity\Post([
             'id' => 2001,
             'title' => "Test Post 2001",
-            'author_id' => 2001,
+            'author_id' => 1,
             'body' => "<p>Test Post 2001</p>"
         ]);
         $result = $mapper->insert($post);

@@ -18,7 +18,7 @@ class PolymorphicComment extends \Spot\Entity
     {
         return [
             'id'            => ['type' => 'integer', 'primary' => true, 'autoincrement' => true],
-            'item_type'     => ['type' => 'string', 'index' => 'item_type_id', 'required' => true],
+            'item_type'     => ['type' => 'string', 'index' => 'item_type_id', 'required' => true, 'value' => 'post'],
             'item_id'       => ['type' => 'integer', 'index' => 'item_type_id', 'required' => true],
             'name'          => ['type' => 'string', 'required' => true],
             'email'         => ['type' => 'string', 'required' => true],
