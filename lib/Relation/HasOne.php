@@ -85,6 +85,10 @@ class HasOne extends RelationAbstract implements \ArrayAccess
         $lastResult = false;
         $relatedEntity = $entity->relation($relationName);
         $relatedMapper = $this->mapper()->getMapper($this->entityName());
+        //Autoloaded relation, no need to save
+        if ($relatedEntity instanceof HasOne) {
+            return false;
+        }
         if ($relatedEntity === false || $this->{$relatedEntity->primaryKeyField()} !== $relatedEntity->primaryKey()) {
             if ($relatedMapper->entityManager()->fields()[$this->foreignKey()]['notnull']) {
                 $relatedMapper->delete([$this->foreignKey() => $entity->primaryKey()]);

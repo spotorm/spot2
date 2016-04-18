@@ -156,7 +156,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
             }
             $deletedIds = [];
             foreach ($oldEntities as $oldRelatedEntity) {
-                if (!in_array($oldRelatedEntity, $relatedIds)) {
+                if (!in_array($oldRelatedEntity->primaryKey(), $relatedIds)) {
                     $deletedIds[] = $oldRelatedEntity->primaryKey();
                 }
             }
