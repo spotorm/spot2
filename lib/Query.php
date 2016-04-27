@@ -311,7 +311,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * @return array SQL fragment strings for WHERE clause
      * @throws Exception
      */
-    private function parseWhereToSQLFragments(array $where, $useAlias = true)
+    protected function parseWhereToSQLFragments(array $where, $useAlias = true)
     {
         $builder = $this->builder();
 
