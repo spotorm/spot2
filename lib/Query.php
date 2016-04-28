@@ -1,4 +1,5 @@
 <?php
+
 namespace Spot;
 
 /**
@@ -56,6 +57,41 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * @var array
      */
     protected static $_customMethods = [];
+
+    /**
+     * @var array
+     */
+    protected static $_whereOperators = [
+        '<' => Query\Operator\LessThan::class,
+        ':lt' => Query\Operator\LessThan::class,
+        '<=' => Query\Operator\LessThanOrEqual::class,
+        ':lte' => Query\Operator\LessThanOrEqual::class,
+        '>' => Query\Operator\GreaterThan::class,
+        ':gt' => Query\Operator\GreaterThan::class,
+        '>=' => Query\Operator\GreaterThanOrEqual::class,
+        ':gte' => Query\Operator\GreaterThanOrEqual::class,
+        '~=' => Query\Operator\RegExp::class,
+        '=~' => Query\Operator\RegExp::class,
+        ':regex' => Query\Operator\RegExp::class,
+        ':like' => Query\Operator\Like::class,
+        ':fulltext' => Query\Operator\FullText::class,
+        ':fulltext_boolean' => Query\Operator\FullTextBoolean::class,
+        'in' => Query\Operator\In::class,
+        ':in' => Query\Operator\In::class,
+        '<>' => Query\Operator\Not::class,
+        '!=' => Query\Operator\Not::class,
+        ':ne' => Query\Operator\Not::class,
+        ':not' => Query\Operator\Not::class,
+        '=' => Query\Operator\Equals::class,
+        ':eq' => Query\Operator\Equals::class,
+    ];
+
+    /**
+     * Already instantiated operator objects
+     *
+     * @var array
+     */
+    protected static $_whereOperatorObjects = [];
 
     /**
      * Constructor Method
@@ -136,6 +172,21 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
             throw new \InvalidArgumentException("Method '" . $method . "' already exists on " . __CLASS__);
         }
         self::$_customMethods[$method] = $callback;
+    }
+
+    /**
+     * Adds a custom type to the type map.
+     *
+     * @param string $operator
+     * @param callable|string $action
+     */
+    public static function addWhereOperator($operator, $action)
+    {
+        if (isset(self::$_whereOperators[$name])) {
+            throw new \InvalidArgumentException("Where operator '" . $method . "' already exists");
+        }
+
+        static::$_whereOperators[$operator] = $action;
     }
 
     /**
@@ -311,14 +362,12 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * @return array SQL fragment strings for WHERE clause
      * @throws Exception
      */
-    protected function parseWhereToSQLFragments(array $where, $useAlias = true)
+    private function parseWhereToSQLFragments(array $where, $useAlias = true)
     {
         $builder = $this->builder();
 
         $sqlFragments = [];
         foreach ($where as $column => $value) {
-
-            $whereClause = "";
             // Column name with comparison operator
             $colData = explode(' ', $column);
             $operator = isset($colData[1]) ? $colData[1] : '=';
@@ -326,112 +375,43 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
                 $operator = array_pop($colData);
                 $colData = [implode(' ', $colData), $operator];
             }
-            $col = $colData[0];
 
-            // Prefix column name with alias
+            $operator = $this->getWhereOperatorCallable(strtolower($operator));
+            if (!$operator) {
+                throw new Exception("Unsupported operator '" . $operator . "' in WHERE clause");
+            }
+
+            $col = $colData[0];
             if ($useAlias === true) {
+                // Prefix column name with alias
                 $col = $this->fieldWithAlias($col);
             }
 
-            // Determine which operator to use based on custom and standard syntax
-            switch (strtolower($operator)) {
-                case '<':
-                case ':lt':
-                    $operator = '<';
-                    break;
-                case '<=':
-                case ':lte':
-                    $operator = '<=';
-                    break;
-                case '>':
-                case ':gt':
-                    $operator = '>';
-                    break;
-                case '>=':
-                case ':gte':
-                    $operator = '>=';
-                    break;
-                // REGEX matching
-                case '~=':
-                case '=~':
-                case ':regex':
-                    $operator = "REGEXP";
-                    break;
-                // LIKE
-                case ':like':
-                    $operator = "LIKE";
-                    break;
-                // FULLTEXT search
-                // MATCH(col) AGAINST(search)
-                case ':fulltext':
-                    $whereClause = "MATCH(" . $col . ") AGAINST(" . $builder->createPositionalParameter($value) . ")";
-                    break;
-                case ':fulltext_boolean':
-                    $whereClause = "MATCH(" . $col . ") AGAINST(" . $builder->createPositionalParameter($value) . " IN BOOLEAN MODE)";
-                    break;
-                // In
-                case 'in':
-                case ':in':
-                    $operator = 'IN';
-                    if (!is_array($value)) {
-                        throw new Exception("Use of IN operator expects value to be array. Got " . gettype($value) . ".");
-                    }
-                    break;
-                // Not equal
-                case '<>':
-                case '!=':
-                case ':ne':
-                case ':not':
-                    $operator = '!=';
-                    if (is_array($value)) {
-                        $operator = "NOT IN";
-                    } elseif (is_null($value)) {
-                        $operator = "IS NOT NULL";
-                    }
-                    break;
-                // Equals
-                case '=':
-                case ':eq':
-                    $operator = '=';
-                    if (is_array($value)) {
-                        $operator = "IN";
-                    } elseif (is_null($value)) {
-                        $operator = "IS NULL";
-                    }
-                    break;
-                // Unsupported operator
-                default:
-                    throw new Exception("Unsupported operator '" . $operator . "' in WHERE clause");
-                    break;
-            }
-
-            // If WHERE clause not already set by the code above...
-            if (empty($whereClause)) {
-                if (is_array($value)) {
-                    if (empty($value)) {
-                        $whereClause = $col . (($operator === 'NOT IN') ? " IS NOT NULL" : " IS NULL");
-                    } else {
-                        $valueIn = "";
-                        foreach ($value as $val) {
-                            $valueIn .= $builder->createPositionalParameter($val) . ",";
-                        }
-                        $value = "(" . trim($valueIn, ',') . ")";
-                        $whereClause = $col . " " . $operator . " " . $value;
-                    }
-                } elseif (is_null($value)) {
-                    $whereClause = $col . " " . $operator;
-                }
-            }
-
-            if (empty($whereClause)) {
-                // Add to binds array and add to WHERE clause
-                $whereClause = $col . " " . $operator . " " . $builder->createPositionalParameter($value) . "";
-            }
-
-            $sqlFragments[] = $whereClause;
+            $sqlFragments[] = $operator($builder, $col, $value);
         }
 
         return $sqlFragments;
+    }
+
+    /**
+     * @param string $operator
+     * @return callable|false
+     */
+    private function getWhereOperatorCallable($operator)
+    {
+        if (!isset(static::$_whereOperators[$operator])) {
+            return false;
+        }
+
+        if (is_callable(static::$_whereOperators[$operator])) {
+            return static::$_whereOperators[$operator];
+        }
+
+        if (!isset(static::$_whereOperatorObjects[$operator])) {
+            static::$_whereOperatorObjects[$operator] = new static::$_whereOperators[$operator]();
+        }
+
+        return static::$_whereOperatorObjects[$operator];
     }
 
     /**

@@ -315,7 +315,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $params = [3,4,5];
 
         $postsSub = $mapper->where(['status !=' => $params]);
-        $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', $params);
+        $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', [$params]);
 
         $this->assertContains('IN', $posts->toSql());
     }
