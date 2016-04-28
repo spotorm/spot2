@@ -458,4 +458,15 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($data, $json);
     }
+
+    public function testQueryCustomWhereOperator()
+    {
+        \Spot\Query::addWhereOperator(':json_exists', function ($builder, $column, $value) {
+            return 'jsonb_exists(' . $column . ', ' . $builder->createPositionalParameter($value) . ')';
+        });
+
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $query = $mapper->where(['data :json_exists' => 'author']);
+        $this->assertContains('jsonb_exists(', $query->toSql());
+    }
 }

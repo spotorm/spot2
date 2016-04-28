@@ -182,8 +182,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      */
     public static function addWhereOperator($operator, $action)
     {
-        if (isset(self::$_whereOperators[$name])) {
-            throw new \InvalidArgumentException("Where operator '" . $method . "' already exists");
+        if (isset(self::$_whereOperators[$operator])) {
+            throw new \InvalidArgumentException("Where operator '" . $operator . "' already exists");
         }
 
         static::$_whereOperators[$operator] = $action;
