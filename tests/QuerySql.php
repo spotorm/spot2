@@ -315,7 +315,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $params = [3,4,5];
 
         $postsSub = $mapper->where(['status !=' => $params]);
-        $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', $params);
+        $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', [$params]);
 
         $this->assertContains('IN', $posts->toSql());
     }
@@ -457,5 +457,16 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $json = json_encode($tags);
 
         $this->assertSame($data, $json);
+    }
+
+    public function testQueryCustomWhereOperator()
+    {
+        \Spot\Query::addWhereOperator(':json_exists', function ($builder, $column, $value) {
+            return 'jsonb_exists(' . $column . ', ' . $builder->createPositionalParameter($value) . ')';
+        });
+
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $query = $mapper->where(['data :json_exists' => 'author']);
+        $this->assertContains('jsonb_exists(', $query->toSql());
     }
 }
