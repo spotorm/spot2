@@ -1,9 +1,11 @@
 <?php
 namespace Spot\Relation;
 
-use Spot\Query;
-use Spot\EntityInterface;
+use BadMethodCallException;
 use Spot\Entity\Collection;
+use Spot\EntityInterface;
+use Spot\Mapper;
+use Spot\Query;
 
 /**
  * Abstract class for relations
@@ -27,7 +29,7 @@ abstract class RelationAbstract
     /**
      * Get Mapper object
      *
-     * @return \Spot\Mapper
+     * @return Mapper
      */
     public function mapper()
     {
@@ -133,7 +135,7 @@ abstract class RelationAbstract
     /**
      * Build query object
      *
-     * @return \Spot\Query
+     * @return Query
      */
     abstract protected function buildQuery();
 
