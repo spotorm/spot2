@@ -317,7 +317,10 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $this->assertTrue((boolean) $result);
     }
 
-    public function testHasOneRelationValidation()
+    /**
+     * @group save-relations
+     */
+    public function testHasOneNewEntitySaveRelation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Event');
         $searchMapper = test_spot_mapper('SpotTest\Entity\Event\Search');
@@ -345,7 +348,64 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $this->assertEquals($queryHasOne->first()->get('body'), 'body2');
     }
 
-    public function testBelongsToRelationValidation()
+    /**
+     * @group save-relations
+     */
+    public function testHasOneRelatedEntityAlreadyExists()
+    {
+
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $searchMapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $data = [
+            'title' => 'Test',
+            'description' => 'Test description',
+            'type' => 'free',
+            'token' => 'some-token',
+            'date_start' => new \DateTime
+        ];
+        $event = $mapper->build($data);
+        $mapper->insert($mapper->build($data));
+        $mapper->save($event);
+        $search2 = new Entity\Event\Search(['body' => 'body2', 'event_id' => 1]);
+        $searchMapper->save($search2);
+        
+        $savedEvent = $mapper->get($event->primaryKey());
+        $savedEvent->relation('search', $search2);
+        $mapper->save($savedEvent, ['relations' => true]);
+        $savedEvent = $mapper->get($savedEvent->primaryKey());
+        $this->assertEquals($savedEvent->search->id, $search2->id);
+        $this->assertEquals($savedEvent->search->event_id, $search2->event_id);
+        $this->assertEquals($savedEvent->id, $search2->event_id);
+        $this->assertEquals($savedEvent->search->body, $search2->body);
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testHasOneIgnoreRelationNotLoaded()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $searchMapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $event = $mapper->build([
+            'title' => 'Test',
+            'description' => 'Test description',
+            'type' => 'free',
+            'token' => 'some-token',
+            'date_start' => new \DateTime
+        ]);
+        $mapper->save($event);
+        $searchMapper->delete(['event_id' => $event->id]);
+        $savedEvent = $mapper->get($event->primaryKey());
+        $savedEvent->set('title', 'Test 2');
+
+        $this->assertEquals($mapper->save($savedEvent, ['relations' => true]), 1);
+
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testBelongsToNewEntitySaveRelation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $author = new \SpotTest\Entity\Author(['id' => 2, 'email' => 'test@example.com', 'password' => '123456']);
@@ -367,7 +427,10 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $this->assertEquals($post->author_id, $author2->id);
     }
 
-    public function testHasManyRelationValidation()
+    /**
+     * @group save-relations
+     */
+    public function testHasManyNewEntitySaveRelation()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $commentMapper = test_spot_mapper('SpotTest\Entity\Post\Comment');
@@ -405,7 +468,41 @@ class CRUD extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testHasManyThroughRelationValidation()
+    /**
+     * @group save-relations
+     */
+    public function testHasManyExistingEntitySaveRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $data = [
+            'title' => 'Test',
+            'body' => 'Test description',
+            'author_id' => 1
+        ];
+        $mapper->save($mapper->build(array_merge($data, ['id' => 99])));
+        $commentMapper = test_spot_mapper('SpotTest\Entity\Post\Comment');
+        $comments = [];
+        for ($i = 1; $i < 3; $i++) {
+            $comment = new \SpotTest\Entity\Post\Comment([
+                'name' => 'John Doe',
+                'email'  => 'test@example.com',
+                'post_id' => 99,
+                'body' => '#'.$i.': Lorem ipsum is dolor.',
+            ]);
+            $commentMapper->insert($comment);
+            $comments[] = $comment;
+        }
+        $post = $mapper->build($data);
+        $post->relation('comments', new \Spot\Entity\Collection($comments));
+        $mapper->save($post, ['relations' => true]);
+        $post = $mapper->get($post->primaryKey());
+        $this->assertTrue(count($post->comments) === 2);
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testHasManyThroughRelationSave()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
