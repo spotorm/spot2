@@ -87,18 +87,24 @@ class HasOne extends RelationAbstract implements \ArrayAccess
         $relatedMapper = $this->mapper()->getMapper($this->entityName());
         //Autoloaded relation, no need to save
         if ($relatedEntity instanceof HasOne) {
-            return false;
+            return 0;
         }
-        if ($relatedEntity === false || $this->{$relatedEntity->primaryKeyField()} !== $relatedEntity->primaryKey()) {
+        
+        if ($relatedEntity === false || $relatedEntity->get($this->foreignKey()) !== $entity->primaryKey()) {
+
             if ($relatedMapper->entityManager()->fields()[$this->foreignKey()]['notnull']) {
                 $relatedMapper->delete([$this->foreignKey() => $entity->primaryKey()]);
             } else {
-                $relatedMapper->upsert([$this->foreignKey() => null], [$this->foreignKey() => $entity->primaryKey()]);
+                $relatedMapper->queryBuilder()->builder()->update($relatedMapper->table())->set($this->foreignKey(), null)->where([$this->foreignKey() => $entity->primaryKey()]);
+            }
+            
+            if ($relatedEntity instanceof EntityInterface) {
+                //Update the foreign key to match the main entity primary key
+                $relatedEntity->set($this->foreignKey(), $entity->primaryKey());
             }
         }
+        
         if ($relatedEntity instanceof EntityInterface && ($relatedEntity->isNew() || $relatedEntity->isModified())) {
-            //Update the foreign key to match the main entity primary key
-            $relatedEntity->set($this->foreignKey(), $entity->primaryKey());
             $lastResult = $relatedMapper->save($relatedEntity, $options);
         }
 

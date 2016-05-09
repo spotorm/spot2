@@ -105,7 +105,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
             $oldEntities = $this->execute();
             $relatedIds = [];
             foreach ($relatedEntities as $related) {
-                if ($related->isNew() || $related->isModified()) {
+                if ($related->isNew() || $related->isModified() || $related->get($this->foreignKey()) !== $entity->primaryKey()) {
                     //Update the foreign key to match the main entity primary key
                     $related->set($this->foreignKey(), $entity->primaryKey());
                     $lastResult = $relatedMapper->save($related, $options);

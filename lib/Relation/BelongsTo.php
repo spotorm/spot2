@@ -94,7 +94,7 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
      */
     public function save(EntityInterface $entity, $relationName, $options = [])
     {
-        $lastResult = false;
+        $lastResult = 0;
         $relatedEntity = $entity->relation($relationName);
 
         if ($relatedEntity instanceof EntityInterface) {
@@ -113,7 +113,7 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
                             if ($relatedMapper->entityManager()->fields()[$relatedRelation->foreignKey()]['notnull']) {
                                 $lastResult = $relatedMapper->delete([$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
                             } else {
-                                $lastResult = $relatedMapper->upsert([$relatedRelation->foreignKey() => null], [$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
+                                $lastResult = $relatedMapper->queryBuilder()->builder()->update($relatedMapper->table())->set($relatedRelation->foreignKey(), null)->where([$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
                             }
                         }
                     }
