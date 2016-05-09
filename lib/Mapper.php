@@ -1146,8 +1146,11 @@ class Mapper implements MapperInterface
         if (!empty($uniqueWhere)) {
             foreach ($uniqueWhere as $field => $value) {
                 if (!is_array($value)) {
-                    $value = [$field => $entity->$field];
+                    $value = [$field => $value];
                 }
+                
+                $value = $this->convertToDatabaseValues($entity, $value);
+
                 if (!in_array(null, $value, true) && $this->first($value) !== false) {
                     $entity->error($field, "" . ucwords(str_replace('_', ' ', $field)) . " '" . implode('-', $value) . "' is already taken.");
                 }

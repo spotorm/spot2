@@ -4,7 +4,7 @@
  */
 class Test_Validation extends PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Author'];
+    private static $entities = ['Author', 'Report'];
 
     public static function setupBeforeClass()
     {
@@ -62,6 +62,29 @@ class Test_Validation extends PHPUnit_Framework_TestCase
         $this->assertFalse($user1->hasErrors());
         $this->assertTrue($user2->hasErrors());
         $this->assertContains("Email 'test@test.com' is already taken.", $user2->errors('email'));
+    }
+
+    public function testUniqueFieldConvertToDb()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Report');
+
+        // Setup new report
+        $report1 = new SpotTest\Entity\Report([
+            'date' => new \DateTime('2016-05-04'),
+            'result' => ['a' => 1, 'b' => 2],
+        ]);
+        $mapper->save($report1);
+
+        // Setup new report (same date, expecting error)
+        $report2 = new SpotTest\Entity\Report([
+            'date' => new \DateTime('2016-05-04'),
+            'result' => ['a' => 2, 'b' => 1],
+        ]);
+        $mapper->save($report2);
+
+        $this->assertFalse($report1->hasErrors());
+        $this->assertTrue($report2->hasErrors());
+        $this->assertContains("Date '2016-05-04' is already taken.", $report2->errors('date'));
     }
 
     public function testEmail()
