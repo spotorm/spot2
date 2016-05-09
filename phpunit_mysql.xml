@@ -16,8 +16,13 @@
   </php>
 
   <testsuites>
-    <testsuite name="Spot">
-      <directory suffix=".php">./tests/SpotTest</directory>
+    <testsuite name="Spot2 ORM">
+      <directory suffix=".php">./tests</directory>
     </testsuite>
   </testsuites>
+  <filter>
+    <whitelist addUncoveredFilesFromWhitelist="true" processUncoveredFilesFromWhitelist="false">
+      <directory suffix=".php">./lib</directory>
+    </whitelist>
+  </filter>
 </phpunit>

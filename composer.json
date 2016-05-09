@@ -18,9 +18,13 @@
         "doctrine/dbal": "~2.4",
         "sabre/event": "~2.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^4.7"
+    },
     "autoload": {
-        "psr-0": {
-            "Spot": "lib/"
+        "psr-4": {
+            "Spot\\": "lib/",
+            "SpotTest\\": "tests/"
         }
     }
 }

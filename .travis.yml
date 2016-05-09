@@ -1,28 +1,31 @@
 # see http://about.travis-ci.org/docs/user/languages/php/ for more hints
 language: php
 
-# list any PHP version you want to test against
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
 php:
   - 5.4
   - 5.5
   - 5.6
+  - 7.0
 
-# optionally specify a list of environments, for example to test different RDBMS
 env:
-  - SPOT_DB=mysql
-  - SPOT_DB=pgsql
-  - SPOT_DB=sqlite
+  - TYPE=mysql DSN=mysql://root@localhost/spot_test
+  - TYPE=pgsql DSN=pgsql://postgres@localhost/spot_test"
+  - TYPE=sqlite DSN=sqlite::memory
+
+install:
+  - composer install
 
 # execute any number of scripts before the test run, custom env's are available as variables
 before_script:
-  - composer install
-  - if [[ "$SPOT_DB" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS spot_test;" -uroot; fi
-  - if [[ "$SPOT_DB" == "pgsql" ]]; then psql -c 'create database spot_test;' -U postgres; fi
+  - if [[ "$TYPE" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS spot_test;" -uroot; fi
+  - if [[ "$TYPE" == "pgsql" ]]; then psql -c 'create database spot_test;' -U postgres; fi
 
 # omitting "script:" will default to phpunit
-# use the $SPOT_DB env variable to determine the phpunit.xml to use
-script: phpunit --configuration phpunit_$SPOT_DB.xml --coverage-text
-
-# configure notifications (email, IRC, campfire etc)
-#notifications:
-#  irc: "irc.freenode.org#travis"
+# use the $TYPE env variable to determine the phpunit.xml to use
+script: vendor/bin/phpunit --configuration phpunit_$TYPE.xml --coverage-text
