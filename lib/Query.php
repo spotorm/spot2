@@ -799,10 +799,12 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
 
             // Methods on Collection
         } elseif (method_exists('\\Spot\\Entity\\Collection', $method)) {
-            if(isset($args[0]))
+            if(isset($args[0])){
             return $this->execute()->$method($args[0]);
-            else
+            } else {
             return $this->execute()->$method();
+            }
+            
             // Error
         } else {
             throw new \BadMethodCallException("Method '" . __CLASS__ . "::" . $method . "' not found");
