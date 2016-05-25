@@ -708,7 +708,7 @@ class Mapper implements MapperInterface
                 $this->saveBelongsToRelations($entity, $options);
                 $data = $entity->data(null, true, false);
             }
-            
+
             $pkField = $this->primaryKeyField();
             $pkFieldInfo = $this->fieldInfo($pkField);
 
@@ -839,7 +839,7 @@ class Mapper implements MapperInterface
             if (isset($options['relations']) && $options['relations'] === true) {
                 $this->saveHasRelations($entity, $options);
             }
-            
+
             // Run afterSave and afterUpdate
             if (
                 false === $this->eventEmitter()->emit('afterSave', [$entity, $this, &$result])
@@ -975,7 +975,7 @@ class Mapper implements MapperInterface
      * @param array $data Key/value pairs of data to store
      * @return array
      */
-    protected function convertToDatabaseValues($entityName, array $data)
+    public function convertToDatabaseValues($entityName, array $data)
     {
         $dbData = [];
         $fields = $entityName::fields();
@@ -995,7 +995,7 @@ class Mapper implements MapperInterface
      * @param array $data Key/value pairs of data to store
      * @return array
      */
-    protected function convertToPHPValues($entityName, array $data)
+    public function convertToPHPValues($entityName, array $data)
     {
         $phpData = [];
         $fields = $entityName::fields();
@@ -1148,7 +1148,7 @@ class Mapper implements MapperInterface
                 if (!is_array($value)) {
                     $value = [$field => $value];
                 }
-                
+
                 $value = $this->convertToDatabaseValues($entity, $value);
 
                 if (!in_array(null, $value, true) && $this->first($value) !== false) {
@@ -1160,7 +1160,7 @@ class Mapper implements MapperInterface
         if (!$v->validate()) {
             $entity->errors($v->errors(), false);
         }
-        
+
         //Relations validation
         if (isset($options['relations']) && $options['relations'] === true) {
             $this->validateRelations($entity);
@@ -1226,7 +1226,7 @@ class Mapper implements MapperInterface
         $tainted = $relatedEntity->isNew() || $relatedEntity->isModified();
 
         $errorsRelated = [];
-        
+
         if ($tainted && !$this->getMapper(get_class($relatedEntity))->validate($relatedEntity)) {
             $errorsRelated = $relatedEntity->errors();
             //Disable validation on foreign key field it will be filled up later on when the new entity is persisted
@@ -1241,7 +1241,7 @@ class Mapper implements MapperInterface
             unset($errors[$relation->localKey()]);
             $entity->errors($errors);
         }
-        
+
         return $errorsRelated;
     }
 }

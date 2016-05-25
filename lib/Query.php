@@ -2,6 +2,8 @@
 
 namespace Spot;
 
+use Doctrine\DBAL\Types\Type;
+
 /**
  * Query Object - Used to build adapter-independent queries PHP-style
  *
@@ -376,18 +378,29 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
                 $colData = [implode(' ', $colData), $operator];
             }
 
-            $operator = $this->getWhereOperatorCallable(strtolower($operator));
-            if (!$operator) {
-                throw new Exception("Unsupported operator '" . $operator . "' in WHERE clause");
+            $operatorCallable = $this->getWhereOperatorCallable(strtolower($operator));
+            if (!$operatorCallable) {
+                throw new \InvalidArgumentException("Unsupported operator '" . $operator . "' "
+                    . "in WHERE clause. If you want to use a custom operator, you "
+                    . "can add one with \Spot\Query::addWhereOperator('" . $operator . "', "
+                    . "function (QueryBuilder \$builder, \$column, \$value) { ... }); ");
             }
 
             $col = $colData[0];
+
+            // Handle DateTime value objects
+            if ($value instanceof \DateTime) {
+                $mapper = $this->mapper();
+                $convertedValues = $mapper->convertToDatabaseValues($mapper->entity(), [$col => $value]);
+                $value = $convertedValues[$col];
+            }
+
+            // Prefix column name with alias
             if ($useAlias === true) {
-                // Prefix column name with alias
                 $col = $this->fieldWithAlias($col);
             }
 
-            $sqlFragments[] = $operator($builder, $col, $value);
+            $sqlFragments[] = $operatorCallable($builder, $col, $value);
         }
 
         return $sqlFragments;

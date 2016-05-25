@@ -46,6 +46,8 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $result = $mapper->insert($post); // returns an id
 
         $this->assertTrue($result !== false);
+
+        return $post;
     }
 
     public function testSampleNewsInsertWithEmptyNonRequiredFields()
@@ -539,5 +541,16 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $post->relation('tags', false);
         $mapper->save($post, ['relations' => true]);
         $this->assertEquals($postTagMapper->all()->count(), 0);
+    }
+
+    /**
+     * @depends testSampleNewsInsert
+     */
+    public function testQueryWithDateTimeObjectValue($post)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $results = $mapper->where(['date_created <=' => new \DateTime()])->toArray();
+
+        $this->assertTrue(count($results) > 0);
     }
 }
