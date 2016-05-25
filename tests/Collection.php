@@ -63,4 +63,26 @@ class Collection extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($data, $json);
     }
+
+    public function testQueryCallsCollectionMethods()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+
+        // Method on Spot\Entity\Collection being called through Spot\Query object
+        $tagsArray = $mapper->all()->resultsIdentities();
+
+        $this->assertSame([1, 2, 3], $tagsArray);
+    }
+
+    public function testQueryCallsCollectionMethodsWithArguments()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+
+        // Method on Spot\Entity\Collection being called through Spot\Query object
+        $matchingTag = $mapper->all()->filter(function ($tag) {
+            return $tag->id === 1;
+        });
+
+        $this->assertSame(1, $matchingTag[0]->id);
+    }
 }

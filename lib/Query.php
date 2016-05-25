@@ -799,7 +799,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
 
             // Methods on Collection
         } elseif (method_exists('\\Spot\\Entity\\Collection', $method)) {
-            return call_user_func_array($method, $args);
+            return call_user_func_array([$this->execute(), $method], $args);
 
             // Error
         } else {
