@@ -224,6 +224,54 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     }
 
     /**
+     * Join (passthrough to DBAL QueryBuilder)
+     *
+     * @return $this
+     */
+    public function join()
+    {
+        call_user_func_array([$this->builder(), __FUNCTION__], $this->escapeIdentifier(func_get_args()));
+
+        return $this;
+    }
+
+    /**
+     * Inner Join (passthrough to DBAL QueryBuilder)
+     *
+     * @return $this
+     */
+    public function innerJoin()
+    {
+        call_user_func_array([$this->builder(), __FUNCTION__], $this->escapeIdentifier(func_get_args()));
+
+        return $this;
+    }
+
+    /**
+     * Left Join (passthrough to DBAL QueryBuilder)
+     *
+     * @return $this
+     */
+    public function leftJoin()
+    {
+        call_user_func_array([$this->builder(), __FUNCTION__], $this->escapeIdentifier(func_get_args()));
+
+        return $this;
+    }
+
+    /**
+     * Right Join (passthrough to DBAL QueryBuilder)
+     *
+     * @return $this
+     */
+    public function rightJoin()
+    {
+        call_user_func_array([$this->builder(), __FUNCTION__], $this->escapeIdentifier(func_get_args()));
+
+        return $this;
+    }
+
+    /**
      * Delete (passthrough to DBAL QueryBuilder)
      *
      * @return $this
