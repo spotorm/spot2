@@ -91,12 +91,14 @@ class Mapper implements MapperInterface
 
     /**
      * Entity manager class for storing information and meta-data about entities
-     *
+     * @param string $entityName
      * @return \Spot\Entity\Manager
      */
-    public function entityManager()
+    public function entityManager($entityName = null)
     {
-        $entityName = $this->entity();
+        if (!$entityName) {
+            $entityName = $this->entity();
+        }
         if (!isset(self::$entityManager[$entityName])) {
             self::$entityManager[$entityName] = new Entity\Manager($entityName);
         }
@@ -568,6 +570,18 @@ class Mapper implements MapperInterface
         }
 
         return false;
+    }
+
+    /**
+     * Execute custom query with no handling - just return affected rows
+     * Useful for UPDATE, DELETE, and INSERT queries
+     *
+     * @param string         $sql        Raw query or SQL to run against the datastore
+     * @param array Optional $conditions Array of binds in column => value pairs to use for prepared statement
+     */
+    public function exec($sql, array $params = [])
+    {
+        return $this->connection()->executeUpdate($sql, $params);
     }
 
     /**

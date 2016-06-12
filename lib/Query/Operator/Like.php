@@ -17,6 +17,10 @@ class Like
      */
     public function __invoke(QueryBuilder $builder, $column, $value)
     {
+        if ($value instanceof \Closure) {
+            return $column . ' = ' . $value();
+        }
+
         return $column . ' LIKE ' . $builder->createPositionalParameter($value);
     }
 }

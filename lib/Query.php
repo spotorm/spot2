@@ -140,22 +140,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     public function noQuote($noQuote = true)
     {
         $this->_noQuote = $noQuote;
-        $this->reEscapeFrom();
 
         return $this;
-    }
-
-    /**
-     * Re-escape from part of query according to new noQuote value
-     */
-    protected function reEscapeFrom()
-    {
-        $part = $this->builder()->getQueryPart('from');
-        $this->builder()->resetQueryPart('from');
-
-        foreach($part as $node) {
-            $this->from($this->unescapeIdentifier($node['table']), $this->unescapeIdentifier($node['alias']));
-        }
     }
 
     /**
@@ -421,10 +407,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @param array $where Array of conditions for this clause
      * @param bool $useAlias
+     * @param string $entityName
      * @return array SQL fragment strings for WHERE clause
      * @throws Exception
      */
-    private function parseWhereToSQLFragments(array $where, $useAlias = true)
+    private function parseWhereToSQLFragments(array $where, $useAlias = true, $entityName=null)
     {
         $builder = $this->builder();
 
@@ -457,9 +444,14 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
 
             // Prefix column name with alias
             if ($useAlias === true) {
-                $col = $this->fieldWithAlias($col);
+                $col = $this->fieldWithAlias($col, true, $entityName);
             }
 
+            if ( $this->stringIsExistingField($entityName, $value) ){
+                $value = function () use ($value){
+                        return $value;
+                };
+            }
             $sqlFragments[] = $operatorCallable($builder, $col, $value);
         }
 
@@ -712,6 +704,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      */
     public function toSql()
     {
+        if ($this->_noQuote) {
+            $escapeCharacter = $this->mapper()->connection()->getDatabasePlatform()->getIdentifierQuoteCharacter();
+            return str_replace($escapeCharacter, '', $this->builder()->getSQL());
+        }
+
         return $this->builder()->getSQL();
     }
 
@@ -777,18 +774,25 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * Get field name with table alias appended
      * @param string $field
      * @param bool $escaped
+     * @param string $entityName
      * @return string
      */
-    public function fieldWithAlias($field, $escaped = true)
+    public function fieldWithAlias($field, $escaped = true, $entityName = null)
     {
-        $fieldInfo = $this->_mapper->entityManager()->fields();
+        $fieldInfo = $this->_mapper->entityManager($entityName)->fields();
 
+        //extract table alias if present
+        list($field, $table) = $this->extractTableAndFieldFromString($field);
         // Determine real field name (column alias support)
         if (isset($fieldInfo[$field])) {
             $field = $fieldInfo[$field]['column'];
         }
 
-        $field = $this->_tableName . '.' . $field;
+        if (!$table) {
+            $table = $this->_mapper->entityManager($entityName)->table();
+        }
+
+        $field = $table . '.' . $field;
 
         return $escaped ? $this->escapeIdentifier($field) : $field;
     }
@@ -903,7 +907,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     public function makeJoin($type, $fromAlias, $entityName, $alias, $condition)
     {
         $joinTable = $this->mapper()->getMapper($entityName)->table();
-        $conditionString = (string)$condition;
+//        $conditionString = (string)$condition;
 
         $this->addMapping(
             'join',
@@ -916,6 +920,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
                 ),
             )
         );
+//        $testCondition = explode('=', $condition);
+        $conditionString = implode(' AND ', $this->parseWhereToSQLFragments($condition, true, $entityName));
 //        $conditionString = implode(' =', $condition);
         //@FIXME: now parameters are double escaped, because the initial are double escaped also :(
         $this->builder()->$type(
@@ -926,5 +932,39 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         );
 
         return $this;
+    }
+
+    /**
+     * Extract data from string, for strings which contains "point"
+     * @Example: table.field
+     * @param $string
+     * @return array
+     */
+    public function extractTableAndFieldFromString($string)
+    {
+        $pointPosition = strpos($string, '.');
+        if ($pointPosition !== false) {
+            $table = substr($string, 0, $pointPosition);
+            $field = substr($string, $pointPosition + 1);
+        } else {
+            $table = null;
+            $field = $string;
+        }
+
+        return [$field, $table];
+
+    }
+
+    public function stringIsExistingField($entityName, $value){
+        $fieldInfo = array_merge($this->_mapper->entityManager($entityName)->fields(), $this->_mapper->entityManager()->fields());
+        $field = null;
+        //extract table alias if present
+        list($extractedField, $table) = $this->extractTableAndFieldFromString($value);
+        // Determine real field name (column alias support)
+        if (isset($fieldInfo[$extractedField])) {
+            $field = $fieldInfo[$extractedField]['column'];
+        }
+
+        return $field;
     }
 }
