@@ -96,6 +96,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     protected static $_whereOperatorObjects = [];
 
     /**
+     * For future use
+     * Store the type of relation with the selected mapper
+     * @var
+     */
+    protected $mapping;
+
+    /**
      * Constructor Method
      *
      * @param \Spot\Mapper $mapper
@@ -225,50 +232,55 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
 
     /**
      * Join (passthrough to DBAL QueryBuilder)
-     *
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param null $condition
      * @return $this
      */
-    public function join()
+    public function join($fromAlias, $entityName, $alias, $condition = null)
     {
-        call_user_func_array([$this->builder(), __FUNCTION__], $this->escapeIdentifier(func_get_args()));
+        return $this->makeJoin(__FUNCTION__, $fromAlias, $entityName, $alias, $condition);
 
-        return $this;
     }
-
     /**
      * Inner Join (passthrough to DBAL QueryBuilder)
-     *
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param null $condition
      * @return $this
      */
-    public function innerJoin()
+    public function innerJoin($fromAlias, $entityName, $alias, $condition = null)
     {
-        call_user_func_array([$this->builder(), __FUNCTION__], $this->escapeIdentifier(func_get_args()));
+        return $this->makeJoin(__FUNCTION__, $fromAlias, $entityName, $alias, $condition);
 
-        return $this;
     }
-
     /**
      * Left Join (passthrough to DBAL QueryBuilder)
-     *
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param null $condition
      * @return $this
      */
-    public function leftJoin()
+    public function leftJoin($fromAlias, $entityName, $alias, $condition = null)
     {
-        call_user_func_array([$this->builder(), __FUNCTION__], $this->escapeIdentifier(func_get_args()));
+        return $this->makeJoin(__FUNCTION__, $fromAlias, $entityName, $alias, $condition);
 
-        return $this;
     }
-
     /**
      * Right Join (passthrough to DBAL QueryBuilder)
-     *
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param null $condition
      * @return $this
      */
-    public function rightJoin()
+    public function rightJoin($fromAlias, $entityName, $alias, $condition = null)
     {
-        call_user_func_array([$this->builder(), __FUNCTION__], $this->escapeIdentifier(func_get_args()));
+        return $this->makeJoin(__FUNCTION__, $fromAlias, $entityName, $alias, $condition);
 
-        return $this;
     }
 
     /**
@@ -866,5 +878,53 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         } else {
             throw new \BadMethodCallException("Method '" . __CLASS__ . "::" . $method . "' not found");
         }
+    }
+
+    /**
+     * Store the mapping of tables and mapper
+     * @param string $type
+     * @param array $data
+     */
+    private function addMapping($type, array $data)
+    {
+        $type = (string)$type;
+        $this->mapping[$type] = $data;
+    }
+
+    /**
+     * Add a join of type $type
+     * @param string $type
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param string $condition
+     * @return $this
+     */
+    public function makeJoin($type, $fromAlias, $entityName, $alias, $condition)
+    {
+        $joinTable = $this->mapper()->getMapper($entityName)->table();
+        $conditionString = (string)$condition;
+
+        $this->addMapping(
+            'join',
+            array(
+                $fromAlias => array(
+                    'joinTable' => $joinTable,
+                    'joinAlias' => $alias,
+                    'joinEntity' => $entityName,
+
+                ),
+            )
+        );
+//        $conditionString = implode(' =', $condition);
+        //@FIXME: now parameters are double escaped, because the initial are double escaped also :(
+        $this->builder()->$type(
+            $this->escapeIdentifier($fromAlias),
+            $this->escapeIdentifier($joinTable),
+            $this->escapeIdentifier($alias),
+            $conditionString
+        );
+
+        return $this;
     }
 }
