@@ -56,14 +56,14 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
         $query = $mapper->select()->noQuote()->where(['number' => 2, 'name' => 'legacy_crud']);
-        $this->assertEquals("SELECT * FROM test_legacy  WHERE test_legacy." . self::$legacyTable->getNumberFieldColumnName() ." = ? AND test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNumberFieldColumnName() ." = ? AND test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ?", $query->toSql());
     }
 
     // Ordering
     public function testLegacyOrderBy()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
-        $query = $mapper->select()->noQuote()->where(['number' => 2])->order(['date_created' => 'ASC']);
+        $query = $mapper->where(['number' => 2])->order(['date_created' => 'ASC'])->noQuote();
         $this->assertContains("ORDER BY test_legacy." . self::$legacyTable->getDateCreatedColumnName() . " ASC", $query->toSql());
     }
 
@@ -71,8 +71,8 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     public function testLegacyGroupBy()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
-        $query = $mapper->select()->noQuote()->where(['name' => 'test_group'])->group(['id']);
-        $this->assertEquals("SELECT * FROM test_legacy  WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY test_legacy." . self::$legacyTable->getIdFieldColumnName(), $query->toSql());
+        $query = $mapper->where(['name' => 'test_group'])->group(['id'])->noQuote();
+        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY test_legacy." . self::$legacyTable->getIdFieldColumnName(), $query->toSql());
     }
 
     // Insert

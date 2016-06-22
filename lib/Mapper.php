@@ -571,6 +571,18 @@ class Mapper implements MapperInterface
     }
 
     /**
+     * Execute custom query with no handling - just return affected rows
+     * Useful for UPDATE, DELETE, and INSERT queries
+     *
+     * @param string         $sql        Raw query or SQL to run against the datastore
+     * @param array Optional $conditions Array of binds in column => value pairs to use for prepared statement
+     */
+    public function exec($sql, array $params = [])
+    {
+        return $this->connection()->executeUpdate($sql, $params);
+    }
+
+    /**
      * Find all records
      *
      * @return Query

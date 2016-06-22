@@ -133,22 +133,8 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     public function noQuote($noQuote = true)
     {
         $this->_noQuote = $noQuote;
-        $this->reEscapeFrom();
 
         return $this;
-    }
-
-    /**
-     * Re-escape from part of query according to new noQuote value
-     */
-    protected function reEscapeFrom()
-    {
-        $part = $this->builder()->getQueryPart('from');
-        $this->builder()->resetQueryPart('from');
-
-        foreach($part as $node) {
-            $this->from($this->unescapeIdentifier($node['table']), $this->unescapeIdentifier($node['alias']));
-        }
     }
 
     /**
@@ -652,6 +638,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      */
     public function toSql()
     {
+        if ($this->_noQuote) {
+            $escapeCharacter = $this->mapper()->connection()->getDatabasePlatform()->getIdentifierQuoteCharacter();
+            return str_replace($escapeCharacter, '', $this->builder()->getSQL());
+        }
+
         return $this->builder()->getSQL();
     }
 
