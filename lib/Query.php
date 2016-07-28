@@ -2,8 +2,6 @@
 
 namespace Spot;
 
-use Doctrine\DBAL\Types\Type;
-
 /**
  * Query Object - Used to build adapter-independent queries PHP-style
  *
@@ -955,8 +953,22 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
 
     }
 
-    public function stringIsExistingField($entityName, $value){
-        $fieldInfo = array_merge($this->_mapper->entityManager($entityName)->fields(), $this->_mapper->entityManager()->fields());
+    /**
+     * Determine if the value is a existing field
+     * @param string $entityName
+     * @param string $value
+     * @return string
+     */
+    public function stringIsExistingField($entityName, $value)
+    {
+        $field = '';
+        if (is_array($value)) {
+            return $field;
+        }
+        $fieldInfo = array_merge(
+            $this->_mapper->entityManager($entityName)->fields(),
+            $this->_mapper->entityManager()->fields()
+        );
         $field = null;
         //extract table alias if present
         list($extractedField, $table) = $this->extractTableAndFieldFromString($value);
