@@ -261,7 +261,6 @@ interface MapperInterface
      * Begin a new database query - get query builder
      * Acts as a kind of factory to get the current adapter's query builder object
      *
-     * @param string $entityName Name of the entity class
      * @param mixed  $fields     String for single field or array of fields
      *
      * @return \Spot\Query
@@ -273,8 +272,8 @@ interface MapperInterface
      * Will update if primary key found, insert if not
      * Performs validation automatically before saving record
      *
-     * @param \Spot\Entity $entity Entity object
-     * @param array optional Array of save options
+     * @param EntityInterface $entity Entity object
+     * @param array $options Array of save options
      */
     public function save(EntityInterface $entity, array $options = []);
 
@@ -289,8 +288,8 @@ interface MapperInterface
     /**
      * Update given entity object
      *
-     * @param object $entity Entity object
-     * @params array $options Array of adapter-specific options
+     * @param EntityInterface $entity Entity object
+     * @param array $options Array of adapter-specific options
      */
     public function update(EntityInterface $entity, array $options = []);
 
@@ -325,15 +324,11 @@ interface MapperInterface
     /**
      * Drop/delete table
      * Destructive and dangerous - drops entire data source and all data
-     *
-     * @param string $entityName Name of the entity class
      */
     public function dropTable();
 
     /**
      * Migrate table structure changes from model to database
-     *
-     * @param string $entityName Name of the entity class
      */
     public function migrate();
 

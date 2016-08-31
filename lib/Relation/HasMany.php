@@ -52,10 +52,10 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
     /**
      * Map relation results to original collection of entities
      *
-     * @param string Relation name
-     * @param \Spot\Collection Collection of original entities to map results of query back to
+     * @param string $relationName
+     * @param Collection $collection of original entities to map results of query back to
      *
-     * @return \Spot\Collection
+     * @return Collection
      */
     public function eagerLoadOnCollection($relationName, Collection $collection)
     {

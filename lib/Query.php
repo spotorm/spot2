@@ -443,7 +443,6 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         $fields = (array)$fields;
         $entityDatasourceOptions = $this->mapper()->entityManager()->datasourceOptions($this->entityName());
         $fieldString = '`' . implode('`, `', $fields) . '`';
-        $fieldTypes = $this->mapper()->fields($this->entityName());
 
         // See if we can use FULLTEXT search
         $whereType = ':like';

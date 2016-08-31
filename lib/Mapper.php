@@ -29,6 +29,9 @@ class Mapper implements MapperInterface
 
     /**
      *  Constructor Method
+     *
+     * @param \Spot\Locator $locator
+     * @param string $entityName
      */
     public function __construct(Locator $locator, $entityName)
     {
@@ -131,6 +134,8 @@ class Mapper implements MapperInterface
 
     /**
      * Load Relations for mapped entity
+     *
+     * @param \Spot\EntityInterface $entity
      */
     public function loadRelations(EntityInterface $entity)
     {
@@ -143,6 +148,13 @@ class Mapper implements MapperInterface
 
     /**
      * Relation: HasMany
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param $entityName
+     * @param $foreignKey
+     * @param null $localValue
+     *
+     * @return \Spot\Relation\HasMany
      */
     public function hasMany(EntityInterface $entity, $entityName, $foreignKey, $localValue = null)
     {
@@ -160,6 +172,14 @@ class Mapper implements MapperInterface
 
     /**
      * Relation: HasManyThrough
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param $hasManyEntity
+     * @param $throughEntity
+     * @param $selectField
+     * @param $whereField
+     *
+     * @return \Spot\Relation\HasManyThrough
      */
     public function hasManyThrough(EntityInterface $entity, $hasManyEntity, $throughEntity, $selectField, $whereField)
     {
@@ -183,6 +203,12 @@ class Mapper implements MapperInterface
      * Relation: HasOne
      *
      * HasOne assumes that the foreignKey will be on the foreignEntity.
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param $foreignEntity
+     * @param $foreignKey
+     *
+     * @return \Spot\Relation\HasOne
      */
     public function hasOne(EntityInterface $entity, $foreignEntity, $foreignKey)
     {
@@ -203,6 +229,12 @@ class Mapper implements MapperInterface
      * BelongsTo assumes that the localKey will reference the foreignEntity's
      * primary key. If this is not the case, you probably want to use the
      * 'hasOne' relationship instead.
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param $foreignEntity
+     * @param $localKey
+     *
+     * @return \Spot\Relation\BelongsTo
      */
     public function belongsTo(EntityInterface $entity, $foreignEntity, $localKey)
     {
