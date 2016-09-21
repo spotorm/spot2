@@ -2,12 +2,13 @@
 
 namespace Spot;
 
-use Doctrine\DBAL\Types\Type;
+use Spot\Entity\Collection;
 
 /**
  * Query Object - Used to build adapter-independent queries PHP-style
  *
  * @package Spot
+ * @mixin Collection
  * @author Vance Lucas <vance@vancelucas.com>
  */
 class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerializable

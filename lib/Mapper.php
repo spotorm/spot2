@@ -286,7 +286,6 @@ class Mapper implements MapperInterface
      * Get formatted fields with all neccesary array keys and values.
      * Merges defaults with defined field values to ensure all options exist for each field.
      *
-     * @param  string $entityName Name of the entity class
      * @return array  Defined fields plus all defaults for full array of all possible options
      */
     public function fields()
@@ -328,6 +327,8 @@ class Mapper implements MapperInterface
      * Get value of primary key for given row result
      *
      * @param object $entity Instance of an entity to find the primary key of
+     *
+     * @return mixed
      */
     public function primaryKey(EntityInterface $entity)
     {
@@ -352,6 +353,8 @@ class Mapper implements MapperInterface
      * Check if field exists in defined fields
      *
      * @param string $field Field name to check for existence
+     *
+     * @return bool
      */
     public function fieldExists($field)
     {
@@ -362,6 +365,8 @@ class Mapper implements MapperInterface
      * Check if field exists in defined fields
      *
      * @param string $field Field name to check for existence
+     *
+     * @return false|mixed
      */
     public function fieldInfo($field)
     {
@@ -640,6 +645,8 @@ class Mapper implements MapperInterface
      * Find first record matching given conditions
      *
      * @param array $conditions Array of conditions in column => value pairs
+     *
+     * @return bool|\Spot\EntityInterface
      */
     public function first(array $conditions = [])
     {
@@ -714,7 +721,7 @@ class Mapper implements MapperInterface
     /**
      * Insert record
      *
-     * @param mixed $entity  Entity object or array of field => value pairs
+     * @param EntityInterface|array $entity  Entity object or array of field => value pairs
      * @param array $options Array of adapter-specific options
      */
     public function insert($entity, array $options = [])
@@ -835,8 +842,14 @@ class Mapper implements MapperInterface
     /**
      * Update given entity object
      *
-     * @param object $entity Entity object
+     * @param object|\Spot\EntityInterface $entity Entity object
+     * @param array $options
+     *
+     * @return bool|int
+     * @throws \Spot\Exception
+     *
      * @params array $options Array of adapter-specific options
+     *
      */
     public function update(EntityInterface $entity, array $options = [])
     {
@@ -983,7 +996,9 @@ class Mapper implements MapperInterface
     /**
      * Delete items matching given conditions
      *
-     * @param mixed $conditions Optional array of conditions in column => value pairs
+     * @param EntityInterface|array $conditions - Optional array of conditions in column => value pairs
+     *
+     * @return bool|\Doctrine\DBAL\Driver\Statement|int
      */
     public function delete($conditions = [])
     {
@@ -991,7 +1006,7 @@ class Mapper implements MapperInterface
         $beforeEvent = 'beforeDelete';
         $afterEvent = 'afterDelete';
 
-        if (is_object($conditions)) {
+        if ($conditions instanceof EntityInterface) {
             $conditions = [$this->primaryKeyField() => $this->primaryKey($conditions)];
         } elseif (is_array($conditions)) {
             $beforeEvent = 'beforeDeleteConditions';
@@ -1066,6 +1081,12 @@ class Mapper implements MapperInterface
 
     /**
      * Transaction with closure
+     *
+     * @param \Closure $work
+     * @param null $entityName
+     *
+     * @return
+     * @throws \Exception
      */
     public function transaction(\Closure $work, $entityName = null)
     {
@@ -1097,17 +1118,19 @@ class Mapper implements MapperInterface
     /**
      * Truncate table
      * Should delete all rows and reset serial/auto_increment keys
+     *
+     * @param bool $cascade
+     *
+     * @return void
      */
     public function truncateTable($cascade = false)
     {
-        return $this->resolver()->truncate($this->table(), $cascade);
+        $this->resolver()->truncate($this->table(), $cascade);
     }
 
     /**
      * Drop/delete table
-     * Destructive and dangerous - drops entire data source and all data
-     *
-     * @param string $entityName Name of the entity class
+     * Destructive and dangerous - drops entire data source and all data*
      */
     public function dropTable()
     {
@@ -1117,7 +1140,7 @@ class Mapper implements MapperInterface
     /**
      * Migrate table structure changes from model to database
      *
-     * @param string $entityName Name of the entity class
+     * @return bool
      */
     public function migrate()
     {

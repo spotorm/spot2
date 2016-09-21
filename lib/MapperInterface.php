@@ -1,5 +1,9 @@
 <?php
 namespace Spot;
+use Spot\Relation\BelongsTo;
+use Spot\Relation\HasMany;
+use Spot\Relation\HasManyThrough;
+use Spot\Relation\HasOne;
 
 /**
  * Base DataMapper Interface
@@ -68,11 +72,26 @@ interface MapperInterface
 
     /**
      * Relation: HasMany
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param $entityName
+     * @param $foreignKey
+     * @param null $localValue
+     *
+     * @return \Spot\Relation\HasMany
      */
     public function hasMany(EntityInterface $entity, $entityName, $foreignKey, $localValue = null);
 
     /**
      * Relation: HasManyThrough
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param $hasManyEntity
+     * @param $throughEntity
+     * @param $selectField
+     * @param $whereField
+     *
+     * @return HasManyThrough
      */
     public function hasManyThrough(EntityInterface $entity, $hasManyEntity, $throughEntity, $selectField, $whereField);
 
@@ -80,6 +99,12 @@ interface MapperInterface
      * Relation: HasOne
      *
      * HasOne assumes that the foreignKey will be on the foreignEntity.
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param $foreignEntity
+     * @param $foreignKey
+     *
+     * @return HasOne
      */
     public function hasOne(EntityInterface $entity, $foreignEntity, $foreignKey);
 
@@ -89,6 +114,12 @@ interface MapperInterface
      * BelongsTo assumes that the localKey will reference the foreignEntity's
      * primary key. If this is not the case, you probably want to use the
      * 'hasOne' relationship instead.
+     *
+     * @param \Spot\EntityInterface $entity
+     * @param $foreignEntity
+     * @param $localKey
+     *
+     * @return BelongsTo
      */
     public function belongsTo(EntityInterface $entity, $foreignEntity, $localKey);
 
@@ -139,11 +170,13 @@ interface MapperInterface
      * Get value of primary key for given row result
      *
      * @param object $entity Instance of an entity to find the primary key of
+     * @return mixed
      */
     public function primaryKey(EntityInterface $entity);
 
     /**
      * Get value of primary key for given row result
+     * @return mixed
      */
     public function primaryKeyField();
 
@@ -151,6 +184,7 @@ interface MapperInterface
      * Check if field exists in defined fields
      *
      * @param string $field Field name to check for existence
+     * @return bool
      */
     public function fieldExists($field);
 
@@ -246,6 +280,7 @@ interface MapperInterface
      * Find first record matching given conditions
      *
      * @param array $conditions Array of conditions in column => value pairs
+     * @return EntityInterface|bool
      */
     public function first(array $conditions = []);
 
@@ -312,12 +347,22 @@ interface MapperInterface
 
     /**
      * Transaction with closure
+     *
+     * @param \Closure $work
+     * @param null $entityName
+     *
+     * @return
+     * @throws \Exception
      */
     public function transaction(\Closure $work, $entityName = null);
 
     /**
      * Truncate table
      * Should delete all rows and reset serial/auto_increment keys
+     *
+     * @param bool $cascade
+     *
+     * @return void
      */
     public function truncateTable($cascade = false);
 
@@ -329,11 +374,17 @@ interface MapperInterface
 
     /**
      * Migrate table structure changes from model to database
+     * @return bool
      */
     public function migrate();
 
     /**
      * Run set validation rules on fields
+     *
+     * @param EntityInterface $entity
+     * @param array $options
+     *
+     * @return boolean
      */
-    public function validate(EntityInterface $entity);
+    public function validate(EntityInterface $entity, array $options = []);
 }
