@@ -537,7 +537,10 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
             // Add to relation field array
             $entityName = get_class($this);
-            if (!in_array($relationName, self::$relationFields[$entityName])) {
+            if (!isset(self::$relationFields[$entityName]) || !in_array($relationName, self::$relationFields[$entityName])) {
+                if (!isset(self::$relationFields[$entityName])) {
+                    self::$relationFields[$entityName] = [];
+                }
                 self::$relationFields[$entityName][] = $relationName;
             }
         }
