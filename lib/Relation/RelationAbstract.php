@@ -1,9 +1,11 @@
 <?php
 namespace Spot\Relation;
 
-use Spot\Query;
-use Spot\Entity;
+use BadMethodCallException;
 use Spot\Entity\Collection;
+use Spot\EntityInterface;
+use Spot\Mapper;
+use Spot\Query;
 
 /**
  * Abstract class for relations
@@ -27,7 +29,7 @@ abstract class RelationAbstract
     /**
      * Get Mapper object
      *
-     * @return \Spot\Mapper
+     * @return Mapper
      */
     public function mapper()
     {
@@ -133,7 +135,7 @@ abstract class RelationAbstract
     /**
      * Build query object
      *
-     * @return \Spot\Query
+     * @return Query
      */
     abstract protected function buildQuery();
 
@@ -165,6 +167,16 @@ abstract class RelationAbstract
     }
 
     /**
+     * Save related entities
+     *
+     * @param EntityInterface $entity Entity to save relation from
+     * @param string $relationName Name of the relation to save
+     * @param array $options Options to pass to the mappers
+     * @return boolean
+     */
+    abstract public function save(EntityInterface $entity, $relationName, $options = []);
+
+    /**
      * Passthrough for missing methods on expected object result
      */
     public function __call($func, $args)
@@ -186,7 +198,7 @@ abstract class RelationAbstract
                 return call_user_func_array([$result, $func], $args);
             }
 
-            throw new \BadMethodCallException("Method " . get_called_class() . "::$func does not exist");
+            throw new BadMethodCallException("Method " . get_called_class() . "::$func does not exist");
         }
     }
 }

@@ -2,6 +2,7 @@
 namespace Spot\Relation;
 
 use Spot\Mapper;
+use Spot\EntityInterface;
 use Spot\Entity\Collection;
 
 /**
@@ -69,6 +70,45 @@ class HasOne extends RelationAbstract implements \ArrayAccess
     public function entity()
     {
         return $this->execute();
+    }
+
+    /**
+     * Save related entities
+     *
+     * @param EntityInterface $entity Entity to save relation from
+     * @param string $relationName Name of the relation to save
+     * @param array $options Options to pass to the mappers
+     * @return boolean
+     */
+    public function save(EntityInterface $entity, $relationName, $options = [])
+    {
+        $lastResult = false;
+        $relatedEntity = $entity->relation($relationName);
+        $relatedMapper = $this->mapper()->getMapper($this->entityName());
+        //Autoloaded relation, no need to save
+        if ($relatedEntity instanceof HasOne) {
+            return 0;
+        }
+        
+        if ($relatedEntity === false || $relatedEntity->get($this->foreignKey()) !== $entity->primaryKey()) {
+
+            if ($relatedMapper->entityManager()->fields()[$this->foreignKey()]['notnull']) {
+                $relatedMapper->delete([$this->foreignKey() => $entity->primaryKey()]);
+            } else {
+                $relatedMapper->queryBuilder()->builder()->update($relatedMapper->table())->set($this->foreignKey(), null)->where([$this->foreignKey() => $entity->primaryKey()]);
+            }
+            
+            if ($relatedEntity instanceof EntityInterface) {
+                //Update the foreign key to match the main entity primary key
+                $relatedEntity->set($this->foreignKey(), $entity->primaryKey());
+            }
+        }
+        
+        if ($relatedEntity instanceof EntityInterface && ($relatedEntity->isNew() || $relatedEntity->isModified())) {
+            $lastResult = $relatedMapper->save($relatedEntity, $options);
+        }
+
+        return $lastResult;
     }
 
     // Magic getter/setter passthru

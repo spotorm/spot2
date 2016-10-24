@@ -3,6 +3,8 @@ namespace Spot\Query;
 
 use Spot\Mapper;
 use Spot\Query;
+use Doctrine\DBAL\Schema\Table;
+use Spot\Relation\BelongsTo;
 
 /**
  * Main query resolver
@@ -121,6 +123,8 @@ class Resolver
         foreach ($fieldIndexes['index'] as $keyName => $keyFields) {
             $table->addIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)));
         }
+        // FOREIGN KEYS
+        $this->addForeignKeys($table);
 
         return $schema;
     }
@@ -263,15 +267,83 @@ class Resolver
 
         return $this->mapper->connection()->quoteIdentifier(trim($identifier));
     }
-	
-	/**
-	 * Trim a leading schema name separated by a dot if present
-	 *
-	 * @param string $identifier
-	 * @return string
-	 */
-	public function trimSchemaName($identifier){
-		$components = explode('.', $identifier, 2); 
-		return end($components);
-	}
+
+    /**
+     * Trim a leading schema name separated by a dot if present
+     *
+     * @param string $identifier
+     * @return string
+     */
+    public function trimSchemaName($identifier){
+            $components = explode('.', $identifier, 2);
+            return end($components);
+    }
+
+    /**
+     * Add foreign keys from BelongsTo relations to the table schema
+     * @param Table $table
+     * @return Table
+     */
+    protected function addForeignKeys(Table $table)
+    {
+        $entityName = $this->mapper->entity();
+        $entity = new $entityName;
+        $relations = $entityName::relations($this->mapper, $entity);
+        $fields = $this->mapper->entityManager()->fields();
+        foreach ($relations as $relationName => $relation) {
+            if ($relation instanceof BelongsTo) {
+
+                $fieldInfo = $fields[$relation->localKey()];
+
+                if ($fieldInfo['foreignkey'] === false) {
+                    continue;
+                }
+
+                $foreignTableMapper = $relation->mapper()->getMapper($relation->entityName());
+                $foreignTable = $foreignTableMapper->table();
+
+                $foreignSchemaManager = $foreignTableMapper->connection()->getSchemaManager();
+                $foreignTableObject = $foreignSchemaManager->listTableDetails($foreignTable);
+
+                $foreignTableColumns = $foreignTableObject->getColumns();
+                $foreignTableNotExists = empty($foreignTableColumns);
+                $foreignKeyNotExists = !array_key_exists($relation->foreignKey(), $foreignTableColumns);
+                // We need to use the is_a() function because the there is some inconsistency in entity names (leading slash)
+                $notRecursiveForeignKey = !is_a($entity, $relation->entityName());
+
+                /* Migrate foreign table if:
+                 *  - the foreign table not exists
+                 *  - the foreign key not exists
+                 *  - the foreign table is not the same as the current table (recursion check)
+                 * This migration eliminates the 'Integrity constraint violation' error
+                 */
+                if (($foreignTableNotExists || $foreignKeyNotExists) && $notRecursiveForeignKey){
+                    $foreignTableMapper->migrate();
+                }
+
+                $onUpdate = !is_null($fieldInfo['onUpdate']) ? $fieldInfo['onUpdate'] :"CASCADE";
+
+                if (!is_null($fieldInfo['onDelete'])) {
+                    $onDelete = $fieldInfo['onDelete'];
+                } else if ($fieldInfo['notnull']) {
+                    $onDelete = "CASCADE";
+                } else {
+                    $onDelete = "SET NULL";
+                }
+
+                // Field alias support
+                $fieldAliasMappings = $this->mapper->entityManager()->fieldAliasMappings();
+                if (isset($fieldAliasMappings[$relation->localKey()])) {
+                    $localKey = $fieldAliasMappings[$relation->localKey()];
+                } else {
+                    $localKey = $relation->localKey();
+                }
+
+                $fkName = $this->mapper->table().'_fk_'.$relationName;
+                $table->addForeignKeyConstraint($foreignTable, [$localKey], [$relation->foreignKey()], ["onDelete" => $onDelete, "onUpdate" => $onUpdate], $fkName);
+            }
+        }
+
+        return $table;
+    }
 }

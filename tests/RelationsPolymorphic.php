@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class RelationsPolymorphic extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Author', 'Post', 'Event', 'Event\Search', 'PolymorphicComment'];
+    private static $entities = ['PolymorphicComment', 'Post', 'Author', 'Event\Search', 'Event'];
 
     public static function setupBeforeClass()
     {

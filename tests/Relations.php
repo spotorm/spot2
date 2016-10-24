@@ -6,12 +6,25 @@ namespace SpotTest;
  */
 class Relations extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Post', 'Post\Comment', 'Author', 'Tag', 'PostTag', 'Event', 'Event\Search'];
+    private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author', 'Event\Search', 'Event'];
 
     public static function setupBeforeClass()
     {
         foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+        }
+
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $author = $authorMapper->build([
+            'id' => 1,
+            'email' => 'example@example.com',
+            'password' => 't00r',
+            'is_admin' => false
+        ]);
+        $result = $authorMapper->insert($author);
+
+        if (!$result) {
+            throw new \Exception("Unable to create author: " . var_export($author->data(), true));
         }
     }
 
@@ -288,6 +301,7 @@ class Relations extends \PHPUnit_Framework_TestCase
         $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
 
         $author = $authorMapper->create([
+            'id' => 2,
             'email'    => $email,
             'password' => 'password',
             'is_admin' => false,
@@ -307,6 +321,7 @@ class Relations extends \PHPUnit_Framework_TestCase
         $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
 
         $author = $authorMapper->create([
+            'id' => 3,
             'email'    => 'test1@test.com',
             'password' => 'password',
             'is_admin' => false,

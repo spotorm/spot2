@@ -6,16 +6,31 @@ namespace SpotTest;
  */
 class CRUD extends \PHPUnit_Framework_TestCase
 {
+    private static $entities = ['PolymorphicComment', 'PostTag', 'Post\Comment', 'Post', 'Tag', 'Author', 'Setting', 'Event\Search', 'Event'];
+
     public static function setupBeforeClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+        }
+
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $author = $authorMapper->build([
+            'id' => 1,
+            'email' => 'example@example.com',
+            'password' => 't00r',
+            'is_admin' => false
+        ]);
+        $result = $authorMapper->insert($author);
+
+        if (!$result) {
+            throw new \Exception("Unable to create author: " . var_export($author->data(), true));
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author', 'Setting'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -31,6 +46,8 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $result = $mapper->insert($post); // returns an id
 
         $this->assertTrue($result !== false);
+
+        return $post;
     }
 
     public function testSampleNewsInsertWithEmptyNonRequiredFields()
@@ -122,7 +139,33 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
     public function testPostTagUpsert()
     {
-        $postMapper = test_spot_mapper('SpotTest\Entity\PostTag');
+        $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $tag = $tagMapper->build([
+            'id' => 2145,
+            'name' => 'Example Tag'
+        ]);
+        $result = $tagMapper->insert($tag);
+
+        if (!$result) {
+            throw new \Exception("Unable to create tag: " . var_export($tag->data(), true));
+        }
+
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->build([
+            'id' => 1295,
+            'title' => 'Example Title',
+            'author_id' => 1,
+            'body' => '<p>body</p>',
+            'status' => 0,
+            'date_created' => new \DateTime()
+        ]);
+        $result = $postMapper->insert($post);
+
+        if (!$result) {
+            throw new \Exception("Unable to create post: " . var_export($post->data(), true));
+        }
+
+        $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
         $data = [
             'tag_id' => 2145,
             'post_id' => 1295
@@ -132,9 +175,9 @@ class CRUD extends \PHPUnit_Framework_TestCase
         ];
 
         // Posttags has unique constraint on tag+post, so insert will fail the second time
-        $result = $postMapper->upsert($data, $where);
-        $result2 = $postMapper->upsert(array_merge($data, ['random' => 'blah blah']), $where);
-        $postTag = $postMapper->first($where);
+        $result = $postTagMapper->upsert($data, $where);
+        $result2 = $postTagMapper->upsert(array_merge($data, ['random' => 'blah blah']), $where);
+        $postTag = $postTagMapper->first($where);
 
         $this->assertTrue((boolean) $result);
         $this->assertTrue((boolean) $result2);
@@ -274,5 +317,240 @@ class CRUD extends \PHPUnit_Framework_TestCase
 
         $result = $postMapper->save($post, ['strict' => false]);
         $this->assertTrue((boolean) $result);
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testHasOneNewEntitySaveRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $searchMapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $search = new Entity\Event\Search(['body' => 'Some body content']);
+        $event = $mapper->build([
+            'title' => 'Test',
+            'description' => 'Test description',
+            'type' => 'free',
+            'token' => 'some-token',
+            'date_start' => new \DateTime
+        ]);
+        $event->relation('search', $search);
+        $mapper->save($event, ['relations' => true]);
+
+        $this->assertEquals($event->id, $search->event_id);
+        $this->assertEquals($event->search->id, $search->id);
+
+        //Check that old related entity gets deleted when updating relationship
+        $search2 = new Entity\Event\Search(['body' => 'body2']);
+        $event->relation('search', $search2);
+        $mapper->save($event, ['relations' => true]);
+
+        $queryHasOne = $searchMapper->where(['event_id' => $event->id]);
+        $this->assertEquals(count($queryHasOne), 1);
+        $this->assertEquals($queryHasOne->first()->get('body'), 'body2');
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testHasOneRelatedEntityAlreadyExists()
+    {
+
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $searchMapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $data = [
+            'title' => 'Test',
+            'description' => 'Test description',
+            'type' => 'free',
+            'token' => 'some-token',
+            'date_start' => new \DateTime
+        ];
+        $event = $mapper->build($data);
+        $mapper->insert($mapper->build($data));
+        $mapper->save($event);
+        $search2 = new Entity\Event\Search(['body' => 'body2', 'event_id' => 1]);
+        $searchMapper->save($search2);
+        
+        $savedEvent = $mapper->get($event->primaryKey());
+        $savedEvent->relation('search', $search2);
+        $mapper->save($savedEvent, ['relations' => true]);
+        $savedEvent = $mapper->get($savedEvent->primaryKey());
+        $this->assertEquals($savedEvent->search->id, $search2->id);
+        $this->assertEquals($savedEvent->search->event_id, $search2->event_id);
+        $this->assertEquals($savedEvent->id, $search2->event_id);
+        $this->assertEquals($savedEvent->search->body, $search2->body);
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testHasOneIgnoreRelationNotLoaded()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $searchMapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+        $event = $mapper->build([
+            'title' => 'Test',
+            'description' => 'Test description',
+            'type' => 'free',
+            'token' => 'some-token',
+            'date_start' => new \DateTime
+        ]);
+        $mapper->save($event);
+        $searchMapper->delete(['event_id' => $event->id]);
+        $savedEvent = $mapper->get($event->primaryKey());
+        $savedEvent->set('title', 'Test 2');
+
+        $this->assertEquals($mapper->save($savedEvent, ['relations' => true]), 1);
+
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testBelongsToNewEntitySaveRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $author = new \SpotTest\Entity\Author(['id' => 2, 'email' => 'test@example.com', 'password' => '123456']);
+        $post = $mapper->build([
+            'title' => 'Test',
+            'body' => 'Test description',
+        ]);
+        $post->relation('author', $author);
+        $mapper->save($post, ['relations' => true]);
+
+        $this->assertEquals($post->author_id, $author->id);
+        $this->assertFalse($post->isNew());
+        $this->assertFalse($author->isNew());
+
+        $author2 = new \SpotTest\Entity\Author(['id' => 3, 'email' => 'test2@example.com', 'password' => '123456789']);
+        $post->relation('author', $author2);
+        $mapper->save($post, ['relations' => true]);
+
+        $this->assertEquals($post->author_id, $author2->id);
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testHasManyNewEntitySaveRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $commentMapper = test_spot_mapper('SpotTest\Entity\Post\Comment');
+        $comments = [];
+        for ($i = 1; $i < 3; $i++) {
+            $comments[] = new \SpotTest\Entity\Post\Comment([
+                'name' => 'John Doe',
+                'email'  => 'test@example.com',
+                'body' => '#'.$i.': Lorem ipsum is dolor.',
+            ]);
+        }
+        $post = $mapper->build([
+            'title' => 'Test',
+            'body' => 'Test description',
+            'author_id' => 1
+        ]);
+        $post->relation('comments', new \Spot\Entity\Collection($comments));
+        $mapper->save($post, ['relations' => true]);
+        $this->assertFalse($post->isNew());
+        foreach ($post->comments as $comment) {
+            $this->assertFalse($comment->isNew());
+            $this->assertEquals($comment->post_id, $post->id);
+        }
+        //Test comment deleted from DB when removed from relation
+        $removedComment = array_shift($comments);
+        $post->relation('comments', new \Spot\Entity\Collection($comments));
+        $mapper->save($post, ['relations' => true]);
+        $this->assertEquals($commentMapper->get($removedComment->primaryKey()), false);
+
+        //Test all comments removed when relation set to false
+        $post->relation('comments', false);
+        $mapper->save($post, ['relations' => true]);
+        foreach ($comments as $comment) {
+            $this->assertEquals($commentMapper->get($comment->primaryKey()), false);
+        }
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testHasManyExistingEntitySaveRelation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $data = [
+            'title' => 'Test',
+            'body' => 'Test description',
+            'author_id' => 1
+        ];
+        $mapper->save($mapper->build(array_merge($data, ['id' => 99])));
+        $commentMapper = test_spot_mapper('SpotTest\Entity\Post\Comment');
+        $comments = [];
+        for ($i = 1; $i < 3; $i++) {
+            $comment = new \SpotTest\Entity\Post\Comment([
+                'name' => 'John Doe',
+                'email'  => 'test@example.com',
+                'post_id' => 99,
+                'body' => '#'.$i.': Lorem ipsum is dolor.',
+            ]);
+            $commentMapper->insert($comment);
+            $comments[] = $comment;
+        }
+        $post = $mapper->build($data);
+        $post->relation('comments', new \Spot\Entity\Collection($comments));
+        $mapper->save($post, ['relations' => true]);
+        $post = $mapper->get($post->primaryKey());
+        $this->assertTrue(count($post->comments) === 2);
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testHasManyThroughRelationSave()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $postTagMapper = test_spot_mapper('SpotTest\Entity\PostTag');
+        $tags = [];
+        for ($i = 1; $i < 3; $i++) {
+            $tags[] = new \SpotTest\Entity\Tag([
+                'name' => 'Tag #'.$i
+            ]);
+        }
+        $post = $mapper->build([
+            'title' => 'Test',
+            'body' => 'Test description',
+            'author_id' => 1
+        ]);
+        $post->relation('tags', new \Spot\Entity\Collection($tags));
+        $mapper->save($post, ['relations' => true]);
+
+        $this->assertFalse($post->isNew());
+        $this->assertEquals($postTagMapper->all()->count(), 2);
+        $i = 1;
+        foreach ($post->tags as $tag) {
+            $this->assertFalse($tag->isNew());
+            $this->assertEquals($tag->name, 'Tag #'.$i);
+            $i++;
+        }
+
+        //Test comment deleted from DB when removed from relation
+        $removedTag = array_shift($tags);
+        $post->relation('tags', new \Spot\Entity\Collection($tags));
+        $mapper->save($post, ['relations' => true]);
+        $this->assertEquals($postTagMapper->where(['tag_id' => $removedTag->primaryKey()])->count(), 0);
+
+        //Test all comments removed when relation set to false
+        $post->relation('tags', false);
+        $mapper->save($post, ['relations' => true]);
+        $this->assertEquals($postTagMapper->all()->count(), 0);
+    }
+
+    /**
+     * @depends testSampleNewsInsert
+     */
+    public function testQueryWithDateTimeObjectValue($post)
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $results = $mapper->where(['date_created <=' => new \DateTime()])->toArray();
+
+        $this->assertTrue(count($results) > 0);
     }
 }

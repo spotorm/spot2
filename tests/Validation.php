@@ -4,7 +4,7 @@
  */
 class Test_Validation extends PHPUnit_Framework_TestCase
 {
-    private static $entities = ['Author'];
+    private static $entities = ['Author', 'Report'];
 
     public static function setupBeforeClass()
     {
@@ -64,6 +64,29 @@ class Test_Validation extends PHPUnit_Framework_TestCase
         $this->assertContains("Email 'test@test.com' is already taken.", $user2->errors('email'));
     }
 
+    public function testUniqueFieldConvertToDb()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Report');
+
+        // Setup new report
+        $report1 = new SpotTest\Entity\Report([
+            'date' => new \DateTime('2016-05-04'),
+            'result' => ['a' => 1, 'b' => 2],
+        ]);
+        $mapper->save($report1);
+
+        // Setup new report (same date, expecting error)
+        $report2 = new SpotTest\Entity\Report([
+            'date' => new \DateTime('2016-05-04'),
+            'result' => ['a' => 2, 'b' => 1],
+        ]);
+        $mapper->save($report2);
+
+        $this->assertFalse($report1->hasErrors());
+        $this->assertTrue($report2->hasErrors());
+        $this->assertContains("Date '2016-05-04' is already taken.", $report2->errors('date'));
+    }
+
     public function testEmail()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Author');
@@ -103,5 +126,49 @@ class Test_Validation extends PHPUnit_Framework_TestCase
         $mapper->save($entity, ['validate' => false]);
 
         $this->assertFalse($entity->hasErrors());
+    }
+
+    public function testHasOneRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $search = new SpotTest\Entity\Event\Search();
+        $event = $mapper->build([]);
+        $event->relation('search', $search);
+        $mapper->validate($event, ['relations' => true]);
+
+        $this->assertTrue(isset($event->errors()['search']));
+    }
+
+    public function testBelongsToRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $author = new SpotTest\Entity\Author();
+        $post = $mapper->build([]);
+        $post->relation('author', $author);
+        $mapper->validate($post, ['relations' => true]);
+
+        $this->assertTrue(isset($post->errors()['author']));
+    }
+
+    public function testHasManyRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $comment = new SpotTest\Entity\Post\Comment();
+        $post = $mapper->build([]);
+        $post->relation('comments', new \Spot\Entity\Collection([$comment]));
+        $mapper->validate($post, ['relations' => true]);
+
+        $this->assertTrue(isset($post->errors()['comments'][0]));
+    }
+
+    public function testHasManyThroughRelationValidation()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $tag = new SpotTest\Entity\Tag();
+        $post = $mapper->build([]);
+        $post->relation('tags', new \Spot\Entity\Collection([$tag]));
+        $mapper->validate($post, ['relations' => true]);
+
+        $this->assertTrue(isset($post->errors()['tags'][0]));
     }
 }

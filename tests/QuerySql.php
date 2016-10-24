@@ -6,9 +6,11 @@ namespace SpotTest;
  */
 class QuerySql extends \PHPUnit_Framework_TestCase
 {
+    private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author'];
+
     public static function setupBeforeClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('SpotTest\Entity\\' . $entity)->migrate();
         }
 
@@ -52,7 +54,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 
     public static function tearDownAfterClass()
     {
-        foreach (['Post', 'Post\Comment', 'Tag', 'PostTag', 'Author'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -61,16 +63,46 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2, 'title' => 'even_title']);
-        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status = ? AND test_posts.title = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? AND test_posts.title = ?", $query->toSql());
     }
 
     public function testInsertPostTagWithUniqueConstraint()
     {
+        $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $tag = $tagMapper->build([
+            'id' => 55,
+            'name' => 'Example Tag'
+        ]);
+        $result = $tagMapper->insert($tag);
+
+        if (!$result) {
+            throw new \Exception("Unable to create tag: " . var_export($tag->data(), true));
+        }
+
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->build([
+            'id' => 55,
+            'title' => 'Example Title',
+            'author_id' => 1,
+            'body' => '<p>body</p>',
+            'status' => 0,
+            'date_created' => new \DateTime()
+        ]);
+        $result = $postMapper->insert($post);
+
+        if (!$result) {
+            throw new \Exception("Unable to create post: " . var_export($post->data(), true));
+        }
+
         $mapper = test_spot_mapper('SpotTest\Entity\PostTag');
         $posttag_id = $mapper->insert([
             'post_id' => 55,
             'tag_id' => 55
         ]);
+
+        $mapper->delete(['id' => $posttag_id]);
+        $postMapper->delete($post);
+        $tagMapper->delete($tag);
     }
 
     public function testQueryInstance()
@@ -93,7 +125,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2]);
-        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ?", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
 
@@ -102,7 +134,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status :eq' => 2]);
-        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ?", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
 
@@ -156,7 +188,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->group(['id']);
-        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status = ? GROUP BY test_posts.id", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? GROUP BY test_posts.id", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
 
@@ -175,7 +207,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => [2]]);
         $post = $query->first();
-        $this->assertEquals("SELECT * FROM test_posts  WHERE test_posts.status IN (?) LIMIT 1", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status IN (?) LIMIT 1", $query->toSql());
         $this->assertEquals(2, $post->status);
     }
 
@@ -283,7 +315,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $params = [3,4,5];
 
         $postsSub = $mapper->where(['status !=' => $params]);
-        $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', $params);
+        $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', [$params]);
 
         $this->assertContains('IN', $posts->toSql());
     }
@@ -415,6 +447,27 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testWildcardLikeSupport()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $expected = 'SELECT * FROM test_posts WHERE test_posts.title LIKE ? AND test_posts.status >= ?';
+        $query = $mapper->where(['title :like' => '%lorem%', 'status >=' => 1])->noQuote()->toSql();
+
+        $this->assertEquals(
+            $expected,
+            $query
+        );
+    }
+
+    public function testExecRawQuery()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $sql = 'UPDATE test_posts SET status = :status WHERE test_posts.title = :title';
+        $affectedRows = $mapper->exec($sql, ['title' => 'even_title', 'status' => 1]);
+
+        $this->assertEquals(5, $affectedRows);
+    }
+
     public function testQueryJsonSerialize()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Tag');
@@ -425,5 +478,27 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $json = json_encode($tags);
 
         $this->assertSame($data, $json);
+    }
+
+    public function testQueryCustomWhereOperator()
+    {
+        \Spot\Query::addWhereOperator(':json_exists', function ($builder, $column, $value) {
+            return 'jsonb_exists(' . $column . ', ' . $builder->createPositionalParameter($value) . ')';
+        });
+
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $query = $mapper->where(['data :json_exists' => 'author']);
+        $this->assertContains('jsonb_exists(', $query->toSql());
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testInvalidQueryOperatorThrowsException()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        // Should generate an exception!
+        $query = $mapper->where(['data :nonsense' => 'author']);
+        $this->assertTrue(false);
     }
 }

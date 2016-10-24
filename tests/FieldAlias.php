@@ -8,18 +8,46 @@ use SpotTest\Entity\Legacy;
 class FieldAlias extends \PHPUnit_Framework_TestCase
 {
     public static $legacyTable;
+    private static $entities = ['PolymorphicComment', 'Legacy', 'Post', 'Author'];
 
     public static function setupBeforeClass()
     {
         self::$legacyTable = new \SpotTest\Entity\Legacy();
-        foreach (['Legacy', 'PolymorphicComment'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('SpotTest\Entity\\' . $entity)->migrate();
+        }
+
+        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $author = $authorMapper->build([
+            'id' => 1,
+            'email' => 'example@example.com',
+            'password' => 't00r',
+            'is_admin' => false
+        ]);
+        $result = $authorMapper->insert($author);
+
+        if (!$result) {
+            throw new \Exception("Unable to create author: " . var_export($author->data(), true));
+        }
+
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->build([
+            'title' => 'title',
+            'body' => '<p>body</p>',
+            'status' => 1 ,
+            'date_created' => new \DateTime(),
+            'author_id' => 1
+        ]);
+        $result = $postMapper->insert($post);
+
+        if (!$result) {
+            throw new \Exception("Unable to create post: " . var_export($post->data(), true));
         }
     }
 
     public static function tearDownAfterClass()
     {
-        foreach (['Legacy', 'PolymorphicComment'] as $entity) {
+        foreach (self::$entities as $entity) {
             test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
@@ -28,14 +56,14 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
         $query = $mapper->select()->noQuote()->where(['number' => 2, 'name' => 'legacy_crud']);
-        $this->assertEquals("SELECT * FROM test_legacy  WHERE test_legacy." . self::$legacyTable->getNumberFieldColumnName() ." = ? AND test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ?", $query->toSql());
+        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNumberFieldColumnName() ." = ? AND test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ?", $query->toSql());
     }
 
     // Ordering
     public function testLegacyOrderBy()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
-        $query = $mapper->select()->noQuote()->where(['number' => 2])->order(['date_created' => 'ASC']);
+        $query = $mapper->where(['number' => 2])->order(['date_created' => 'ASC'])->noQuote();
         $this->assertContains("ORDER BY test_legacy." . self::$legacyTable->getDateCreatedColumnName() . " ASC", $query->toSql());
     }
 
@@ -43,8 +71,8 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     public function testLegacyGroupBy()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
-        $query = $mapper->select()->noQuote()->where(['name' => 'test_group'])->group(['id']);
-        $this->assertEquals("SELECT * FROM test_legacy  WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY test_legacy." . self::$legacyTable->getIdFieldColumnName(), $query->toSql());
+        $query = $mapper->where(['name' => 'test_group'])->group(['id'])->noQuote();
+        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY test_legacy." . self::$legacyTable->getIdFieldColumnName(), $query->toSql());
     }
 
     // Insert
