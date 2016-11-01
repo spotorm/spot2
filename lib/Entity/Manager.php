@@ -243,6 +243,7 @@ class Manager
         $tableKeys = [
             'primary' => [],
             'unique' => [],
+            'fulltext' => [],
             'index' => []
         ];
         $usedKeyNames = [];
@@ -272,6 +273,14 @@ class Manager
                     $fieldKeyName = $table . '_' . $fieldInfo['index'];
                 }
                 $tableKeys['index'][$fieldKeyName][] = $fieldName;
+                $usedKeyNames[] = $fieldKeyName;
+            }
+            if ($fieldInfo['fulltext']) {
+                if (is_string($fieldInfo['fulltext'])) {
+                    // Named group
+                    $fieldKeyName = $table . '_' . $fieldInfo['index'];
+                }
+                $tableKeys['fulltext'][$fieldKeyName][] = $fieldName;
                 $usedKeyNames[] = $fieldKeyName;
             }
         }
