@@ -124,8 +124,10 @@ class Resolver
             $table->addIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)));
         }
         // FULLTEXT
-        foreach ($fieldIndexes['fulltext'] as $keyName => $keyFields) {
-            $table->addIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)), ['fulltext']);
+        if (isset($fieldIndexes['fulltext'])) {
+            foreach ($fieldIndexes['fulltext'] as $keyName => $keyFields) {
+                $table->addIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)), ['fulltext']);
+            }
         }
 
         // FOREIGN KEYS
