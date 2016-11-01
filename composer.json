@@ -1,5 +1,5 @@
 {
-    "name": "SomewhatCloudy/spot2",
+    "name": "vlucas/spot2",
     "type": "library",
     "description": "Simple DataMapper built on top of Doctrine DBAL",
     "keywords": ["orm", "datamapper", "dbal", "doctrine", "database", "model", "mapper", "entity"],
@@ -10,7 +10,7 @@
             "name": "Vance Lucas",
             "email": "vance@vancelucas.com",
             "homepage": "http://www.vancelucas.com"
-        }  
+        }
     ],
     "require": {
         "php": ">=5.4.0",
