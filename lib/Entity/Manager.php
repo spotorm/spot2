@@ -243,7 +243,6 @@ class Manager
         $tableKeys = [
             'primary' => [],
             'unique' => [],
-            'fulltext' => [],
             'index' => []
         ];
         $usedKeyNames = [];
@@ -276,6 +275,12 @@ class Manager
                 $usedKeyNames[] = $fieldKeyName;
             }
             if ($fieldInfo['fulltext']) {
+
+                // Only add if relevant to stop error
+                if (!isset($tableKeys['fulltext'])) {
+                    $tableKeys['fulltext'] = [];
+                }
+
                 if (is_string($fieldInfo['fulltext'])) {
                     // Named group
                     $fieldKeyName = $table . '_' . $fieldInfo['index'];
