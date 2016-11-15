@@ -259,24 +259,41 @@ class Manager
                 $tableKeys['primary'][] = $fieldName;
             }
             if ($fieldInfo['unique']) {
-                if (is_string($fieldInfo['unique'])) {
-                    // Named group
-                    $fieldKeyName = $table . '_' . $fieldInfo['unique'];
-                }
+                $fieldKeyName = $this->computeIndexName($table, $fieldInfo['unique'])?:$fieldKeyName;
                 $tableKeys['unique'][$fieldKeyName][] = $fieldName;
                 $usedKeyNames[] = $fieldKeyName;
             }
             if ($fieldInfo['index']) {
-                if (is_string($fieldInfo['index'])) {
-                    // Named group
-                    $fieldKeyName = $table . '_' . $fieldInfo['index'];
+                if (!is_array($fieldInfo['index'])) {
+                    $fieldInfo['index'] = [$fieldInfo['index']];
                 }
-                $tableKeys['index'][$fieldKeyName][] = $fieldName;
-                $usedKeyNames[] = $fieldKeyName;
+                foreach ($fieldInfo['index'] as $fieldInfoIndex) {
+                    $fieldKeyName = $this->computeIndexName($table, $fieldInfoIndex)?:$fieldKeyName;
+                    $tableKeys['index'][$fieldKeyName][] = $fieldName;
+                    $usedKeyNames[] = $fieldKeyName;
+                }
             }
         }
 
         return $tableKeys;
+    }
+
+    /**
+     * Attempt to generate a user-suffixed index name
+     *
+     * @param  string       $table
+     * @param  string|bool  $indexConfiguration
+     *
+     * @return string|bool
+     */
+    private function computeIndexName($table, $indexConfiguration)
+    {
+        if (is_string($indexConfiguration)) {
+            // Index name based on user-defined configuration
+            return $table . '_' . $indexConfiguration;
+        }
+
+        return false;
     }
 
     /**
