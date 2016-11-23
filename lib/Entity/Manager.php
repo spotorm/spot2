@@ -259,9 +259,14 @@ class Manager
                 $tableKeys['primary'][] = $fieldName;
             }
             if ($fieldInfo['unique']) {
-                $fieldKeyName = $this->computeIndexName($table, $fieldInfo['unique'])?:$fieldKeyName;
-                $tableKeys['unique'][$fieldKeyName][] = $fieldName;
-                $usedKeyNames[] = $fieldKeyName;
+                if (!is_array($fieldInfo['unique'])) {
+                    $fieldInfo['unique'] = [$fieldInfo['unique']];
+                }
+                foreach ($fieldInfo['unique'] as $fieldInfoUnique) {
+                    $fieldKeyName = $this->computeIndexName($table, $fieldInfoUnique)?:$fieldKeyName;
+                    $tableKeys['unique'][$fieldKeyName][] = $fieldName;
+                    $usedKeyNames[] = $fieldKeyName;
+                }
             }
             if ($fieldInfo['index']) {
                 if (!is_array($fieldInfo['index'])) {
