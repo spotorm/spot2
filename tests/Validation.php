@@ -112,7 +112,8 @@ class Test_Validation extends PHPUnit_Framework_TestCase
         $mapper->save($entity);
 
         $this->assertTrue($entity->hasErrors());
-        $this->assertContains("Email must be at least 4 long", $entity->errors('email'));
+        // This error message is used for length range validation
+        $this->assertContains("Email must be 4 characters long", $entity->errors('email'));
     }
 
     public function testDisabledValidation()
