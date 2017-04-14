@@ -27,6 +27,7 @@ install:
 before_script:
   - if [[ "$TYPE" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS spot_test;" -uroot; fi
   - if [[ "$TYPE" == "pgsql" ]]; then psql -c 'create database spot_test;' -U postgres; fi
+  - if [[ $TRAVIS_PHP_VERSION == "7.1" ]]; then composer require --dev phpseclib/mcrypt_compat; fi
 
 # omitting "script:" will default to phpunit
 # use the $TYPE env variable to determine the phpunit.xml to use
