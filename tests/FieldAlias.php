@@ -81,9 +81,16 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
         $legacy = new Legacy();
         $legacy->name = 'Something Here';
         $legacy->number = 5;
+        $legacy->weird_name = "ABC";
 
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
-        $mapper->save($legacy);
+        $result = $mapper->save($legacy);
+
+        $this->assertEquals(true, $result);
+        $this->assertEquals("ABC", $legacy->weird_name);
+        $this->assertEquals(5, $legacy->number);
+        $this->assertEquals("Something Here", $legacy->name);
+
         return $legacy;
     }
 
