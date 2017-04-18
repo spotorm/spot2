@@ -356,6 +356,7 @@ class Manager
 
     /**
      * Get value of primary key for given row result
+     * @return mixed
      */
     public function primaryKeyField()
     {

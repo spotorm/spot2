@@ -2,12 +2,13 @@
 
 namespace Spot;
 
-use Doctrine\DBAL\Types\Type;
+use Spot\Entity\Collection;
 
 /**
  * Query Object - Used to build adapter-independent queries PHP-style
  *
  * @package Spot
+ * @mixin Collection
  * @author Vance Lucas <vance@vancelucas.com>
  */
 class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerializable
@@ -443,7 +444,6 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         $fields = (array)$fields;
         $entityDatasourceOptions = $this->mapper()->entityManager()->datasourceOptions($this->entityName());
         $fieldString = '`' . implode('`, `', $fields) . '`';
-        $fieldTypes = $this->mapper()->fields($this->entityName());
 
         // See if we can use FULLTEXT search
         $whereType = ':like';

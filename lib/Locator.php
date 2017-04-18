@@ -22,7 +22,10 @@ class Locator
     /**
      * Get config class mapper was instantiated with
      *
+     * @param null $cfg
+     *
      * @return \Spot\Config
+     * @throws \Spot\Exception
      */
     public function config($cfg = null)
     {

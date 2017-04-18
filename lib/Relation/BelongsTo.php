@@ -87,9 +87,10 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
     /**
      * Save related entities
      *
-     * @param ntityInterface $entity Entity to save relation from
+     * @param EntityInterface $entity Entity to save relation from
      * @param string $relationName Name of the relation to save
      * @param array $options Options to pass to the mappers
+     *
      * @return boolean
      */
     public function save(EntityInterface $entity, $relationName, $options = [])
@@ -102,14 +103,14 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
                 $relatedMapper = $this->mapper()->getMapper($this->entityName());
 
                 $lastResult = $relatedMapper->save($relatedEntity, $options);
-                 //Update the local key to match the related entity primary key
+                //Update the local key to match the related entity primary key
                 if ($entity->get($this->localKey()) !== $relatedEntity->primaryKey()) {
                     $relatedRelations = $entity->relations($relatedMapper, $relatedEntity);
 
                     //Check if it was a hasOne or a hasMany relation,
                     //if hasOne, we must unset old value
                     foreach ($relatedRelations as $relatedRelation) {
-                        if ($relatedRelation instanceof Relation\HasOne && $relatedRelation->foreignKey() === $this->localKey()) {
+                        if ($relatedRelation instanceof HasOne && $relatedRelation->foreignKey() === $this->localKey()) {
                             if ($relatedMapper->entityManager()->fields()[$relatedRelation->foreignKey()]['notnull']) {
                                 $lastResult = $relatedMapper->delete([$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
                             } else {
@@ -133,6 +134,7 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
         if ($entity) {
             return $entity->$key;
         }
+
         return null;
     }
 

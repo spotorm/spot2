@@ -47,7 +47,7 @@ interface EntityInterface
     /**
      * Gets and sets data on the current entity
      */
-    public function data($data = null, $modified = true);
+    public function data($data = null, $modified = true, $loadRelations = true);
 
     /**
      * Return array of field data with data from the field names listed removed

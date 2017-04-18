@@ -209,7 +209,7 @@ class Resolver
      *
      * @param string $table Table name
      * @param bool $cascade
-     * @return
+     * @return void
      * @throws \Spot\Exception
      * @internal param array $data Array of data for WHERE clause in 'field' => 'value' format
      */
@@ -229,7 +229,7 @@ class Resolver
             $sql = "TRUNCATE TABLE " . $table . "";
         }
 
-        return $connection->transactional(function ($conn) use ($sql) {
+        $connection->transactional(function ($conn) use ($sql) {
             $conn->exec($sql);
         });
     }

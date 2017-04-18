@@ -16,7 +16,7 @@ class Config implements \Serializable
      *
      * @param string  $name   Unique name for the connection
      * @param string  $dsn    DSN string for this connection
-     * @param boolean $defaut Use this connection as the default? The first connection added is automatically set as the default, even if this flag is false.
+     * @param boolean $default  Use this connection as the default? The first connection added is automatically set as the default, even if this flag is false.
      *
      * @return \Doctrine\DBAL\Connection
      * @throws \Spot\Exception
@@ -59,7 +59,7 @@ class Config implements \Serializable
      * Get connection by name
      *
      * @param  string                   $name Unique name of the connection to be returned
-     * @return \Doctrine\DBAL\Connection
+     * @return \Doctrine\DBAL\Connection|false
      * @throws \Spot\Exception
      */
     public function connection($name = null)
