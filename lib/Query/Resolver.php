@@ -123,6 +123,11 @@ class Resolver
         foreach ($fieldIndexes['index'] as $keyName => $keyFields) {
             $table->addIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)));
         }
+        // FULLTEXT
+        foreach ($fieldIndexes['fulltext'] as $keyName => $keyFields) {
+            $table->addIndex($keyFields, $this->escapeIdentifier($this->trimSchemaName($keyName)), ['fulltext']);
+        }
+
         // FOREIGN KEYS
         $this->addForeignKeys($table);
 
