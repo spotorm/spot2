@@ -319,7 +319,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
             throw new Exception("Number of supplied parameters (" . $paramCount . ") does not match the number of provided placeholders (" . $placeholderCount . ")");
         }
 
-        $sql = preg_replace_callback('/\?/', function ($match) use ($builder, $params) {
+        $sql = preg_replace_callback('/\?/', function ($match) use ($builder, &$params) {
             $param = array_shift($params);
 
             return $builder->createPositionalParameter($param);
