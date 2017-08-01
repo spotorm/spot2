@@ -461,6 +461,7 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $post->relation('comments', new \Spot\Entity\Collection($comments));
         $mapper->save($post, ['relations' => true]);
         $this->assertEquals($commentMapper->get($removedComment->primaryKey()), false);
+        $this->assertEquals($commentMapper->where(['post_id' => $post->id])->count(), 1);
 
         //Test all comments removed when relation set to false
         $post->relation('comments', false);
