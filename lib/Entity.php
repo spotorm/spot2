@@ -192,6 +192,14 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         return [];
     }
 
+	/**
+	 * Run bootstrap process, populating table immediatley after creation.
+	 */
+	public static function bootstrap()
+	{
+		return true;
+	}
+
     /**
      * Gets and sets data on the current entity
      *

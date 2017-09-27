@@ -45,48 +45,56 @@ class Resolver
         return $this;
     }
 
-    /**
-     * Migrate table structure changes to database
-     *
-     * @return bool
-     * @throws \Doctrine\DBAL\Schema\SchemaException
-     * @throws \Spot\Exception
-     */
-    public function migrate()
-    {
-        // Mapper knows currently set entity
-        $entity = $this->mapper->entity();
-        $table = $entity::table();
-        $fields = $this->mapper->entityManager()->fields();
-        $fieldIndexes = $this->mapper->entityManager()->fieldKeys();
-        $connection = $this->mapper->connection();
+	/**
+	 * Migrate table structure changes to database
+	 *
+	 * @return bool
+	 * @throws \Doctrine\DBAL\Schema\SchemaException
+	 * @throws \Spot\Exception
+	 */
+	public function migrate()
+	{
+		// Mapper knows currently set entity
+		$entity = $this->mapper->entity();
+		$table = $entity::table();
+		$tableCreated = false;
+		$fields = $this->mapper->entityManager()->fields();
+		$fieldIndexes = $this->mapper->entityManager()->fieldKeys();
+		$connection = $this->mapper->connection();
 
-        $schemaManager = $this->mapper->connection()->getSchemaManager();
-        $tableObject = $schemaManager->listTableDetails($table);
-        $tableObjects[] = $tableObject;
-        $schema = new \Doctrine\DBAL\Schema\Schema($tableObjects);
+		$schemaManager = $this->mapper->connection()->getSchemaManager();
+		$tableObject = $schemaManager->listTableDetails($table);
+		$tableObjects[] = $tableObject;
+		$schema = new \Doctrine\DBAL\Schema\Schema($tableObjects);
 
-        $tableColumns = $tableObject->getColumns();
-        $tableExists = !empty($tableColumns);
-        if ($tableExists) {
-            // Update existing table
-            $existingTable = $schema->getTable($table);
-            $newSchema = $this->migrateCreateSchema();
-            $queries = $schema->getMigrateToSql($newSchema, $connection->getDatabasePlatform());
-        } else {
-            // Create new table
-            $newSchema = $this->migrateCreateSchema();
-            $queries = $newSchema->toSql($connection->getDatabasePlatform());
-        }
+		$tableColumns = $tableObject->getColumns();
+		$tableExists = !empty($tableColumns);
+		if ($tableExists) {
+			// Update existing table
+			$existingTable = $schema->getTable($table);
+			$newSchema = $this->migrateCreateSchema();
+			$queries = $schema->getMigrateToSql($newSchema, $connection->getDatabasePlatform());
+		} else {
+			// Create new table
+			$newSchema = $this->migrateCreateSchema();
+			$tableCreated = true;
+			$queries = $newSchema->toSql($connection->getDatabasePlatform());
+		}
 
-        // Execute resulting queries
-        $lastResult = false;
-        foreach ($queries as $sql) {
-            $lastResult = $connection->exec($sql);
-        }
+		// Execute resulting queries
+		$lastResult = false;
+		foreach ($queries as $sql) {
+			$lastResult = $connection->exec($sql);
+		}
 
-        return $lastResult;
-    }
+		//
+		if ($tableCreated)
+		{
+			$entity::bootstrap();
+		}
+
+		return $lastResult;
+	}
 
     /**
      * Migrate create schema
