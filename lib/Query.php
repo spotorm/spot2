@@ -96,6 +96,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     protected static $_whereOperatorObjects = [];
 
     /**
+     * Storage for each select executed statement
+     *
+     * @var array
+     */
+    protected $_cache = [];
+
+    /**
      * Constructor Method
      *
      * @param \Spot\Mapper $mapper
@@ -627,7 +634,16 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      */
     public function execute()
     {
-        // @TODO Add caching to execute based on resulting SQL+data so we don't execute same query w/same data multiple times
+        if (in_array(md5($this->toSql()), $this->_cache)) {
+            return $this->_cache[md5($this->toSql())];
+        }
+
+        //We only want to cache the SELECT statements
+        if (strpos($this->toSql(), 'SELECT') !== false) {
+            $this->_cache[md5($this->toSql())] = $this->mapper()->resolver()->read($this);
+            return $this->_cache[md5($this->toSql())];
+        }
+
         return $this->mapper()->resolver()->read($this);
     }
 
