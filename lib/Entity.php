@@ -16,6 +16,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      * @var string|null
      */
     protected static $table;
+    protected static $connection;
 
     /**
      * Datasource options
@@ -101,7 +102,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         $fields = static::fields();
         foreach ($fields as $field => $opts) {
             if (!isset($this->_data[$field])) {
-                $this->_data[$field] = isset($opts['value']) ? $opts['value'] : (isset($opts['default']) ? $opts['default'] : null);
+                $this->_data[$field] = isset($opts['value']) ? $opts['value'] : null;
             }
         }
 
@@ -124,6 +125,15 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         }
 
         return static::$table;
+    }
+
+    public static function connection($connectionName = null)
+    {
+        if (null !== $connectionName) {
+            static::$connection = $connectionName;
+        }
+
+        return static::$connection;
     }
 
     /**
@@ -537,10 +547,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
             // Add to relation field array
             $entityName = get_class($this);
-            if (!isset(self::$relationFields[$entityName]) || !in_array($relationName, self::$relationFields[$entityName])) {
-                if (!isset(self::$relationFields[$entityName])) {
-                    self::$relationFields[$entityName] = [];
-                }
+            if (!in_array($relationName, self::$relationFields[$entityName])) {
                 self::$relationFields[$entityName][] = $relationName;
             }
         }

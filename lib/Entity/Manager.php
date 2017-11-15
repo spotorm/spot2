@@ -104,6 +104,7 @@ class Manager
                 throw new \InvalidArgumentException("Entity must have a table defined. Please define a protected static property named 'table' on your '" . $entityName . "' entity class.");
             }
             $this->table = $entityTable;
+            $this->connection = $entityName::connection();
 
             // Table Options
             $entityTableOptions = $entityName::tableOptions();
@@ -402,6 +403,20 @@ class Manager
         }
 
         return $this->table;
+    }
+
+    /**
+     * Get name of db connection for given entity class
+     *
+     * @return string
+     */
+    public function connection()
+    {
+        if ($this->connection === null) {
+            $this->fields();
+        }
+
+        return $this->connection;
     }
 
     /**

@@ -360,10 +360,11 @@ class Mapper implements MapperInterface
      * @return \Doctrine\DBAL\Connection
      * @throws \Spot\Exception
      */
-    public function connection($connectionName = null)
+    public function connection()
     {
+        $connectionName = $this->entityManager()->connection();
         // Try getting connection based on given name
-        if ($connectionName === null) {
+        if (empty($connectionName)) {
             return $this->config()->defaultConnection();
         } elseif ($connection = $this->config()->connection($connectionName)) {
             return $connection;
