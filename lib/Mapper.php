@@ -362,7 +362,7 @@ class Mapper implements MapperInterface
      */
     public function connection($connectionName = null)
     {
-        $connectionName = $connectionName ?? $this->entityManager()->connection();
+        $connectionName = $connectionName ? $connectionName : $this->entityManager()->connection();
         // Try getting connection based on given name
         if (empty($connectionName)) {
             return $this->config()->defaultConnection();
