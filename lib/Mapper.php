@@ -356,13 +356,13 @@ class Mapper implements MapperInterface
     /**
      * Get connection to use
      *
-     * @param  string         $connectionName Named connection or entity class name
+     * @param string $connectionName Named connection or entity class name
      * @return \Doctrine\DBAL\Connection
      * @throws \Spot\Exception
      */
-    public function connection()
+    public function connection($connectionName = null)
     {
-        $connectionName = $this->entityManager()->connection();
+        $connectionName = $connectionName ?? $this->entityManager()->connection();
         // Try getting connection based on given name
         if (empty($connectionName)) {
             return $this->config()->defaultConnection();

@@ -16,6 +16,11 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      * @var string|null
      */
     protected static $table;
+
+    /**
+     * Connection name
+     * @var string|null
+     */
     protected static $connection;
 
     /**

@@ -172,7 +172,6 @@ interface MapperInterface
     /**
      * Get connection to use
      *
-     * @param  string         $connectionName Named connection or entity class name
      * @return \Doctrine\DBAL\Connection
      * @throws \Spot\Exception
      */
