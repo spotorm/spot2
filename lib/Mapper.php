@@ -91,12 +91,14 @@ class Mapper implements MapperInterface
 
     /**
      * Entity manager class for storing information and meta-data about entities
-     *
+     * @param string $entityName
      * @return \Spot\Entity\Manager
      */
-    public function entityManager()
+    public function entityManager($entityName = null)
     {
-        $entityName = $this->entity();
+        if (!$entityName) {
+            $entityName = $this->entity();
+        }
         if (!isset(self::$entityManager[$entityName])) {
             self::$entityManager[$entityName] = new Entity\Manager($entityName);
         }

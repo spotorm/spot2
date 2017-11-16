@@ -28,6 +28,10 @@ class Equals
             return $column . ' IS NULL';
         }
 
+        if ($value instanceof \Closure) {
+            return $column . ' = ' . $value();
+        }
+
         return $column . ' = ' . $builder->createPositionalParameter($value);
     }
 }

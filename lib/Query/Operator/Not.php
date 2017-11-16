@@ -21,11 +21,16 @@ class Not
     public function __invoke(QueryBuilder $builder, $column, $value)
     {
         if (is_array($value) && !empty($value)) {
-            return $column . ' NOT IN (' . $builder->createPositionalParameter($value, Connection::PARAM_STR_ARRAY) . ')';
+            return $column . ' NOT IN (' . $builder->createPositionalParameter($value,
+                Connection::PARAM_STR_ARRAY) . ')';
         }
 
         if ($value === null || (is_array($value) && empty($value))) {
             return $column . ' IS NOT NULL';
+        }
+
+        if ($value instanceof \Closure) {
+            return $column . ' = ' . $value();
         }
 
         return $column . ' != ' . $builder->createPositionalParameter($value);
