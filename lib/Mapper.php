@@ -1125,9 +1125,13 @@ class Mapper implements MapperInterface
             // Unique field
             if ($entity->isNew() && isset($fieldAttrs['unique']) && !empty($fieldAttrs['unique']) && $entity->$field !== null) {
                 if (is_string($fieldAttrs['unique'])) {
-                    // Named group
-                    $fieldKeyName = $fieldAttrs['unique'];
-                    $uniqueWhere[$fieldKeyName][$field] = $entity->$field;
+                    $fieldAttrs['unique'] = [$fieldAttrs['unique']];
+                }
+                if (is_array($fieldAttrs['unique'])) {
+                    foreach ($fieldAttrs['unique'] as $fieldKeyName) {
+                        // Named group
+                        $uniqueWhere[$fieldKeyName][$field] = $entity->$field;
+                    }
                 } else {
                     $uniqueWhere[$field] = $entity->$field;
                 }

@@ -101,7 +101,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         $fields = static::fields();
         foreach ($fields as $field => $opts) {
             if (!isset($this->_data[$field])) {
-                $this->_data[$field] = isset($opts['value']) ? $opts['value'] : null;
+                $this->_data[$field] = isset($opts['value']) ? $opts['value'] : (isset($opts['default']) ? $opts['default'] : null);
             }
         }
 

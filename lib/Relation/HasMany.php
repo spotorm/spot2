@@ -114,7 +114,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
             }
 
             foreach ($oldEntities as $oldRelatedEntity) {
-                if (!in_array($oldRelatedEntity, $relatedIds)) {
+                if (!in_array($oldRelatedEntity->primaryKey(), $relatedIds)) {
                     $deletedIds[] = $oldRelatedEntity->primaryKey();
                 }
             }

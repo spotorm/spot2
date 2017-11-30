@@ -14,9 +14,9 @@ class Config implements \Serializable
     /**
      * Add database connection
      *
-     * @param string  $name   Unique name for the connection
-     * @param string  $dsn    DSN string for this connection
-     * @param boolean $defaut Use this connection as the default? The first connection added is automatically set as the default, even if this flag is false.
+     * @param string                        $name    Unique name for the connection
+     * @param DBAL\Connection|array|string  $dsn     DSN string for this connection
+     * @param boolean                       $default Use this connection as the default? The first connection added is automatically set as the default, even if this flag is false.
      *
      * @return \Doctrine\DBAL\Connection
      * @throws \Spot\Exception

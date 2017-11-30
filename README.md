@@ -1,4 +1,4 @@
-Spot DataMapper ORM v2.0 [![Build Status](https://travis-ci.org/vlucas/spot2.svg)](https://travis-ci.org/vlucas/spot2)
+Spot DataMapper ORM v2.0 [![Build Status](https://travis-ci.org/spotorm/spot2.svg)](https://travis-ci.org/spotorm/spot2)
 ========================
 Spot v2.x is built on the [Doctrine
 DBAL](http://www.doctrine-project.org/projects/dbal.html), and targets PHP
