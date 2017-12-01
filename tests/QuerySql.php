@@ -320,6 +320,16 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertContains('IN', $posts->toSql());
     }
 
+    public function testWhereFieldSqlWithMultipleParams()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $params = [3,5];
+
+        $posts = $mapper->select()->whereFieldSql('id', 'BETWEEN ? AND ?', $params);
+
+        $this->assertCount(3, $posts);
+    }
+
     public function testQueryArrayAccess()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
