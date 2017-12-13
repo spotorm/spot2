@@ -19,7 +19,7 @@ class Comment extends Entity
     public static function fields()
     {
         return [
-            'id'            => ['type' => 'integer', 'primary' => true, 'autoincrement' => true],
+            'comment_id'    => ['type' => 'integer', 'primary' => true, 'autoincrement' => true],
             'post_id'       => ['type' => 'integer', 'index' => true, 'required' => true],
             'name'          => ['type' => 'string', 'required' => true],
             'email'         => ['type' => 'string', 'required' => true],
