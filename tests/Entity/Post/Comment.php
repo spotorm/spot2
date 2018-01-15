@@ -32,11 +32,10 @@ class Comment extends Entity
     {
         return [
             'yesterday' => function (Query $query) {
-                return $query->where(['date_created :gt' => new DateTime('yesterday'), 'date_created :lt' => new DateTime('today')]);
+                return $query->where(['date_created :gte' => new DateTime('yesterday'), 'date_created :lt' => new DateTime('today')]);
             }
         ];
     }
-
 
     public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
