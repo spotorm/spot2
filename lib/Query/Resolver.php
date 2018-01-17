@@ -193,6 +193,23 @@ class Resolver
     }
 
     /**
+     * Taken given aliased field name/value inputs and map them to their non-aliased names
+     */
+    public function dataWithOutFieldAliasMappings(array $data)
+    {
+        // have to call fields() otherwise fieldAliasMappings() would return null on the first entity
+        $this->mapper->entityManager()->fields();
+        $fieldAliasMappings = $this->mapper->entityManager()->fieldAliasMappings();
+        foreach ($fieldAliasMappings as $field => $aliasedField) {
+            if (array_key_exists($aliasedField, $data)) {
+                $data[$field] = $data[$aliasedField];
+                unset($data[$aliasedField]);
+            }
+        }
+        return $data;
+    }
+
+    /**
      * Execute provided query and return result
      *
      * @param  \Spot\Query $query SQL query to execute
