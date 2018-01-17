@@ -22,6 +22,8 @@ class Legacy extends Entity
             'name'         => ['type' => 'string', 'required' => true, 'column' => self::getNameFieldColumnName()],
             'number'       => ['type' => 'integer', 'required' => true, 'column' => self::getNumberFieldColumnName()],
             'date_created' => ['type' => 'datetime', 'value' => new \DateTime(), 'column' => self::getDateCreatedColumnName()],
+            'array'        => ['type' => 'array', 'required' => false],
+            'arrayAliased'=> ['type' => 'array', 'required' => false, 'column' => 'array_aliased']
         ];
     }
 
