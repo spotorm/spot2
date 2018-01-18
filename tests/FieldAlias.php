@@ -143,4 +143,25 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Spot\Relation\HasMany', $legacy->polymorphic_comments);
         $this->assertEquals(count($legacy->polymorphic_comments), 1);
     }
+
+    public function testFieldAliasMapping() {
+        $testId = 2545;
+        $testArray = ['testKey' => 'testValue'];
+
+        $legacy = new Legacy();
+        $legacy->id = $testId;
+        $legacy->name = 'Something Here';
+        $legacy->number = 5;
+        $legacy->array = $testArray;
+        $legacy->arrayAliased = $testArray;
+
+        $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
+        $mapper->save($legacy);
+
+        unset($legacy);
+        $legacy = $mapper->get($testId);
+
+        $this->assertEquals($testArray, $legacy->array);
+        $this->assertEquals($testArray, $legacy->arrayAliased);
+    }
 }

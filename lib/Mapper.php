@@ -1011,14 +1011,10 @@ class Mapper implements MapperInterface
     {
         $phpData = [];
         $fields = $entityName::fields();
-        $fieldAliasMappings = $this->entityManager()->fieldAliasMappings();
         $platform = $this->connection()->getDatabasePlatform();
+        $data = $this->resolver()->dataWithOutFieldAliasMappings($data);
         $entityData = array_intersect_key($data, $fields);
         foreach ($data as $field => $value) {
-            if ($fieldAlias = array_search($field, $fieldAliasMappings)) {
-                $field = $fieldAlias;
-            }
-
             // Field is in the Entity definitions
             if (isset($entityData[$field])) {
                 $typeHandler = Type::getType($fields[$field]['type']);
