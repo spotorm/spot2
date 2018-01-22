@@ -17,6 +17,10 @@ class LessThanOrEqual
      */
     public function __invoke(QueryBuilder $builder, $column, $value)
     {
+        if ($value instanceof \Closure) {
+            return $column . ' <= ' . $value();
+        }
+
         return $column . ' <= ' . $builder->createPositionalParameter($value);
     }
 }

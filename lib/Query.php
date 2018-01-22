@@ -2,8 +2,6 @@
 
 namespace Spot;
 
-use Doctrine\DBAL\Types\Type;
-
 /**
  * Query Object - Used to build adapter-independent queries PHP-style
  *
@@ -94,6 +92,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * @var array
      */
     protected static $_whereOperatorObjects = [];
+
+    /**
+     * For future use
+     * Store the type of relation with the selected mapper
+     * @var
+     */
+    protected $mapping;
 
     /**
      * Constructor Method
@@ -207,6 +212,59 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         call_user_func_array([$this->builder(), 'select'], $this->escapeIdentifier(func_get_args()));
 
         return $this;
+    }
+
+    /**
+     * Join (passthrough to DBAL QueryBuilder)
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param null $condition
+     * @return $this
+     */
+    public function join($fromAlias, $entityName, $alias, $condition = null)
+    {
+        return $this->makeJoin(__FUNCTION__, $fromAlias, $entityName, $alias, $condition);
+
+    }
+    /**
+     * Inner Join (passthrough to DBAL QueryBuilder)
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param null $condition
+     * @return $this
+     */
+    public function innerJoin($fromAlias, $entityName, $alias, $condition = null)
+    {
+        return $this->makeJoin(__FUNCTION__, $fromAlias, $entityName, $alias, $condition);
+
+    }
+    /**
+     * Left Join (passthrough to DBAL QueryBuilder)
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param null $condition
+     * @return $this
+     */
+    public function leftJoin($fromAlias, $entityName, $alias, $condition = null)
+    {
+        return $this->makeJoin(__FUNCTION__, $fromAlias, $entityName, $alias, $condition);
+
+    }
+    /**
+     * Right Join (passthrough to DBAL QueryBuilder)
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param null $condition
+     * @return $this
+     */
+    public function rightJoin($fromAlias, $entityName, $alias, $condition = null)
+    {
+        return $this->makeJoin(__FUNCTION__, $fromAlias, $entityName, $alias, $condition);
+
     }
 
     /**
@@ -347,10 +405,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @param array $where Array of conditions for this clause
      * @param bool $useAlias
+     * @param string $entityName
      * @return array SQL fragment strings for WHERE clause
      * @throws Exception
      */
-    private function parseWhereToSQLFragments(array $where, $useAlias = true)
+    private function parseWhereToSQLFragments(array $where, $useAlias = true, $entityName=null)
     {
         $builder = $this->builder();
 
@@ -383,9 +442,14 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
 
             // Prefix column name with alias
             if ($useAlias === true) {
-                $col = $this->fieldWithAlias($col);
+                $col = $this->fieldWithAlias($col, true, $entityName);
             }
 
+            if ( $this->stringIsExistingField($entityName, $value) ){
+                $value = function () use ($value){
+                        return $value;
+                };
+            }
             $sqlFragments[] = $operatorCallable($builder, $col, $value);
         }
 
@@ -708,18 +772,25 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * Get field name with table alias appended
      * @param string $field
      * @param bool $escaped
+     * @param string $entityName
      * @return string
      */
-    public function fieldWithAlias($field, $escaped = true)
+    public function fieldWithAlias($field, $escaped = true, $entityName = null)
     {
-        $fieldInfo = $this->_mapper->entityManager()->fields();
+        $fieldInfo = $this->_mapper->entityManager($entityName)->fields();
 
+        //extract table alias if present
+        list($field, $table) = $this->extractTableAndFieldFromString($field);
         // Determine real field name (column alias support)
         if (isset($fieldInfo[$field])) {
             $field = $fieldInfo[$field]['column'];
         }
 
-        $field = $this->_tableName . '.' . $field;
+        if (!$table) {
+            $table = $this->_mapper->entityManager($entityName)->table();
+        }
+
+        $field = $table . '.' . $field;
 
         return $escaped ? $this->escapeIdentifier($field) : $field;
     }
@@ -809,5 +880,103 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         } else {
             throw new \BadMethodCallException("Method '" . __CLASS__ . "::" . $method . "' not found");
         }
+    }
+
+    /**
+     * Store the mapping of tables and mapper
+     * @param string $type
+     * @param array $data
+     */
+    private function addMapping($type, array $data)
+    {
+        $type = (string)$type;
+        $this->mapping[$type] = $data;
+    }
+
+    /**
+     * Add a join of type $type
+     * @param string $type
+     * @param string $fromAlias
+     * @param string $entityName
+     * @param string $alias
+     * @param string $condition
+     * @return $this
+     */
+    public function makeJoin($type, $fromAlias, $entityName, $alias, $condition)
+    {
+        $joinTable = $this->mapper()->getMapper($entityName)->table();
+//        $conditionString = (string)$condition;
+
+        $this->addMapping(
+            'join',
+            array(
+                $fromAlias => array(
+                    'joinTable' => $joinTable,
+                    'joinAlias' => $alias,
+                    'joinEntity' => $entityName,
+
+                ),
+            )
+        );
+//        $testCondition = explode('=', $condition);
+        $conditionString = implode(' AND ', $this->parseWhereToSQLFragments($condition, true, $entityName));
+//        $conditionString = implode(' =', $condition);
+        //@FIXME: now parameters are double escaped, because the initial are double escaped also :(
+        $this->builder()->$type(
+            $this->escapeIdentifier($fromAlias),
+            $this->escapeIdentifier($joinTable),
+            $this->escapeIdentifier($alias),
+            $conditionString
+        );
+
+        return $this;
+    }
+
+    /**
+     * Extract data from string, for strings which contains "point"
+     * @Example: table.field
+     * @param $string
+     * @return array
+     */
+    public function extractTableAndFieldFromString($string)
+    {
+        $pointPosition = strpos($string, '.');
+        if ($pointPosition !== false) {
+            $table = substr($string, 0, $pointPosition);
+            $field = substr($string, $pointPosition + 1);
+        } else {
+            $table = null;
+            $field = $string;
+        }
+
+        return [$field, $table];
+
+    }
+
+    /**
+     * Determine if the value is a existing field
+     * @param string $entityName
+     * @param string $value
+     * @return string
+     */
+    public function stringIsExistingField($entityName, $value)
+    {
+        $field = '';
+        if (is_array($value)) {
+            return $field;
+        }
+        $fieldInfo = array_merge(
+            $this->_mapper->entityManager($entityName)->fields(),
+            $this->_mapper->entityManager()->fields()
+        );
+        $field = null;
+        //extract table alias if present
+        list($extractedField, $table) = $this->extractTableAndFieldFromString($value);
+        // Determine real field name (column alias support)
+        if (isset($fieldInfo[$extractedField])) {
+            $field = $fieldInfo[$extractedField]['column'];
+        }
+
+        return $field;
     }
 }

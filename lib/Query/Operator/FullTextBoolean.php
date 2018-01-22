@@ -17,6 +17,10 @@ class FullTextBoolean
      */
     public function __invoke(QueryBuilder $builder, $column, $value)
     {
+        if ($value instanceof \Closure) {
+            return $column . ' = ' . $value();
+        }
+
         return 'MATCH(' . $column . ') AGAINST (' . $builder->createPositionalParameter($value) . ' IN BOOLEAN MODE)';
     }
 }
