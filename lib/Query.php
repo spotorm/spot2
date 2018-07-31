@@ -713,6 +713,14 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     public function fieldWithAlias($field, $escaped = true)
     {
         $fieldInfo = $this->_mapper->entityManager()->fields();
+        
+        // Detect function in field name
+        $field = trim($field);
+        $function = strpos($field, '(');
+        if ($function) {
+            $functionName = substr($field, 0, $function);
+            $field = substr($field, $function + 1, strlen($field) - strlen($functionName) - 2);
+        }
 
         // Determine real field name (column alias support)
         if (isset($fieldInfo[$field])) {
@@ -720,8 +728,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         }
 
         $field = $this->_tableName . '.' . $field;
+        $field = $escaped ? $this->escapeIdentifier($field) : $field;
+        
+        $result = $function ? $functionName . '(' : '';
+        $result .= $field;
+        $result .= $function ? ')' : '';
 
-        return $escaped ? $this->escapeIdentifier($field) : $field;
+        return $result;
     }
 
     /**

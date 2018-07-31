@@ -66,6 +66,14 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
         $query = $mapper->where(['number' => 2])->order(['date_created' => 'ASC'])->noQuote();
         $this->assertContains("ORDER BY test_legacy." . self::$legacyTable->getDateCreatedColumnName() . " ASC", $query->toSql());
     }
+    
+    // Ordering by function
+    public function testLegacyOrderByFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
+        $query = $mapper->where(['number' => 2])->order(['WEEK(date_created)' => 'ASC'])->noQuote();
+        $this->assertContains("ORDER BY WEEK(test_legacy." . self::$legacyTable->getDateCreatedColumnName() . ") ASC", $query->toSql());
+    }
 
     // Grouping
     public function testLegacyGroupBy()
@@ -73,6 +81,14 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
         $query = $mapper->where(['name' => 'test_group'])->group(['id'])->noQuote();
         $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY test_legacy." . self::$legacyTable->getIdFieldColumnName(), $query->toSql());
+    }
+    
+    // Grouping by function
+    public function testLegacyGroupByFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
+        $query = $mapper->where(['name' => 'test_group'])->group(['WEEK(date_created)'])->noQuote();
+        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY WEEK(test_legacy." . self::$legacyTable->getDateCreatedColumnName() . ")", $query->toSql());
     }
 
     // Insert
