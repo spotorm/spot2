@@ -718,8 +718,15 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         $field = trim($field);
         $function = strpos($field, '(');
         if ($function) {
-            $functionName = substr($field, 0, $function);
-            $field = substr($field, $function + 1, strlen($field) - strlen($functionName) - 2);
+            foreach ($fieldInfo as $key => $currentField) {
+                $fieldFound = strpos($field, $key);
+                if ($fieldFound) {
+                    $functionStart = substr($field, 0, $fieldFound);
+                    $functionEnd = substr($field, $fieldFound + strLen($key));
+                    $field = $key;
+                    break;
+                }
+            }
         }
 
         // Determine real field name (column alias support)
@@ -730,9 +737,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         $field = $this->_tableName . '.' . $field;
         $field = $escaped ? $this->escapeIdentifier($field) : $field;
         
-        $result = $function ? $functionName . '(' : '';
+        $result = $function ? $functionStart : '';
         $result .= $field;
-        $result .= $function ? ')' : '';
+        $result .= $function ? $functionEnd : '';
 
         return $result;
     }

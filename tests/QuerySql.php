@@ -191,6 +191,18 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertContains("ORDER BY TRIM(test_posts.date_created) ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
+    
+    // Ordering by complex function
+    public function testOrderByComplexFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        if (!DriverSpecific::getWeekFunction($mapper)) {
+            $this->markTestSkipped('This test is not supported with the current driver.');
+        }
+        $query = $mapper->select()->noQuote()->where(['status' => 2])->order([DriverSpecific::getWeekFunction($mapper, 'date_created') => 'ASC']);
+        $this->assertContains("ORDER BY " . DriverSpecific::getWeekFunction($mapper, 'test_posts.date_created') . " ASC", $query->toSql());
+        $this->assertEquals(count($query), 1);
+    }
 
     // Grouping
     public function testGroupBy()

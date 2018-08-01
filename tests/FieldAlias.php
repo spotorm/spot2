@@ -74,6 +74,17 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
         $query = $mapper->where(['number' => 2])->order(['TRIM(date_created)' => 'ASC'])->noQuote();
         $this->assertContains("ORDER BY TRIM(test_legacy." . self::$legacyTable->getDateCreatedColumnName() . ") ASC", $query->toSql());
     }
+    
+    // Ordering by complex function
+    public function testLegacyOrderByComplexFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
+        if (!DriverSpecific::getWeekFunction($mapper)) {
+            $this->markTestSkipped('This test is not supported with the current driver.');
+        }
+        $query = $mapper->where(['number' => 2])->order([DriverSpecific::getWeekFunction($mapper, 'date_created') => 'ASC'])->noQuote();
+        $this->assertContains("ORDER BY " . DriverSpecific::getWeekFunction($mapper, 'test_legacy.' . self::$legacyTable->getDateCreatedColumnName()) . " ASC", $query->toSql());
+    }
 
     // Grouping
     public function testLegacyGroupBy()
