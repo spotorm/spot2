@@ -71,12 +71,8 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     public function testLegacyOrderByFunction()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
-        // Currently it works with mysql only
-        if (!$mapper->connectionIs('mysql')) {
-            $this->markTestSkipped('Not supported in Sqlite nor Postgres.');
-        }
-        $query = $mapper->where(['number' => 2])->order(['WEEK(date_created)' => 'ASC'])->noQuote();
-        $this->assertContains("ORDER BY WEEK(test_legacy." . self::$legacyTable->getDateCreatedColumnName() . ") ASC", $query->toSql());
+        $query = $mapper->where(['number' => 2])->order(['TRIM(date_created)' => 'ASC'])->noQuote();
+        $this->assertContains("ORDER BY TRIM(test_legacy." . self::$legacyTable->getDateCreatedColumnName() . ") ASC", $query->toSql());
     }
 
     // Grouping
@@ -91,12 +87,8 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
     public function testLegacyGroupByFunction()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
-        // Currently it works with mysql only
-        if (!$mapper->connectionIs('mysql')) {
-            $this->markTestSkipped('Not supported in Sqlite nor Postgres.');
-        }
-        $query = $mapper->where(['name' => 'test_group'])->group(['WEEK(date_created)'])->noQuote();
-        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY WEEK(test_legacy." . self::$legacyTable->getDateCreatedColumnName() . ")", $query->toSql());
+        $query = $mapper->where(['name' => 'test_group'])->group(['TRIM(date_created)'])->noQuote();
+        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY TRIM(test_legacy." . self::$legacyTable->getDateCreatedColumnName() . ")", $query->toSql());
     }
 
     // Insert
