@@ -18,6 +18,12 @@ abstract class Entity implements EntityInterface, \JsonSerializable
     protected static $table;
 
     /**
+     * Connection name
+     * @var string|null
+     */
+    protected static $connection;
+
+    /**
      * Datasource options
      *
      * @var array
@@ -124,6 +130,15 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         }
 
         return static::$table;
+    }
+
+    public static function connection($connectionName = null)
+    {
+        if (null !== $connectionName) {
+            static::$connection = $connectionName;
+        }
+
+        return static::$connection;
     }
 
     /**

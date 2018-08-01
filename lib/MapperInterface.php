@@ -172,11 +172,10 @@ interface MapperInterface
     /**
      * Get connection to use
      *
-     * @param  string         $connectionName Named connection or entity class name
      * @return \Doctrine\DBAL\Connection
      * @throws \Spot\Exception
      */
-    public function connection($connectionName = null);
+    public function connection();
 
     /**
      * Test to see if collection is of the given type

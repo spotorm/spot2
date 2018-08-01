@@ -14,6 +14,11 @@ interface EntityInterface
     public static function table($tableName = null);
 
     /**
+     * Connection name getter/setter
+     */
+    public static function connection($connectionName = null);
+
+    /**
      * Datasource options getter/setter
      */
     public static function tableOptions($tableOpts = null);
