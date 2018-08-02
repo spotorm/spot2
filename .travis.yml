@@ -27,7 +27,8 @@ install:
 before_script:
   - if [[ "$TYPE" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS spot_test;" -uroot; fi
   - if [[ "$TYPE" == "pgsql" ]]; then psql -c 'create database spot_test;' -U postgres; fi
-
+  - if [[ "$TYPE" == "sqlite" && "$TRAVIS_PHP_VERSION" == "hhvm" ]]; then echo 'open_basedir = none' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini; fi
+  
 # omitting "script:" will default to phpunit
 # use the $TYPE env variable to determine the phpunit.xml to use
 script: vendor/bin/phpunit --configuration phpunit_$TYPE.xml --coverage-text
