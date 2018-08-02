@@ -37,6 +37,7 @@ class Entity extends \PHPUnit_Framework_TestCase
 
     public function testEntitySetDataProperties()
     {
+        $currentDateTime = new \DateTime();
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post();
 
@@ -44,6 +45,7 @@ class Entity extends \PHPUnit_Framework_TestCase
         $post->title = "My Awesome Post";
         $post->body = "<p>Body</p>";
         $post->author_id = 1;
+        $post->date_created = $currentDateTime;
 
         $data = $post->data();
         ksort($data);
@@ -53,7 +55,7 @@ class Entity extends \PHPUnit_Framework_TestCase
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'status' => 0,
-            'date_created' => new \DateTime(),
+            'date_created' => $currentDateTime,
             'data' => null,
             'author_id' => 1
         ];
@@ -66,14 +68,15 @@ class Entity extends \PHPUnit_Framework_TestCase
 
     public function testEntitySetDataConstruct()
     {
+        $currentDateTime = new \DateTime();
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post([
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'author_id' => 1,
-            'date_created' => new \DateTime()
+            'date_created' => $currentDateTime
         ]);
-
+        
         $data = $post->data();
         ksort($data);
 
@@ -85,7 +88,7 @@ class Entity extends \PHPUnit_Framework_TestCase
             'date_created' => null,
             'data' => null,
             'author_id' => 1,
-            'date_created' => new \DateTime()
+            'date_created' => $currentDateTime
         ];
         ksort($testData);
 
