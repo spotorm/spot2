@@ -15,11 +15,6 @@ php:
   - 7.1
   - hhvm
 
-matrix:
-    allow_failures:
-        - php: hhvm
-        - php: 7.1
-
 env:
   - TYPE=mysql DSN=mysql://root@localhost/spot_test
   - TYPE=pgsql DSN=pgsql://postgres@localhost/spot_test"
