@@ -66,3 +66,21 @@ class Encrypted extends Type
         }
     }
 }
+
+/* 
+ * Added hash_equals to support PHP 5.4 and PHP 5.5
+ * hash_equals is built-in from PHP 5.6
+ * Source: http://php.net/manual/en/function.hash-equals.php
+ */
+if(!function_exists('hash_equals')) {
+    function hash_equals($str1, $str2) {
+        if(strlen($str1) != strlen($str2)) {
+            return false;
+        } else {
+            $res = $str1 ^ $str2;
+            $ret = 0;
+            for($i = strlen($res) - 1; $i >= 0; $i--) $ret |= ord($res[$i]);
+            return !$ret;
+        }
+    }
+}
