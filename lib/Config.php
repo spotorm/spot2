@@ -189,7 +189,7 @@ class Config implements \Serializable
             $parsed['dbsyntax'] = $str;
         }
 
-        if ( !count( $dsn ) ) {
+        if ( !isset( $dsn ) ) {
             return $parsed;
         }
 
