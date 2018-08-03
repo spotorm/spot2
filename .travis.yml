@@ -35,7 +35,7 @@ before_script:
   # Disable the HHVM JIT for faster Unit Testing
   - if [[ $TRAVIS_PHP_VERSION = hhv* ]]; then 
       echo 'hhvm.jit = 0' >> /etc/hhvm/php.ini;
-      echo 'open_basedir = /tmp' >> /etc/hhvm/php.ini;
+      echo 'open_basedir = /tmp:/home/travis/' >> /etc/hhvm/php.ini;
     fi
   # Disable DEPRECATE messages during PHPUnit initialization on PHP 7.2. To fix them, PHPUnit should be updated to 6.*
   - if [[ $TRAVIS_PHP_VERSION == 7.2 ]] || [[ $TRAVIS_PHP_VERSION == "nightly" ]]; then
