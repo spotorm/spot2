@@ -66,6 +66,25 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
         $query = $mapper->where(['number' => 2])->order(['date_created' => 'ASC'])->noQuote();
         $this->assertContains("ORDER BY test_legacy." . self::$legacyTable->getDateCreatedColumnName() . " ASC", $query->toSql());
     }
+    
+    // Ordering by function
+    public function testLegacyOrderByFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
+        $query = $mapper->where(['number' => 2])->order(['TRIM(name)' => 'ASC'])->noQuote();
+        $this->assertContains("ORDER BY TRIM(test_legacy." . self::$legacyTable->getNameFieldColumnName() . ") ASC", $query->toSql());
+    }
+    
+    // Ordering by complex function
+    public function testLegacyOrderByComplexFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
+        if (!DriverSpecific::getWeekFunction($mapper)) {
+            $this->markTestSkipped('This test is not supported with the current driver.');
+        }
+        $query = $mapper->where(['number' => 2])->order([DriverSpecific::getWeekFunction($mapper, 'date_created') => 'ASC'])->noQuote();
+        $this->assertContains("ORDER BY " . DriverSpecific::getWeekFunction($mapper, 'test_legacy.' . self::$legacyTable->getDateCreatedColumnName()) . " ASC", $query->toSql());
+    }
 
     // Grouping
     public function testLegacyGroupBy()
@@ -73,6 +92,14 @@ class FieldAlias extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
         $query = $mapper->where(['name' => 'test_group'])->group(['id'])->noQuote();
         $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNameFieldColumnName() . " = ? GROUP BY test_legacy." . self::$legacyTable->getIdFieldColumnName(), $query->toSql());
+    }
+    
+    // Grouping by function
+    public function testLegacyGroupByFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Legacy');
+        $query = $mapper->where(['number' => 2])->group(['TRIM(name)'])->noQuote();
+        $this->assertEquals("SELECT * FROM test_legacy WHERE test_legacy." . self::$legacyTable->getNumberFieldColumnName() . " = ? GROUP BY TRIM(test_legacy." . self::$legacyTable->getNameFieldColumnName() . ")", $query->toSql());
     }
 
     // Insert

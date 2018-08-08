@@ -182,6 +182,27 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertContains("ORDER BY test_posts.date_created ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
+    
+    // Ordering by function
+    public function testOrderByFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $query = $mapper->select()->noQuote()->where(['status' => 2])->order(['TRIM(body)' => 'ASC']);
+        $this->assertContains("ORDER BY TRIM(test_posts.body) ASC", $query->toSql());
+        $this->assertEquals(count($query), 1);
+    }
+    
+    // Ordering by complex function
+    public function testOrderByComplexFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        if (!DriverSpecific::getWeekFunction($mapper)) {
+            $this->markTestSkipped('This test is not supported with the current driver.');
+        }
+        $query = $mapper->select()->noQuote()->where(['status' => 2])->order([DriverSpecific::getWeekFunction($mapper, 'date_created') => 'ASC']);
+        $this->assertContains("ORDER BY " . DriverSpecific::getWeekFunction($mapper, 'test_posts.date_created') . " ASC", $query->toSql());
+        $this->assertEquals(count($query), 1);
+    }
 
     // Grouping
     public function testGroupBy()
@@ -189,6 +210,15 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->group(['id']);
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? GROUP BY test_posts.id", $query->toSql());
+        $this->assertEquals(count($query), 1);
+    }
+    
+    // Grouping by function
+    public function testGroupByFunction()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $query = $mapper->select()->noQuote()->where(['status' => 2])->group(['TRIM(body)']);
+        $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? GROUP BY TRIM(test_posts.body)", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
 
