@@ -8,28 +8,41 @@ cache:
     - $HOME/.composer/cache
 
 php:
-  - 5.4
-  - 5.5
-  - 5.6
-  - 7.0
+  - 7.2
   - 7.1
+  - 7.0
+  - 5.6
+  - 5.5
+  - 5.4
+  - nightly
   - hhvm
-
+  
 matrix:
-    allow_failures:
-        - php: hhvm
-        - php: 7.1
+  allow_failures:
+    - php: nightly
+    - php: hhvm # run build against hhvm but allow them to fail
 
 env:
   - TYPE=mysql DSN=mysql://root@localhost/spot_test
   - TYPE=pgsql DSN=pgsql://postgres@localhost/spot_test"
-  - TYPE=sqlite DSN=sqlite::memory
+  - TYPE=sqlite DSN=sqlite:/tmp/db.sqlite
 
 install:
   - composer install
 
 # execute any number of scripts before the test run, custom env's are available as variables
 before_script:
+  # Disable the HHVM JIT for faster Unit Testing
+  - if [[ $TRAVIS_PHP_VERSION = hhv* ]]; then 
+      echo 'hhvm.jit = 0' >> /etc/hhvm/php.ini;
+      echo 'open_basedir = /tmp:/home/travis/' >> /etc/hhvm/php.ini;
+    fi
+  # Disable DEPRECATE messages during PHPUnit initialization on PHP 7.2. To fix them, PHPUnit should be updated to 6.*
+  - if [[ $TRAVIS_PHP_VERSION == 7.2 ]] || [[ $TRAVIS_PHP_VERSION == "nightly" ]]; then
+      echo 'Disabled DEPRECATED notifications for PHP 7.2';
+      echo 'error_reporting = E_ALL & ~E_DEPRECATED' >> /tmp/php-config.ini;
+      phpenv config-add /tmp/php-config.ini;
+    fi
   - if [[ "$TYPE" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS spot_test;" -uroot; fi
   - if [[ "$TYPE" == "pgsql" ]]; then psql -c 'create database spot_test;' -U postgres; fi
 

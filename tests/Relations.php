@@ -102,6 +102,7 @@ class Relations extends \PHPUnit_Framework_TestCase
         $post = $mapper->get();
         $post->title = "No Comments";
         $post->body = "<p>Comments relation test</p>";
+        $post->author_id = 1;
         $mapper->save($post);
 
         $this->assertSame(0, count($post->comments));
