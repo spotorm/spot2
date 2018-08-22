@@ -57,6 +57,12 @@ class Manager
     protected $table;
 
     /**
+     * Connection name
+     * @var string|null
+     */
+    protected $connection;
+    
+    /**
      * @var
      */
     protected $tableOptions;
