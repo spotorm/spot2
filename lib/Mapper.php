@@ -2,6 +2,7 @@
 namespace Spot;
 
 use Doctrine\DBAL\Types\Type;
+use Spot\Relation\RelationAbstract;
 
 /**
  * Base DataMapper
@@ -216,6 +217,19 @@ class Mapper implements MapperInterface
 
         // Return relation object so query can be lazy-loaded
         return new Relation\BelongsTo($this, $foreignEntity, $foreignKey, $localKey, $entity->$localKey);
+    }
+
+    /**
+     * Relation: NestedRelation
+     *
+     * @param RelationAbstract $relationObject
+     * @param RelationAbstract $parentRelationObject
+     *
+     * @return Relation\NestedRelation
+     */
+    public function nestedRelation(RelationAbstract $relationObject, RelationAbstract $parentRelationObject)
+    {
+        return new Relation\NestedRelation($relationObject, $parentRelationObject);
     }
 
     /**
