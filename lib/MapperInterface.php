@@ -1,6 +1,8 @@
 <?php
 namespace Spot;
 
+use Spot\Relation\RelationAbstract;
+
 /**
  * Base DataMapper Interface
  *
@@ -91,6 +93,13 @@ interface MapperInterface
      * 'hasOne' relationship instead.
      */
     public function belongsTo(EntityInterface $entity, $foreignEntity, $localKey);
+
+    /**
+     * Relation: NestedRelation
+     *
+     * Loading multilevel relations
+     */
+    public function nestedRelation(RelationAbstract $relationObject, RelationAbstract $parentRelationObject);
 
     /**
      * Prepare entity and load necessary objects on it

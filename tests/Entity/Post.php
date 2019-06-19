@@ -6,6 +6,7 @@ use Spot\EntityInterface;
 use Spot\MapperInterface;
 use Spot\EventEmitter;
 use Spot\Query;
+use SpotTest\Entity\Post\UserComment;
 
 /**
  * Post
@@ -34,10 +35,14 @@ class Post extends Entity
 
     public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
+        $userCommentsRelation = $mapper->hasMany($entity, 'SpotTest\Entity\Post\UserComment', 'post_id');
+        $userRelation = UserComment::relations($mapper, $entity)['user'];
         return [
             'tags' => $mapper->hasManyThrough($entity, 'SpotTest\Entity\Tag', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id'),
             'comments' => $mapper->hasMany($entity, 'SpotTest\Entity\Post\Comment', 'post_id')->order(['date_created' => 'ASC']),
             'polymorphic_comments' => $mapper->hasMany($entity, 'SpotTest\Entity\PolymorphicComment', 'item_id')->where(['item_type' => 'post']),
+            'user_comments' => $userCommentsRelation,
+            'user_comments.user' => $mapper->nestedRelation($userRelation, $userCommentsRelation),
             'author' => $mapper->belongsTo($entity, 'SpotTest\Entity\Author', 'author_id')
         ];
     }
