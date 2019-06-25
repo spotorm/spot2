@@ -98,6 +98,9 @@ interface MapperInterface
      * Relation: NestedRelation
      *
      * Loading multilevel relations
+     *
+     * @param RelationAbstract $relationObject ,
+     * @param RelationAbstract $parentRelationObject
      */
     public function nestedRelation(RelationAbstract $relationObject, RelationAbstract $parentRelationObject);
 

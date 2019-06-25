@@ -104,8 +104,35 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
                 ['user_comments'], 102
             ],
             [
-                ['user_comments', 'user_coments.user'], 3
+                ['user_comments', 'user_comments.user'], 3
             ]
         ];
     }
+
+    /**
+     * @dataProvider testWrongRelationNamesDataProvider()
+     *
+     * @expectedException \InvalidArgumentException
+     */
+    public function testNestedRelationBadRelationNames($relations)
+    {
+        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+
+
+        $posts = $mapper->all()->with($relations);
+        foreach ($posts as $post) {
+            $post->id;
+        }
+    }
+
+    public function testWrongRelationNamesDataProvider()
+    {
+        return [
+                [['user_comments', 'user_commentsss.user']],
+                [['user_comments.user']],
+                [['user_comments', 'user_comments.userrr']],
+
+        ];
+    }
+
 }

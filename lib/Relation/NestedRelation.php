@@ -33,6 +33,11 @@ class NestedRelation extends RelationAbstract
      */
     protected $relationName;
 
+    /**
+     * @var string
+     */
+    protected $entityName;
+
     /*
      * @var Collection
      */
@@ -56,6 +61,7 @@ class NestedRelation extends RelationAbstract
     {
         $this->relationObject = $relationObject;
         $this->parentRelationObject = $parentRelationObject;
+        $this->entityName = $relationObject->entityName();
     }
 
     /**
@@ -65,17 +71,16 @@ class NestedRelation extends RelationAbstract
      */
     public function identityValuesFromCollection(Collection $collection)
     {
-        // This method is not used here
+        throw new \BadMethodCallException("This method is not implemented in NestedRelation class");
     }
 
     /**
      * Build query object
      *
-     * @return \Spot\Query
      */
     protected function buildQuery()
     {
-        return $this->relationObject->buildQuery();
+        throw new \BadMethodCallException("This method is not implemented in NestedRelation class");
     }
 
     /**
@@ -172,12 +177,10 @@ class NestedRelation extends RelationAbstract
      * @param string $relationName Name of the relation to save
      * @param array $options Options to pass to the mappers
      *
-     * @return boolean
-     *
      * @throws \Exception
      */
     public function save(EntityInterface $entity, $relationName, $options = [])
     {
-        return true; // Not needed to be implemented
+        throw new \BadMethodCallException("This method is not implemented in NestedRelation class");
     }
 }

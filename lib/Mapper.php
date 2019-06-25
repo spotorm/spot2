@@ -222,10 +222,10 @@ class Mapper implements MapperInterface
     /**
      * Relation: NestedRelation
      *
-     * @param RelationAbstract $relationObject
+     * @param RelationAbstract $relationObject ,
      * @param RelationAbstract $parentRelationObject
      *
-     * @return Relation\NestedRelation
+     * @return Relation\NestedRelation|bool
      */
     public function nestedRelation(RelationAbstract $relationObject, RelationAbstract $parentRelationObject)
     {
@@ -459,6 +459,8 @@ class Mapper implements MapperInterface
             return $collection;
         }
 
+        $relationObjects = [];
+
         foreach ($with as $relationName) {
             // We only need a single entity from the collection, because we're
             // going to modify the query to pass in an array of all the
@@ -471,6 +473,25 @@ class Mapper implements MapperInterface
             }
 
             $relationObject = $singleEntity->relation($relationName);
+
+            // Handle nested relations
+            if ($relationObject === false) {
+                $relationNames = explode('.', $relationName);
+                if (count($relationNames) > 1) {
+                    $finalRelationName = array_pop($relationNames);
+                    $parentRelationName = implode('.', $relationNames);
+                    if (!isset($relationObjects[$parentRelationName])) {
+                        throw new \InvalidArgumentException("Nested relation exception: parent relation is not loaded:'" . $parentRelationName . "'");
+                    }
+                    $parentRelation = $relationObjects[$parentRelationName];
+                    $parentRelationEntity = $parentRelation->entityName();
+                    if( !isset($parentRelationEntity::relations($this, (new $parentRelationEntity))[$finalRelationName])) {
+                        throw new \InvalidArgumentException("Nested relation exception: target relation '" . $finalRelationName . "' doesn't exist in Entity '" . $parentRelationEntity . "'");
+                    }
+                    $targetRelation = $parentRelationEntity::relations($this, (new $parentRelationEntity))[$finalRelationName];
+                    $relationObject = $this->nestedRelation($targetRelation, $parentRelation);
+                }
+            }
 
             // Ensure we have a valid relation name
             if ($relationObject === false) {
@@ -492,6 +513,8 @@ class Mapper implements MapperInterface
 
             // Eager-load relation results back to collection
             $collection = $relationObject->eagerLoadOnCollection($relationName, $collection);
+
+            $relationObjects[$relationName] = $relationObject;
         }
 
         $eventEmitter->emit('afterWith', [$this, $collection, $with]);
