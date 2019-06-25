@@ -101,7 +101,9 @@ class NestedRelation extends RelationAbstract
         if (!empty($this->relationCollectionReversedIdentities)) {
             $result = [];
             foreach ($filledRelationCollection as $ent) {
-                $result[$this->relationCollectionReversedIdentities[$ent->getId()]][] = $ent;
+                if (isset($this->relationCollectionReversedIdentities[$ent->primaryKey()])) {
+                    $result[$this->relationCollectionReversedIdentities[$ent->primaryKey()]][] = $ent;
+                }
             }
             $filledRelationCollection = $result;
         }
@@ -123,7 +125,9 @@ class NestedRelation extends RelationAbstract
         }
 
         foreach($parentCollection as $entity) {
-            $entity->relation($this->parentRelationName, $filledRelationCollection[$entity->getId()]);
+            if (isset($filledRelationCollection[$entity->primaryKey()])) {
+                $entity->relation($this->parentRelationName, $filledRelationCollection[$entity->primaryKey()]);
+            }
         }
 
         if ($this->parentRelationObject instanceof NestedRelation) {
@@ -148,12 +152,12 @@ class NestedRelation extends RelationAbstract
             if ($relatedEntity instanceof Collection) {
                 foreach ($relatedEntity as $childEntity) {
                     $relationCollection[] = $childEntity;
-                    $resultsIdentities[] = $childEntity->getId();
-                    $this->relationCollectionReversedIdentities[$childEntity->getId()] = $entity->getId();
+                    $resultsIdentities[] = $childEntity->primaryKey();
+                    $this->relationCollectionReversedIdentities[$childEntity->primaryKey()] = $entity->primaryKey();
                 }
             } else {
-                $relationCollection[$entity->getId()] = $relatedEntity;
-                $resultsIdentities[] = $relatedEntity->getId();
+                $relationCollection[$entity->primaryKey()] = $relatedEntity;
+                $resultsIdentities[] = $relatedEntity->primaryKey();
             }
         }
         $this->relationCollection = new Collection($relationCollection, $resultsIdentities);

@@ -16,7 +16,7 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
 
         // Fixtures for this test suite
 
-        // Author
+        // 1 Author
         $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
         $author = $authorMapper->create([
             'id'       => 123,
@@ -25,9 +25,9 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
             'is_admin' => false
         ]);
 
-        // User
+        // 4 Users
         $users = [];
-        $usersCount = 2;
+        $usersCount = 4;
         $userMapper = test_spot_mapper('SpotTest\Entity\User');
         for ($i = 1; $i <= $usersCount; $i++) {
             $users[] = $userMapper->create([
@@ -36,9 +36,9 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
             ]);
         }
 
-        // Posts
+        // 10 Posts
         $posts = [];
-        $postsCount = 3;
+        $postsCount = 10;
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         for ($i = 1; $i <= $postsCount; $i++) {
             $posts[] = $mapper->create([
@@ -48,10 +48,10 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
             ]);
         }
 
-        // 3 comments for each post
+        // 10 comments for each post
         foreach ($posts as $post) {
             $comments = [];
-            $commentCount = 3;
+            $commentCount = 10;
             $commentMapper = test_spot_mapper('SpotTest\Entity\Post\UserComment');
             for ($i = 1; $i <= $commentCount; $i++) {
                 $comments[] = $commentMapper->create([
@@ -70,7 +70,10 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testEagerLoad()
+    /**
+     * @dataProvider testEagerLoadDataProvider()
+     */
+    public function testEagerLoad($relations, $expectedTotalQueries)
     {
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
 
@@ -80,18 +83,29 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
 
         $startCount = count($logger->queries);
 
-        $posts = $mapper->all()->with('user_comments', 'user_comments.user');
+        $posts = $mapper->all()->with($relations);
         foreach ($posts as $post) {
             foreach ($post->user_comments as $comment) {
                 $user = $comment->user;
-                $user->id;
-                // Do nothing - just had to iterate to execute the queries
-                $this->assertEquals($post->id, $comment->post_id);
+                // Lets check that we have the correct user for each comment
+                $this->assertEquals($user->id, $comment->user_id);
             }
         }
         $endCount = count($logger->queries);
 
         // Eager-loaded relation should be only 2 queries
-        $this->assertEquals($startCount+2, $endCount);
+        $this->assertEquals($startCount+$expectedTotalQueries, $endCount);
+    }
+
+    public function testEagerLoadDataProvider()
+    {
+        return [
+            [
+                ['user_comments'], 102
+            ],
+            [
+                ['user_comments', 'user_coments.user'], 3
+            ]
+        ];
     }
 }
