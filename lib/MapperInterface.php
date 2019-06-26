@@ -95,16 +95,6 @@ interface MapperInterface
     public function belongsTo(EntityInterface $entity, $foreignEntity, $localKey);
 
     /**
-     * Relation: NestedRelation
-     *
-     * Loading multilevel relations
-     *
-     * @param RelationAbstract $relationObject ,
-     * @param RelationAbstract $parentRelationObject
-     */
-    public function nestedRelation(RelationAbstract $relationObject, RelationAbstract $parentRelationObject);
-
-    /**
      * Prepare entity and load necessary objects on it
      */
     public function prepareEntity(EntityInterface $entity);

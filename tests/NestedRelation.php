@@ -93,16 +93,18 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
         }
         $endCount = count($logger->queries);
 
-        // Eager-loaded relation should be only 2 queries
+        // Eager-loaded relation should be only 3 queries
         $this->assertEquals($startCount+$expectedTotalQueries, $endCount);
     }
 
     public function testEagerLoadDataProvider()
     {
         return [
+            // without nested relation we will have 102 queries
             [
                 ['user_comments'], 102
             ],
+            // with nested relation we will have only 3 queries
             [
                 ['user_comments', 'user_comments.user'], 3
             ]
@@ -131,7 +133,6 @@ class NestedRelation extends \PHPUnit_Framework_TestCase
                 [['user_comments', 'user_commentsss.user']],
                 [['user_comments.user']],
                 [['user_comments', 'user_comments.userrr']],
-
         ];
     }
 

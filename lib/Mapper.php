@@ -2,7 +2,7 @@
 namespace Spot;
 
 use Doctrine\DBAL\Types\Type;
-use Spot\Relation\RelationAbstract;
+use Spot\Relation\NestedRelation;
 
 /**
  * Base DataMapper
@@ -217,19 +217,6 @@ class Mapper implements MapperInterface
 
         // Return relation object so query can be lazy-loaded
         return new Relation\BelongsTo($this, $foreignEntity, $foreignKey, $localKey, $entity->$localKey);
-    }
-
-    /**
-     * Relation: NestedRelation
-     *
-     * @param RelationAbstract $relationObject ,
-     * @param RelationAbstract $parentRelationObject
-     *
-     * @return Relation\NestedRelation|bool
-     */
-    public function nestedRelation(RelationAbstract $relationObject, RelationAbstract $parentRelationObject)
-    {
-        return new Relation\NestedRelation($relationObject, $parentRelationObject);
     }
 
     /**
@@ -489,7 +476,7 @@ class Mapper implements MapperInterface
                         throw new \InvalidArgumentException("Nested relation exception: target relation '" . $finalRelationName . "' doesn't exist in Entity '" . $parentRelationEntity . "'");
                     }
                     $targetRelation = $parentRelationEntity::relations($this, (new $parentRelationEntity))[$finalRelationName];
-                    $relationObject = $this->nestedRelation($targetRelation, $parentRelation);
+                    $relationObject = new NestedRelation($targetRelation, $parentRelation);
                 }
             }
 
