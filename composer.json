@@ -23,8 +23,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Spot\\": "lib/",
-            "SpotTest\\": "tests/"
+            "Spot\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+          "SpotTest\\": "tests/"
         }
     }
 }
