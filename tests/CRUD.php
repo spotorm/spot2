@@ -1,6 +1,8 @@
 <?php
 namespace SpotTest;
 
+use Datetime;
+
 /**
  * @package Spot
  */
@@ -553,5 +555,45 @@ class CRUD extends \PHPUnit_Framework_TestCase
         $results = $mapper->where(['date_created <=' => new \DateTime()])->toArray();
 
         $this->assertTrue(count($results) > 0);
+    }
+
+    /**
+     * @group save-relations
+     */
+    public function testResetRelationResult()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $commentMapper = test_spot_mapper('SpotTest\Entity\Post\Comment');
+        $comments = [
+            new \SpotTest\Entity\Post\Comment([
+                'name' => 'John Doe',
+                'email'  => 'test@example.com',
+                'body' => '#1: Lorem ipsum is dolor.',
+                'date_created' => new DateTime('yesterday')
+            ])
+        ];
+        for ($i = 2; $i < 4; $i++) {
+            $comments[] = new \SpotTest\Entity\Post\Comment([
+                'name' => 'John Doe',
+                'email'  => 'test@example.com',
+                'body' => '#'.$i.': Lorem ipsum is dolor.',
+                'date_created' => new DateTime('today')
+            ]);
+        }
+        $post = $mapper->build([
+            'title' => 'Test',
+            'body' => 'Test description',
+            'author_id' => 1
+        ]);
+        $post->relation('comments', new \Spot\Entity\Collection($comments));
+        $mapper->save($post, ['relations' => true]);
+
+        $post = $mapper->get($post->id);
+
+        $comments = $post->comments->yesterday()->execute();
+        $this->assertEquals($comments->count(), 1);
+
+        $comments = $post->comments->reset()->execute();
+        $this->assertEquals($comments->count(), 3);
     }
 }

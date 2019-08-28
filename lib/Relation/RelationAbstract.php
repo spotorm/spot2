@@ -167,6 +167,20 @@ abstract class RelationAbstract
     }
 
     /**
+     * Reset result and query
+     *
+     * @return $this
+     */
+    public function reset()
+    {
+        $this->result = null;
+        $this->query = null;
+        $this->queryQueue = [];
+
+        return $this;
+    }
+
+    /**
      * Save related entities
      *
      * @param EntityInterface $entity Entity to save relation from
