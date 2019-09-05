@@ -76,6 +76,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         '=~' => 'Spot\Query\Operator\RegExp',
         ':regex' => 'Spot\Query\Operator\RegExp',
         ':like' => 'Spot\Query\Operator\Like',
+        ':notlike' => 'Spot\Query\Operator\NotLike',
         ':fulltext' => 'Spot\Query\Operator\FullText',
         ':fulltext_boolean' => 'Spot\Query\Operator\FullTextBoolean',
         'in' => 'Spot\Query\Operator\In',

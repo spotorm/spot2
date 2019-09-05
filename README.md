@@ -335,6 +335,7 @@ Supported conditions are:
 * Greater than or equal `>=`, `:gte`
 * RegExp `~=`, `=~`, `:regex`
 * Like `:like`
+* Not Like `:notlike`
 * Full Text `:fulltext`
 * Full Text Boolean `:fulltext_boolean`
 * In `in`, `:in`
