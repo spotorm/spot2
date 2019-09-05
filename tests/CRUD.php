@@ -6,7 +6,7 @@ namespace SpotTest;
  */
 class CRUD extends \PHPUnit_Framework_TestCase
 {
-    private static $entities = ['PolymorphicComment', 'PostTag', 'Post\Comment', 'Post', 'Tag', 'Author', 'Setting', 'Event\Search', 'Event'];
+    private static $entities = ['PolymorphicComment', 'PostTag', 'Post\UserComment', 'Post\Comment', 'Post', 'Tag', 'Author', 'Setting', 'Event\Search', 'Event'];
 
     public static function setupBeforeClass()
     {
