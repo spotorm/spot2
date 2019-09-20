@@ -441,7 +441,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
 
         $camelCaseField = str_replace(' ', '', ucwords(str_replace('_', ' ', $field)));
         $getterMethod = 'get' . $camelCaseField;
-        if (!in_array($field, $this->_inGetter) && method_exists($this, $getterMethod)) {
+        if (!isset($this->_inGetter[$field]) && method_exists($this, $getterMethod)) {
             // Custom getter method
             $this->_inGetter[$field] = true;
             $v = call_user_func([$this, $getterMethod]);
@@ -500,7 +500,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
         // Custom setter method
         $camelCaseField = str_replace(' ', '', ucwords(str_replace('_', ' ', $field)));
         $setterMethod = 'set' . $camelCaseField;
-        if (!in_array($field, $this->_inSetter) && method_exists($this, $setterMethod)) {
+        if (!isset($this->_inSetter[$field]) && method_exists($this, $setterMethod)) {
             $this->_inSetter[$field] = true;
             $value = call_user_func([$this, $setterMethod], $value);
             unset($this->_inSetter[$field]);
