@@ -544,6 +544,9 @@ abstract class Entity implements EntityInterface, \JsonSerializable
             if (isset($relations[$objectId][$relationName])) {
                 unset($relations[$objectId][$relationName]);
             }
+            if (isset($relations[$objectId]) && !$relations[$objectId]) {
+                unset($relations[$objectId]);
+            }
 
             return false;
         } else {
