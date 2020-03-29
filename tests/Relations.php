@@ -334,4 +334,22 @@ class Relations extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue(isset($post->author));
     }
+
+    /**
+     * @depends testBlogPostInsert
+     * @doesNotPerformAssertions
+     */
+    public function testRelationQuery($postId)
+    {
+        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $post = $postMapper->get($postId);
+
+        // first doesn't return the Query object, but it shouldn't break everything
+        $lastComment = $post->comments->order(['date_created' => 'DESC'])->first();
+        $this->assertInstanceOf('SpotTest\Entity\Post\Comment', $lastComment);
+        // we should still be able to iterate over comments
+        foreach ($post->comments as $comment) {
+            $this->assertInstanceOf('SpotTest\Entity\Post\Comment', $comment);
+        }
+    }
 }
