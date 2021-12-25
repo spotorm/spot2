@@ -87,11 +87,11 @@ class MultipleUniquesTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($entity4->hasErrors());
         $this->assertFalse($entity5->hasErrors());
         $this->assertTrue($entity6->hasErrors());
-        $this->assertStringContainsString("Uniq1 'data1_test1-1' is already taken.", $entity6->errors('uniq1'));
+        $this->assertContains("Uniq1 'data1_test1-1' is already taken.", $entity6->errors('uniq1'));
         $this->assertTrue($entity7->hasErrors());
-        $this->assertStringContainsString("Uniq2 'data1_test2-data3_test2' is already taken.", $entity7->errors('uniq2'));
+        $this->assertContains("Uniq2 'data1_test2-data3_test2' is already taken.", $entity7->errors('uniq2'));
         $this->assertTrue($entity8->hasErrors());
-        $this->assertStringContainsString("Uniq1 'data1_test1-1' is already taken.", $entity8->errors('uniq1'));
-        $this->assertStringContainsString("Uniq2 'data1_test1-data3_test4' is already taken.", $entity8->errors('uniq2'));
+        $this->assertContains("Uniq1 'data1_test1-1' is already taken.", $entity8->errors('uniq1'));
+        $this->assertContains("Uniq2 'data1_test1-data3_test4' is already taken.", $entity8->errors('uniq2'));
     }
 }

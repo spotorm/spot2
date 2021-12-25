@@ -189,7 +189,7 @@ class EventsTest extends \PHPUnit\Framework\TestCase
 
         $eventEmitter = $mapper->eventEmitter();
         $eventEmitter->on('beforeInsert', function ($post, $mapper) use (&$testcase) {
-            $testcase->assertTrue(false);
+            $testcase->fail();
         });
 
         $eventEmitter->on('beforeUpdate', function ($post, $mapper) use (&$hooks, &$testcase) {

@@ -30,7 +30,7 @@ class ManagerTest extends \PHPUnit\Framework\TestCase
 
         // an "employee" index must exist with company and user field
         $this->assertTrue(array_key_exists('test_multipleindexedfield_employee', $fieldKeys['index']));
-        $this->assertStringContainsString('company', $fieldKeys['index']['test_multipleindexedfield_employee']);
-        $this->assertStringContainsString('user', $fieldKeys['index']['test_multipleindexedfield_employee']);
+        $this->assertContains('company', $fieldKeys['index']['test_multipleindexedfield_employee']);
+        $this->assertContains('user', $fieldKeys['index']['test_multipleindexedfield_employee']);
     }
 }

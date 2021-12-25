@@ -37,7 +37,7 @@ class ValidationTest extends \PHPUnit\Framework\TestCase
         $mapper->save($entity);
 
         $this->assertTrue($entity->hasErrors());
-        $this->assertStringContainsString("Email is required", $entity->errors('email'));
+        $this->assertContains("Email is required", $entity->errors('email'));
     }
 
     public function testUniqueField()
@@ -62,7 +62,7 @@ class ValidationTest extends \PHPUnit\Framework\TestCase
 
         $this->assertFalse($user1->hasErrors());
         $this->assertTrue($user2->hasErrors());
-        $this->assertStringContainsString("Email 'test@test.com' is already taken.", $user2->errors('email'));
+        $this->assertContains("Email 'test@test.com' is already taken.", $user2->errors('email'));
     }
 
     public function testUniqueFieldConvertToDb()
@@ -85,7 +85,7 @@ class ValidationTest extends \PHPUnit\Framework\TestCase
 
         $this->assertFalse($report1->hasErrors());
         $this->assertTrue($report2->hasErrors());
-        $this->assertStringContainsString("Date '2016-05-04' is already taken.", $report2->errors('date'));
+        $this->assertContains("Date '2016-05-04' is already taken.", $report2->errors('date'));
     }
 
     public function testEmail()
@@ -99,7 +99,7 @@ class ValidationTest extends \PHPUnit\Framework\TestCase
         $mapper->save($entity);
 
         $this->assertTrue($entity->hasErrors());
-        $this->assertStringContainsString("Email is not a valid email address", $entity->errors('email'));
+        $this->assertContains("Email is not a valid email address", $entity->errors('email'));
     }
 
     public function testLength()
@@ -113,7 +113,7 @@ class ValidationTest extends \PHPUnit\Framework\TestCase
         $mapper->save($entity);
 
         $this->assertTrue($entity->hasErrors());
-        $this->assertStringContainsString("Email must be 4 characters long", $entity->errors('email'));
+        $this->assertContains("Email must be 4 characters long", $entity->errors('email'));
     }
 
     public function testDisabledValidation()

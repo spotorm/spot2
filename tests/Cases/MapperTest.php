@@ -15,7 +15,7 @@ class MapperTest extends \PHPUnit\Framework\TestCase
     public function testGetCustomEntityMapper()
     {
         $mapper = \test_spot_mapper('SpotTest\Entity\Event');
-        $this->assertInstanceOf(Entity\Event::mapper(), $mapper);
+        $this->assertInstanceOf(\SpotTest\Entity\Event::mapper(), $mapper);
 
         $query = $mapper->testQuery();
         $this->assertInstanceOf('Spot\Query', $query);

@@ -159,7 +159,7 @@ class InsertTest extends \PHPUnit\Framework\TestCase
         $result = $mapper->insert($event);
 
         $this->assertFalse($result);
-        $this->assertStringContainsString('Type is required', $event->errors('type'));
+        $this->assertContains('Type is required', $event->errors('type'));
     }
 
     public function testSaveEventRunsAfterInsertHook()
