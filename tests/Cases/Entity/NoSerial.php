@@ -1,0 +1,22 @@
+<?php
+namespace SpotTest\Cases\Entity;
+
+use Spot\Entity;
+
+/**
+ * Entity with no serial/autoincrement
+ *
+ * @package Spot
+ */
+class NoSerial extends \Spot\Entity
+{
+    protected static $table = 'test_noserial';
+
+    public static function fields()
+    {
+        return [
+            'id'    => ['type' => 'integer', 'primary' => true],
+            'data'  => ['type' => 'string', 'required' => true],
+        ];
+    }
+}

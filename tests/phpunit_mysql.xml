@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         backupGlobals="false"
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         bootstrap="./bootstrap.php"
+         cacheResult="false"
+         verbose="true"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+    <coverage includeUncoveredFiles="true" processUncoveredFiles="false">
+        <include>
+            <directory suffix=".php">./lib</directory>
+        </include>
+    </coverage>
+    <php>
+        <env name="SPOT_DB_TYPE" value="mysql"/>
+        <env name="SPOT_DB_DSN" value="mysql://root@localhost/spot_test"/>
+    </php>
+    <testsuites>
+        <testsuite name="Spot2 ORM">
+            <directory suffix=".php">./tests/cases</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

@@ -4,3 +4,4 @@ composer.lock
 vendor
 tests/spot_test.sqlite
 .idea
+/phpunit.phar
