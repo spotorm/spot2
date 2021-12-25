@@ -1,5 +1,5 @@
 <?php
-namespace SpotTest\Cases\Entity\Event;
+namespace SpotTest\Entity\Event;
 
 use Spot\Entity;
 use Spot\EntityInterface;

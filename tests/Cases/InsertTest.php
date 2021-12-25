@@ -11,7 +11,7 @@ class InsertTest extends \PHPUnit\Framework\TestCase
     public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
@@ -31,14 +31,14 @@ class InsertTest extends \PHPUnit\Framework\TestCase
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testInsertPostEntity()
     {
-        $post = new \SpotTest\Cases\Entity\Post();
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $post = new \SpotTest\Entity\Post();
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post->title = "Test Post";
         $post->body = "<p>This is a really awesome super-duper post.</p><p>It's really quite lovely.</p>";
         $post->date_created = new \DateTime();
@@ -53,16 +53,16 @@ class InsertTest extends \PHPUnit\Framework\TestCase
 
     public function testInsertPostEntitySequencesAreCorrect()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
-        $post = new Entity\Post();
+        $post = new \SpotTest\Entity\Post();
         $post->title = "Test Post";
         $post->body = "<p>This is a really awesome super-duper post.</p><p>It's really quite lovely.</p>";
         $post->date_created = new \DateTime();
         $post->author_id = 1;
         $result = $mapper->insert($post);
 
-        $post2 = new Entity\Post();
+        $post2 = new \SpotTest\Entity\Post();
         $post2->title = "Test Post";
         $post2->body = "<p>This is a really awesome super-duper post.</p><p>It's really quite lovely.</p>";
         $post2->date_created = new \DateTime();
@@ -75,7 +75,7 @@ class InsertTest extends \PHPUnit\Framework\TestCase
 
     public function testInsertPostArray()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = [
             'title' => "Test Post",
             'author_id' => 1,
@@ -89,7 +89,7 @@ class InsertTest extends \PHPUnit\Framework\TestCase
 
     public function testCreateInsertsEntity()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = [
             'title' => "Test Post 101",
             'author_id' => 1,
@@ -103,7 +103,7 @@ class InsertTest extends \PHPUnit\Framework\TestCase
 
     public function testBuildReturnsEntityUnsaved()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = [
             'title' => "Test Post 100",
             'author_id' => 1,
@@ -112,14 +112,14 @@ class InsertTest extends \PHPUnit\Framework\TestCase
         ];
         $result = $mapper->build($post);
 
-        $this->assertInstanceOf('\SpotTest\Cases\Entity\Post', $result);
+        $this->assertInstanceOf('\SpotTest\Entity\Post', $result);
         $this->assertTrue($result->isNew());
         $this->assertEquals(null, $result->id);
     }
 
     public function testCreateReturnsEntity()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = [
             'title' => "Test Post 101",
             'author_id' => 1,
@@ -128,14 +128,14 @@ class InsertTest extends \PHPUnit\Framework\TestCase
         ];
         $result = $mapper->create($post);
 
-        $this->assertInstanceOf('\SpotTest\Cases\Entity\Post', $result);
+        $this->assertInstanceOf('\SpotTest\Entity\Post', $result);
         $this->assertFalse($result->isNew());
     }
 
     public function testInsertNewEntitySavesWithIdAlreadySet()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
-        $post = new \SpotTest\Cases\Entity\Post([
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
+        $post = new \SpotTest\Entity\Post([
             'id' => 2001,
             'title' => "Test Post 2001",
             'author_id' => 1,
@@ -144,14 +144,14 @@ class InsertTest extends \PHPUnit\Framework\TestCase
         $result = $mapper->insert($post);
         $entity = $mapper->get($post->id);
 
-        $this->assertInstanceOf('\SpotTest\Cases\Entity\Post', $entity);
+        $this->assertInstanceOf('\SpotTest\Entity\Post', $entity);
         $this->assertFalse($entity->isNew());
     }
 
     public function testInsertEventRunsValidation()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Event');
-        $event = new \SpotTest\Cases\Entity\Event([
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Event');
+        $event = new \SpotTest\Entity\Event([
             'title' => 'Test Event 1',
             'description' => 'Test Description',
             'date_start' => new \DateTime('+1 day')
@@ -164,8 +164,8 @@ class InsertTest extends \PHPUnit\Framework\TestCase
 
     public function testSaveEventRunsAfterInsertHook()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Event');
-        $event = new \SpotTest\Cases\Entity\Event([
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Event');
+        $event = new \SpotTest\Entity\Event([
             'title' => 'Test Event 1',
             'description' => 'Test Description',
             'type' => 'free',
@@ -179,8 +179,8 @@ class InsertTest extends \PHPUnit\Framework\TestCase
 
     public function testInsertEventRunsDateValidation()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Event');
-        $event = new \SpotTest\Cases\Entity\Event([
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Event');
+        $event = new \SpotTest\Entity\Event([
             'title' => 'Test Event 1',
             'description' => 'Test Description',
             'type' => 'vip',
@@ -195,8 +195,8 @@ class InsertTest extends \PHPUnit\Framework\TestCase
 
     public function testInsertEventRunsTypeOptionsValidation()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Event');
-        $event = new \SpotTest\Cases\Entity\Event([
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Event');
+        $event = new \SpotTest\Entity\Event([
             'title' => 'Test Event 1',
             'description' => 'Test Description',
             'type' => 'invalid_value',

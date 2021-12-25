@@ -11,7 +11,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
     public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         // Fixtures for this test suite
@@ -27,7 +27,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
         // Posts
         $posts = [];
         $postsCount = 3;
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         for ($i = 1; $i <= $postsCount; $i++) {
             $posts[] = $mapper->create([
                 'title'     => "Eager Loading Test Post $i",
@@ -91,13 +91,13 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testEagerLoadHasMany()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         // Set SQL logger
         $logger = new \Doctrine\DBAL\Logging\DebugStack();
@@ -120,7 +120,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
 
     public function testEagerLoadHasManyCounts()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         // Set SQL logger
         $logger = new \Doctrine\DBAL\Logging\DebugStack();
@@ -140,7 +140,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
 
     public function testEagerLoadBelongsTo()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         // Set SQL logger
         $logger = new \Doctrine\DBAL\Logging\DebugStack();
@@ -180,7 +180,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
 
     public function testEagerLoadHasManyThrough()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         // Set SQL logger
         $logger = new \Doctrine\DBAL\Logging\DebugStack();
@@ -204,7 +204,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
 
     public function testEagerLoadHasManyThroughToArray()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->all()->with('tags')->first();
         $result = $post->toArray();
 
@@ -213,7 +213,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
 
     public function testEagerLoadHasManyThroughToArrayShouldNotLoadRelation()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->all()->first();
 
         $result = $post->toArray();
@@ -223,7 +223,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
 
     public function testEagerLoadBelongsToArray()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $posts = $mapper->all()->with('author')->first();
 
         $result = $posts->toArray();
@@ -233,7 +233,7 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
 
     public function testEagerLoadBelongsToArrayShouldNotLoadRelation()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $posts = $mapper->all()->first();
 
         $result = $posts->toArray();
@@ -264,14 +264,14 @@ class RelationsEagerLoading extends \PHPUnit\Framework\TestCase
     public function testEagerLoadingEntityDepthIsLimitedToOneLevel()
     {
         // Retrieve a post
-        $post_mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $post_mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $post_mapper->get(1);
 
         // And its comments
         $comments = $post->comments->execute();
         $post->relation('comments', $comments);
 
-        $comment_mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post\Comment');
+        $comment_mapper = \test_spot_mapper('\SpotTest\Entity\Post\Comment');
         $comment = $comment_mapper->create([
             'post_id' => 1,
             'name'    => 'Testy McTester',

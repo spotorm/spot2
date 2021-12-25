@@ -10,11 +10,11 @@ class ArrayObjectTypesTest extends \PHPUnit\Framework\TestCase
 
     /**
      * The basic entity for these tests
-     * @return \SpotTest\Cases\Entity\ArrayObjectType
+     * @return \SpotTest\Entity\ArrayObjectType
      */
     private function getEntity()
     {    
-        $entity = new \SpotTest\Cases\Entity\ArrayObjectType([
+        $entity = new \SpotTest\Entity\ArrayObjectType([
             'fld_array' => ['value' => 'original'],
             'fld_simple_array' => ['value' => 'original'],
             'fld_json_array' => ['value' => 'original'],

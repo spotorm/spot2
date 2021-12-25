@@ -12,7 +12,7 @@ class FieldAliasTest extends \PHPUnit\Framework\TestCase
 
     public static function setupBeforeClass(): void
     {
-        self::$legacyTable = new \SpotTest\Cases\Entity\Legacy();
+        self::$legacyTable = new \SpotTest\Entity\Legacy();
         foreach (self::$entities as $entity) {
             \test_spot_mapper('SpotTest\Entity\\' . $entity)->migrate();
         }
@@ -30,7 +30,7 @@ class FieldAliasTest extends \PHPUnit\Framework\TestCase
             throw new \Exception("Unable to create author: " . var_export($author->data(), true));
         }
 
-        $postMapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $postMapper->build([
             'title' => 'title',
             'body' => '<p>body</p>',
@@ -48,7 +48,7 @@ class FieldAliasTest extends \PHPUnit\Framework\TestCase
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
@@ -64,7 +64,7 @@ class FieldAliasTest extends \PHPUnit\Framework\TestCase
     {
         $mapper = \test_spot_mapper('SpotTest\Entity\Legacy');
         $query = $mapper->where(['number' => 2])->order(['date_created' => 'ASC'])->noQuote();
-        $this->assertContains("ORDER BY test_legacy." . self::$legacyTable->getDateCreatedColumnName() . " ASC", $query->toSql());
+        $this->assertStringContainsString("ORDER BY test_legacy." . self::$legacyTable->getDateCreatedColumnName() . " ASC", $query->toSql());
     }
     
     // Ordering by function
@@ -158,7 +158,7 @@ class FieldAliasTest extends \PHPUnit\Framework\TestCase
     {
         // New Comment
         $commentMapper = \test_spot_mapper('SpotTest\Entity\PolymorphicComment');
-        $comment = new \SpotTest\Cases\Entity\PolymorphicComment([
+        $comment = new \SpotTest\Entity\PolymorphicComment([
             'item_id' => $legacy->id,
             'item_type' => 'legacy',
             'name' => 'Testy McTesterpants',

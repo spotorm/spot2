@@ -11,7 +11,7 @@ class ScopesTest extends \PHPUnit\Framework\TestCase
     public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
@@ -31,7 +31,7 @@ class ScopesTest extends \PHPUnit\Framework\TestCase
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
@@ -51,14 +51,14 @@ class ScopesTest extends \PHPUnit\Framework\TestCase
 
     public function testEntityScopes()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->active();
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ?", $query->toSql());
     }
 
     public function testRelationScopes()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $mapper->insert([
             'title' => 'Test',
             'body' => 'Test body',

@@ -17,6 +17,6 @@ class LocatorTest extends \PHPUnit\Framework\TestCase
     {
         $cfg = new \Spot\Config();
         $spot = new \Spot\Locator($cfg);
-        $this->assertInstanceOf('Spot\Mapper', $spot->mapper('SpotTest\Entity\Post'));
+        $this->assertInstanceOf('Spot\Mapper', $spot->mapper('\SpotTest\Entity\Post'));
     }
 }

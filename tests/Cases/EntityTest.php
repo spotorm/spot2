@@ -11,7 +11,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
     public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
@@ -31,14 +31,14 @@ class EntityTest extends \PHPUnit\Framework\TestCase
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testEntitySetDataProperties()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
-        $post = new \SpotTest\Cases\Entity\Post();
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
+        $post = new \SpotTest\Entity\Post();
 
         // Set data
         $post->title = "My Awesome Post";
@@ -66,8 +66,8 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testEntitySetDataConstruct()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
-        $post = new \SpotTest\Cases\Entity\Post([
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
+        $post = new \SpotTest\Entity\Post([
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'author_id' => 1,
@@ -94,7 +94,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testEntityErrors()
     {
-        $post = new \SpotTest\Cases\Entity\Post([
+        $post = new \SpotTest\Entity\Post([
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>'
         ]);
@@ -136,7 +136,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
         ];
 
         // Set initial data
-        $post = new \SpotTest\Cases\Entity\Post($testData);
+        $post = new \SpotTest\Entity\Post($testData);
 
         $this->assertEquals($testData, $post->dataUnmodified());
         $this->assertEquals([], $post->dataModified());
@@ -163,7 +163,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
             'author_id' => 1,
         ];
 
-        $post = new \SpotTest\Cases\Entity\Post($data);
+        $post = new \SpotTest\Entity\Post($data);
 
         $post->status = null;
         $this->assertTrue($post->isModified('status'));
@@ -195,10 +195,10 @@ class EntityTest extends \PHPUnit\Framework\TestCase
             'data' => ['posts' => 'are cool', 'another field' => 'to serialize'],
             'date_created' => new \DateTime()
         ];
-        $post = new \SpotTest\Cases\Entity\Post($data);
+        $post = new \SpotTest\Entity\Post($data);
         $this->assertEquals($post->data, ['posts' => 'are cool', 'another field' => 'to serialize']);
 
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $mapper->save($post);
 
         $post = $mapper->get($post->id);
@@ -222,7 +222,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
             'date_created' => new \DateTime()
         ];
 
-        $post = new \SpotTest\Cases\Entity\Post($data);
+        $post = new \SpotTest\Entity\Post($data);
 
         // Reference test
         $title = $post->title;
@@ -253,7 +253,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
             'date_created' => new \DateTime()
         ];
 
-        $post = new \SpotTest\Cases\Entity\Post($data);
+        $post = new \SpotTest\Entity\Post($data);
 
         $title = $post->title;
         $title = 'A Post Title';
@@ -271,7 +271,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
             'date_created' => new \DateTime()
         ];
 
-        $post = new \SpotTest\Cases\Entity\Post($data);
+        $post = new \SpotTest\Entity\Post($data);
 
         $data = $post->data;
         $data['posts'] = 'are not by reference';
@@ -281,7 +281,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testCustomSetterMethod()
     {
-        $entity = new \SpotTest\Cases\Entity\CustomMethods();
+        $entity = new \SpotTest\Entity\CustomMethods();
         $entity->test1 = 'test';
 
         $this->assertEquals('test_test_gotten', $entity->test1);
@@ -289,7 +289,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testCustomSetterMethodWithArrayLoad()
     {
-        $entity = new \SpotTest\Cases\Entity\CustomMethods([
+        $entity = new \SpotTest\Entity\CustomMethods([
             'test1' => 'test'
         ]);
 
@@ -298,7 +298,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testCustomGetterMethodWithArrayData()
     {
-        $entity = new \SpotTest\Cases\Entity\CustomMethods([
+        $entity = new \SpotTest\Entity\CustomMethods([
             'test1' => 'test'
         ]);
         $data = $entity->data();
@@ -310,7 +310,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
     {
         $mapper = \test_spot_mapper('SpotTest\Entity\CustomMethods');
 
-        $entity = new \SpotTest\Cases\Entity\CustomMethods([
+        $entity = new \SpotTest\Entity\CustomMethods([
             'test1' => 'test',
             'test2' => 'copy'
         ]);
@@ -327,7 +327,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testGetPrimaryKeyField()
     {
-        $entity = new \SpotTest\Cases\Entity\CustomMethods([
+        $entity = new \SpotTest\Entity\CustomMethods([
             'test1' => 'test'
         ]);
         $this->assertEquals('id', $entity->primaryKeyField());
@@ -335,7 +335,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testGetPrimaryKeyFieldValue()
     {
-        $entity = new \SpotTest\Cases\Entity\CustomMethods([
+        $entity = new \SpotTest\Entity\CustomMethods([
             'test1' => 'test'
         ]);
         $this->assertEquals($entity->id, $entity->primaryKey());
@@ -343,7 +343,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testJsonEncodeJsonSerializable()
     {
-        $post = new \SpotTest\Cases\Entity\Post([
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A Post',
             'body' => 'A Body',
             'status' => 0,
@@ -358,7 +358,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
 
     public function testToStringReturnsJson()
     {
-        $post = new \SpotTest\Cases\Entity\Post([
+        $post = new \SpotTest\Entity\Post([
             'title' => 'A Post',
             'body' => 'A Body',
             'status' => 0,

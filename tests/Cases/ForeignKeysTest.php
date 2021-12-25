@@ -11,20 +11,20 @@ class ForeignKeysTest extends \PHPUnit\Framework\TestCase
     public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testForeignKeyMigration()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $entity = $mapper->entity();
         $table = $entity::table();
         $schemaManager = $mapper->connection()->getSchemaManager();

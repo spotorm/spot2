@@ -11,7 +11,7 @@ class RelationsPolymorphic extends \PHPUnit\Framework\TestCase
     public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         // Fixtures for this test suite
@@ -27,7 +27,7 @@ class RelationsPolymorphic extends \PHPUnit\Framework\TestCase
         // Posts
         $posts = [];
         $postsCount = 3;
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         for ($i = 1; $i <= $postsCount; $i++) {
             $posts[] = $mapper->create([
                 'title'     => "Eager Loading Test Post $i",
@@ -88,7 +88,7 @@ class RelationsPolymorphic extends \PHPUnit\Framework\TestCase
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
@@ -105,9 +105,9 @@ class RelationsPolymorphic extends \PHPUnit\Framework\TestCase
 
     public function testPostHasManyPolymorphicComments()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->first();
-        $this->assertInstanceOf('SpotTest\Entity\Post', $post);
+        $this->assertInstanceOf('\SpotTest\Entity\Post', $post);
 
         $query = $post->polymorphic_comments->query();
 

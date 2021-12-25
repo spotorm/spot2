@@ -11,20 +11,20 @@ class IndexesTest extends \PHPUnit\Framework\TestCase
     public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testUniqueCompoundIndexDuplicateCausesValidationError()
     {
-        $zipMapper = \test_spot_mapper('\SpotTest\Cases\Entity\Zip');
+        $zipMapper = \test_spot_mapper('\SpotTest\Entity\Zip');
 
         $data = [
             'code'  => '12345',
@@ -44,7 +44,7 @@ class IndexesTest extends \PHPUnit\Framework\TestCase
 
     public function testUniqueCompoundIndexNoValidationErrorWhenDataDifferent()
     {
-        $zipMapper = \test_spot_mapper('\SpotTest\Cases\Entity\Zip');
+        $zipMapper = \test_spot_mapper('\SpotTest\Entity\Zip');
 
         $data = [
             'code'  => '23456',

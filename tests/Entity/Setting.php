@@ -1,5 +1,5 @@
 <?php
-namespace SpotTest\Cases\Entity;
+namespace SpotTest\Entity;
 
 /**
  * Setting
@@ -21,5 +21,5 @@ class Setting extends \Spot\Entity
 }
 
 // Add encrypted type
-\SpotTest\Cases\Type\Encrypted::$key = 'SOUPER-SEEKRET1!';
+\SpotTest\Type\Encrypted::$key = 'SOUPER-SEEKRET1!';
 \Doctrine\DBAL\Types\Type::addType('encrypted', 'SpotTest\Type\Encrypted');

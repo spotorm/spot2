@@ -19,7 +19,7 @@
     </coverage>
     <php>
         <env name="SPOT_DB_TYPE" value="mysql"/>
-        <env name="SPOT_DB_DSN" value="mysql://root@localhost/spot_test"/>
+        <env name="SPOT_DB_DSN" value="mysql://booking:furz@localhost/spot_test"/>
     </php>
     <testsuites>
         <testsuite name="Spot2 ORM">

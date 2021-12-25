@@ -28,7 +28,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
             ]);
         }
         for ($i = 1; $i <= 10; $i++) {
-            $post_id = \test_spot_mapper('SpotTest\Entity\Post')->insert([
+            $post_id = \test_spot_mapper('\SpotTest\Entity\Post')->insert([
                 'title' => ($i % 2 ? 'odd' : 'even' ). '_title',
                 'body' => '<p>' . $i  . '_body</p>',
                 'status' => $i ,
@@ -55,13 +55,13 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testWhereArrayMultipleSeparatedByAnd()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2, 'title' => 'even_title']);
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? AND test_posts.title = ?", $query->toSql());
     }
@@ -79,7 +79,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
             throw new \Exception("Unable to create tag: " . var_export($tag->data(), true));
         }
 
-        $postMapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $postMapper->build([
             'id' => 55,
             'title' => 'Example Title',
@@ -107,14 +107,14 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testQueryInstance()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $posts = $mapper->where(['title' => 'even_title']);
         $this->assertInstanceOf('Spot\Query', $posts);
     }
 
     public function testQueryCollectionInstance()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $posts = $mapper->where(['title' => 'even_title']);
         $this->assertInstanceOf('Spot\Query', $posts);
         $this->assertInstanceOf('Spot\Entity\Collection', $posts->execute());
@@ -123,7 +123,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Bare (implicit equals)
     public function testOperatorNone()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2]);
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ?", $query->toSql());
         $this->assertEquals(count($query), 1);
@@ -132,7 +132,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Equals
     public function testOperatorEq()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status :eq' => 2]);
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ?", $query->toSql());
         $this->assertEquals(count($query), 1);
@@ -141,7 +141,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Less than
     public function testOperatorLt()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $this->assertEquals(4, $mapper->where(['status <' => 5])->count());
         $this->assertEquals(4, $mapper->where(['status :lt' => 5])->count());
     }
@@ -149,7 +149,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Greater than
     public function testOperatorGt()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $this->assertFalse($mapper->first(['status >' => 10]));
         $this->assertFalse($mapper->first(['status :gt' => 10]));
     }
@@ -157,7 +157,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Greater than or equal to
     public function testOperatorGte()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $this->assertEquals(6, $mapper->where(['status >=' => 5])->count());
         $this->assertEquals(6, $mapper->where(['status :gte' => 5])->count());
     }
@@ -165,7 +165,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Regexp
     public function testOperatorRegexp()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         // "REGEXP" only supported by MySQL
         if (!$mapper->connectionIs('mysql')) {
             $this->markTestSkipped('Not supported in Sqlite nor Postgres.');
@@ -177,7 +177,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Ordering
     public function testOrderBy()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->order(['date_created' => 'ASC']);
         $this->assertContains("ORDER BY test_posts.date_created ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
@@ -186,7 +186,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Ordering by function
     public function testOrderByFunction()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->order(['TRIM(body)' => 'ASC']);
         $this->assertContains("ORDER BY TRIM(test_posts.body) ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
@@ -195,7 +195,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Ordering by complex function
     public function testOrderByComplexFunction()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         if (!DriverSpecificTest::getWeekFunction($mapper)) {
             $this->markTestSkipped('This test is not supported with the current driver.');
         }
@@ -207,7 +207,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Grouping
     public function testGroupBy()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->group(['id']);
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? GROUP BY test_posts.id", $query->toSql());
         $this->assertEquals(count($query), 1);
@@ -216,7 +216,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Grouping by function
     public function testGroupByFunction()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->group(['TRIM(body)']);
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? GROUP BY TRIM(test_posts.body)", $query->toSql());
         $this->assertEquals(count($query), 1);
@@ -225,7 +225,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     // Use same column name more than once
     public function testFieldMultipleUsage()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $countResult = $mapper->where(['status' => 1])
             ->orWhere(['status' => 2])
             ->count();
@@ -234,7 +234,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayDefaultIn()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => [2]]);
         $post = $query->first();
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status IN (?) LIMIT 1", $query->toSql());
@@ -243,7 +243,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayInEmpty()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $query = $mapper->where(['status' => []]);
         $this->assertContains('IS NULL', $query->toSql());
@@ -252,7 +252,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayInSingle()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         // Numeric
         $query = $mapper->where(['status :in' => [2]]);
@@ -262,7 +262,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayNotInEmpty()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $query = $mapper->where(['status !=' => []]);
         $this->assertContains('IS NOT NULL', $query->toSql());
@@ -271,7 +271,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayNotInSingle()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $post = $mapper->first(['status !=' => [2]]);
         $this->assertFalse($post->status == 2);
@@ -282,7 +282,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayMultiple()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->where(['status' => [3,4,5]]);
         $this->assertContains('IN', $posts->toSql());
@@ -295,7 +295,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayNotInMultiple()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->where(['status !=' => [3,4,5]]);
         $this->assertContains('NOT IN', $posts->toSql());
@@ -308,7 +308,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testQueryHavingClause()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         // "HAVING" aliases are only supported by MySQL
         if (!$mapper->connectionIs('mysql')) {
@@ -323,7 +323,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testQueryEmptyArrayIsNullToAvoidSQLErrorOnEmptyINClause()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $posts = $mapper->where(['status' => []]);
         $this->assertContains('IS NULL', $posts->toSql());
         $this->assertEquals(0, count($posts));
@@ -331,7 +331,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testWhereSqlSubqueryInClause()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $postsSub = $mapper->where(['status !=' => [3,4,5]]);
         $posts = $mapper->select()->whereSql('id IN(' . $postsSub->toSql() . ')');
@@ -341,7 +341,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testWhereFieldSqlSubqueryInClause()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $params = [3,4,5];
 
         $postsSub = $mapper->where(['status !=' => $params]);
@@ -352,7 +352,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testWhereFieldSqlWithMultipleParams()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $params = [3,5];
 
         $posts = $mapper->select()->whereFieldSql('id', 'BETWEEN ? AND ?', $params);
@@ -362,16 +362,16 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testQueryArrayAccess()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->all();
 
-        $this->assertInstanceOf('SpotTest\Entity\Post', $posts[0]);
+        $this->assertInstanceOf('\SpotTest\Entity\Post', $posts[0]);
     }
 
     public function testQueryCountIsInteger()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->all();
 
@@ -380,7 +380,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testQueryCountIsAccurate()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->all();
         $postCount = count($posts);
@@ -395,7 +395,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testCustomQueryWithSQL()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->query("SELECT * FROM " . $mapper->table());
         $this->assertInstanceOf('Spot\Entity\Collection', $posts);
@@ -404,7 +404,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $i = 0;
         foreach($posts as $post) {
             $i++;
-            $this->assertInstanceOf('SpotTest\Entity\Post', $post);
+            $this->assertInstanceOf('\SpotTest\Entity\Post', $post);
         }
 
         $this->assertSame($postCount, $i);
@@ -412,7 +412,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testCustomQueryWithSqlAndIndexedParams()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->query("SELECT * FROM " . $mapper->table() . " WHERE status < ?", [10]);
         $this->assertInstanceOf('Spot\Entity\Collection', $posts);
@@ -421,7 +421,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $i = 0;
         foreach($posts as $post) {
             $i++;
-            $this->assertInstanceOf('SpotTest\Entity\Post', $post);
+            $this->assertInstanceOf('\SpotTest\Entity\Post', $post);
         }
 
         $this->assertSame($postCount, $i);
@@ -429,7 +429,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testCustomQueryWithSqlAndNamedParams()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->query("SELECT * FROM " . $mapper->table() . " WHERE status < :status", ['status' => 10]);
         $this->assertInstanceOf('Spot\Entity\Collection', $posts);
@@ -438,7 +438,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $i = 0;
         foreach($posts as $post) {
             $i++;
-            $this->assertInstanceOf('SpotTest\Entity\Post', $post);
+            $this->assertInstanceOf('\SpotTest\Entity\Post', $post);
         }
 
         $this->assertSame($postCount, $i);
@@ -449,7 +449,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
      */
     public function testEscapingIdentifier($identifier, $expected)
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $quote = $mapper->connection()->getDatabasePlatform()->getIdentifierQuoteCharacter();
 
         $this->assertEquals(
@@ -471,7 +471,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testEscapingInQuery()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $expected = str_replace(
             '`',
@@ -489,7 +489,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testWildcardLikeSupport()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $expected = 'SELECT * FROM test_posts WHERE test_posts.title LIKE ? AND test_posts.status >= ?';
         $query = $mapper->where(['title :like' => '%lorem%', 'status >=' => 1])->noQuote()->toSql();
 
@@ -501,7 +501,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
     public function testExecRawQuery()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $sql = 'UPDATE test_posts SET status = :status WHERE test_posts.title = :title';
         $affectedRows = $mapper->exec($sql, ['title' => 'even_title', 'status' => 1]);
 
@@ -526,7 +526,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
             return 'jsonb_exists(' . $column . ', ' . $builder->createPositionalParameter($value) . ')';
         });
 
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->where(['data :json_exists' => 'author']);
         $this->assertContains('jsonb_exists(', $query->toSql());
     }
@@ -536,7 +536,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
      */
     public function testInvalidQueryOperatorThrowsException()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         // Should generate an exception!
         $query = $mapper->where(['data :nonsense' => 'author']);
         $this->assertTrue(false);

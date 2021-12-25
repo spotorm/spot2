@@ -1,4 +1,5 @@
 <?php
+
 namespace SpotTest\Cases;
 
 /**
@@ -35,7 +36,7 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         $cfg = new \Spot\Config();
         $adapter = $cfg->addConnection('test_mysql', 'mysql://test:password@localhost/test');
 
-        $this->assertInternalType('string', serialize($cfg));
+        $this->assertIsString(serialize($cfg));
     }
 
     public function testConfigCanUnserialize()

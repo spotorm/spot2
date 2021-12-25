@@ -1,5 +1,5 @@
 <?php
-namespace SpotTest\Cases\Entity;
+namespace SpotTest\Entity;
 
 use Spot\Entity;
 use Spot\MapperInterface;

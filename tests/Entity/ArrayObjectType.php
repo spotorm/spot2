@@ -1,6 +1,6 @@
 <?php
 
-namespace SpotTest\Cases\Entity;
+namespace SpotTest\Entity;
 
 /**
  * ArrayObjectType

@@ -1,5 +1,5 @@
 <?php
-namespace SpotTest\Cases\Entity\Schema;
+namespace SpotTest\Entity\Schema;
 
 use Spot\Entity;
 use Spot\EntityInterface;

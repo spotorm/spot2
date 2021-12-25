@@ -11,7 +11,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
     public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
@@ -31,13 +31,13 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
     public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            \test_spot_mapper('\SpotTest\Cases\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testBlogPostInsert()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get();
         $post->title = "My Awesome Blog Post";
         $post->body = "<p>This is a really awesome super-duper post.</p><p>It's testing the relationship functions.</p>";
@@ -49,7 +49,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
 
         // Test selcting it to ensure it exists
         $postx = $mapper->get($postId);
-        $this->assertTrue($postx instanceof \SpotTest\Cases\Entity\Post);
+        $this->assertTrue($postx instanceof \SpotTest\Entity\Post);
 
         return $postId;
     }
@@ -59,8 +59,8 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testPostCommentsInsert($postId)
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
-        $commentMapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post\Comment');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
+        $commentMapper = \test_spot_mapper('\SpotTest\Entity\Post\Comment');
         $post = $mapper->get($postId);
 
         // Array will usually come from POST/JSON data or other source
@@ -88,17 +88,17 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testPostCommentsCanIterate($postId)
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get($postId);
 
         foreach ($post->comments as $comment) {
-            $this->assertTrue($comment instanceof \SpotTest\Cases\Entity\Post\Comment);
+            $this->assertTrue($comment instanceof \SpotTest\Entity\Post\Comment);
         }
     }
 
     public function testHasManyRelationCountZero()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get();
         $post->title = "No Comments";
         $post->body = "<p>Comments relation test</p>";
@@ -109,7 +109,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
 
     public function testBlogCommentsIterateEmptySet()
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get();
         $post->title = "No Comments";
         $post->body = "<p>Comments relation test</p>";
@@ -118,7 +118,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
 
         // Testing that we can iterate over an empty set
         foreach ($post->comments as $comment) {
-            $this->assertTrue($comment instanceof \SpotTest\Cases\Entity\Post\Comment);
+            $this->assertTrue($comment instanceof \SpotTest\Entity\Post\Comment);
         }
     }
 
@@ -127,7 +127,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testRelationsNotInData($postId)
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get($postId);
         $this->assertNotContains('comments', array_keys($post->data()));
     }
@@ -137,7 +137,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testBlogCommentsRelationCountOne($postId)
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get($postId);
 
         $this->assertTrue(count($post->comments) == 1);
@@ -148,7 +148,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testBlogCommentsRelationCanBeModified($postId)
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get($postId);
 
         $sortedComments = $post->comments->order(['date_created' => 'DESC']);
@@ -162,7 +162,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testRelationshipQueryNotReset($postId)
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get($postId);
 
         $before_count = $post->comments->count();
@@ -178,7 +178,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testBlogTagsHasManyThrough($postId)
     {
-        $mapper = \test_spot_mapper('\SpotTest\Cases\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get($postId);
         $this->assertSame(0, count($post->tags));
     }
@@ -188,7 +188,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testPostTagInsertHasManyThroughCountIsAccurate($postId)
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->get($postId);
 
         $tagCount = 3;
@@ -287,7 +287,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
      */
     public function testInvalidRelationClass()
     {
-        $mapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $entity = $mapper->first();
         $entity->fake = $mapper->hasOne($entity, 'Nonexistent\Entity', 'fake_field');
 
@@ -297,7 +297,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
     public function testAccessingRelationObjectProperty()
     {
         $email = 'test@test.com';
-        $postMapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
 
         $author = $authorMapper->create([
@@ -317,7 +317,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
 
     public function testLazyLoadRelationIsset()
     {
-        $postMapper = \test_spot_mapper('SpotTest\Entity\Post');
+        $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
 
         $author = $authorMapper->create([
