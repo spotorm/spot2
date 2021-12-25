@@ -53,7 +53,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'status' => 0,
-            'date_created' => $data['create_date'],
+            'date_created' => $data['date_created'],
             'data' => null,
             'author_id' => 1
         ];
