@@ -531,11 +531,10 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $this->assertContains('jsonb_exists(', $query->toSql());
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testInvalidQueryOperatorThrowsException()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         // Should generate an exception!
         $query = $mapper->where(['data :nonsense' => 'author']);

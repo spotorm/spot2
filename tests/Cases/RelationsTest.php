@@ -282,11 +282,10 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($event->id, $eventId);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testInvalidRelationClass()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $entity = $mapper->first();
         $entity->fake = $mapper->hasOne($entity, 'Nonexistent\Entity', 'fake_field');

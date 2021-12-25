@@ -208,7 +208,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
     public function testTruncate()
     {
         $postTagMapper = \test_spot_mapper('SpotTest\Entity\PostTag');
-        $postTagMapper->truncateTable();
+        error_log(var_export($postTagMapper->truncateTable()));
     }
 
     public function testDeleteAll()
@@ -217,11 +217,10 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $postTagMapper->delete();
     }
 
-    /**
-     * @expectedException Spot\Exception
-     */
     public function testStrictInsert()
     {
+        $this->expectException(Spot\Exception::class);
+
         $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $result = $postMapper->insert([
             'title' => 'irrelevant_title',
@@ -248,11 +247,10 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue((boolean) $result);
     }
 
-    /**
-     * @expectedException Spot\Exception
-     */
     public function testStrictUpdate()
     {
+        $this->expectException(Spot\Exception::class);
+
         $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $postMapper->create([
             'title' => 'irrelevant_title',
@@ -285,11 +283,10 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue( ! $post->isModified());
     }
 
-    /**
-     * @expectedException Spot\Exception
-     */
     public function testStrictSave()
     {
+        $this->expectException(Spot\Exception::class);
+
         $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $postMapper->build([
             'title' => 'irrelevant_title',
