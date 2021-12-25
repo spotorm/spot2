@@ -1,4 +1,5 @@
 <?php
+
 namespace SpotTest\Cases;
 
 /**
@@ -6,7 +7,17 @@ namespace SpotTest\Cases;
  */
 class CRUDTest extends \PHPUnit\Framework\TestCase
 {
-    private static $entities = ['PolymorphicComment', 'PostTag', 'Post\Comment', 'Post', 'Tag', 'Author', 'Setting', 'Event\Search', 'Event'];
+    private static $entities = [
+        'PolymorphicComment',
+        'PostTag',
+        'Post\Comment',
+        'Post',
+        'Tag',
+        'Author',
+        'Setting',
+        'Event\Search',
+        'Event'
+    ];
 
     public static function setupBeforeClass(): void
     {
@@ -115,7 +126,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $post = $mapper->first(['title' => "Test Post Modified"]);
         $result = $mapper->delete($post);
 
-        $this->assertTrue((boolean) $result);
+        $this->assertTrue((boolean)$result);
     }
 
     public function testMultipleConditionDelete()
@@ -123,16 +134,16 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         for ($i = 1; $i <= 10; $i++) {
             $postMapper->insert([
-                'title' => ($i % 2 ? 'odd' : 'even' ). '_title',
+                'title' => ($i % 2 ? 'odd' : 'even') . '_title',
                 'author_id' => 1,
-                'body' => '<p>' . $i  . '_body</p>',
-                'status' => $i ,
+                'body' => '<p>' . $i . '_body</p>',
+                'status' => $i,
                 'date_created' => new \DateTime()
             ]);
         }
 
         $result = $postMapper->delete(['status !=' => [3, 4, 5], 'title' => 'odd_title']);
-        $this->assertTrue((boolean) $result);
+        $this->assertTrue((boolean)$result);
         $this->assertEquals(3, $result);
 
     }
@@ -179,14 +190,16 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $result2 = $postTagMapper->upsert(array_merge($data, ['random' => 'blah blah']), $where);
         $postTag = $postTagMapper->first($where);
 
-        $this->assertTrue((boolean) $result);
-        $this->assertTrue((boolean) $result2);
+        $this->assertTrue((boolean)$result);
+        $this->assertTrue((boolean)$result2);
         $this->assertSame('blah blah', $postTag->random);
     }
 
     public function testUniqueConstraintUpsert()
     {
-        $this->markTestSkipped('@todo test depends on mycrypt');
+        if (!function_exists('mcrypt_encrypt')) {
+            $this->markTestSkipped('mycrypt extension is not installed');
+        }
 
         $mapper = \test_spot_mapper('SpotTest\Entity\Setting');
         $data = [
@@ -202,8 +215,8 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $result2 = $mapper->upsert(['svalue' => 'abcdef123456'], $where);
         $entity = $mapper->first($where);
 
-        $this->assertTrue((boolean) $result);
-        $this->assertTrue((boolean) $result2);
+        $this->assertTrue((boolean)$result);
+        $this->assertTrue((boolean)$result2);
         $this->assertSame('abcdef123456', $entity->svalue);
     }
 
@@ -234,7 +247,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
             'additional_field' => 'Should cause an error'
         ], ['strict' => false]);
 
-        $this->assertTrue((boolean) $result);
+        $this->assertTrue((boolean)$result);
     }
 
     public function testStrictUpdate()
@@ -269,8 +282,8 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $post->additional_field = 'Should cause an error';
 
         $result = $postMapper->update($post, ['strict' => false]);
-        $this->assertTrue((boolean) $result);
-        $this->assertTrue( ! $post->isModified());
+        $this->assertTrue((boolean)$result);
+        $this->assertTrue(!$post->isModified());
     }
 
     public function testStrictSave()
@@ -303,7 +316,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         ]);
 
         $result = $postMapper->save($post, ['strict' => false]);
-        $this->assertTrue((boolean) $result);
+        $this->assertTrue((boolean)$result);
     }
 
     /**
@@ -357,7 +370,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $mapper->save($event);
         $search2 = new \SpotTest\Entity\Event\Search(['body' => 'body2', 'event_id' => 1]);
         $searchMapper->save($search2);
-        
+
         $savedEvent = $mapper->get($event->primaryKey());
         $savedEvent->relation('search', $search2);
         $mapper->save($savedEvent, ['relations' => true]);
@@ -427,8 +440,8 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         for ($i = 1; $i < 3; $i++) {
             $comments[] = new \SpotTest\Entity\Post\Comment([
                 'name' => 'John Doe',
-                'email'  => 'test@example.com',
-                'body' => '#'.$i.': Lorem ipsum is dolor.',
+                'email' => 'test@example.com',
+                'body' => '#' . $i . ': Lorem ipsum is dolor.',
             ]);
         }
         $post = $mapper->build([
@@ -475,9 +488,9 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         for ($i = 1; $i < 3; $i++) {
             $comment = new \SpotTest\Entity\Post\Comment([
                 'name' => 'John Doe',
-                'email'  => 'test@example.com',
+                'email' => 'test@example.com',
                 'post_id' => 99,
-                'body' => '#'.$i.': Lorem ipsum is dolor.',
+                'body' => '#' . $i . ': Lorem ipsum is dolor.',
             ]);
             $commentMapper->insert($comment);
             $comments[] = $comment;
@@ -501,7 +514,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $tags = [];
         for ($i = 1; $i < 3; $i++) {
             $tags[] = new \SpotTest\Entity\Tag([
-                'name' => 'Tag #'.$i
+                'name' => 'Tag #' . $i
             ]);
         }
         $post = $mapper->build([
@@ -518,7 +531,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $i = 1;
         foreach ($post->tags as $tag) {
             $this->assertFalse($tag->isNew());
-            $this->assertEquals($tag->name, 'Tag #'.$i);
+            $this->assertEquals($tag->name, 'Tag #' . $i);
             $i++;
         }
 
