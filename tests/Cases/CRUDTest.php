@@ -205,21 +205,9 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('abcdef123456', $entity->svalue);
     }
 
-    public function testTruncate()
-    {
-        $postTagMapper = \test_spot_mapper('SpotTest\Entity\PostTag');
-        error_log(var_export($postTagMapper->truncateTable()));
-    }
-
-    public function testDeleteAll()
-    {
-        $postTagMapper = \test_spot_mapper('SpotTest\Entity\PostTag');
-        $postTagMapper->delete();
-    }
-
     public function testStrictInsert()
     {
-        $this->expectException(Spot\Exception::class);
+        $this->expectException(\Spot\Exception::class);
 
         $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $result = $postMapper->insert([
@@ -249,7 +237,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
 
     public function testStrictUpdate()
     {
-        $this->expectException(Spot\Exception::class);
+        $this->expectException(\Spot\Exception::class);
 
         $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $postMapper->create([
@@ -285,7 +273,7 @@ class CRUDTest extends \PHPUnit\Framework\TestCase
 
     public function testStrictSave()
     {
-        $this->expectException(Spot\Exception::class);
+        $this->expectException(\Spot\Exception::class);
 
         $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $postMapper->build([

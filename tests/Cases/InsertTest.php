@@ -190,7 +190,7 @@ class InsertTest extends \PHPUnit\Framework\TestCase
         $dsErrors = $event->errors('date_start');
 
         $this->assertFalse($result);
-        $this->assertContains('Date Start must be date after', $dsErrors[0]);
+        $this->assertStringContainsString('Date Start must be date after', $dsErrors[0]);
     }
 
     public function testInsertEventRunsTypeOptionsValidation()
@@ -210,7 +210,7 @@ class InsertTest extends \PHPUnit\Framework\TestCase
 
     public function testCreateWithErrorsThrowsException()
     {
-        $this->expectException(Spot\Exception::class);
+        $this->expectException(\Spot\Exception::class);
 
         $mapper = \test_spot_mapper('SpotTest\Entity\Event');
         $event = $mapper->create([

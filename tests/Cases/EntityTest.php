@@ -53,7 +53,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'status' => 0,
-            'date_created' => new \DateTime(),
+            'date_created' => $data['create_date'],
             'data' => null,
             'author_id' => 1
         ];
@@ -85,7 +85,7 @@ class EntityTest extends \PHPUnit\Framework\TestCase
             'date_created' => null,
             'data' => null,
             'author_id' => 1,
-            'date_created' => new \DateTime()
+            'date_created' => $data['date_created']
         ];
         ksort($testData);
 
