@@ -154,7 +154,7 @@ class RelationsTest extends \PHPUnit\Framework\TestCase
         $sortedComments = $post->comments->order(['date_created' => 'DESC']);
         $this->assertInstanceOf('Spot\Relation\HasMany', $sortedComments);
 
-        $this->assertContains("ORDER BY", $sortedComments->query()->toSql());
+        $this->assertStringContainsString("ORDER BY", $sortedComments->query()->toSql());
     }
 
     /**

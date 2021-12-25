@@ -42,7 +42,7 @@ class SchemaQuerySqlTest extends \PHPUnit\Framework\TestCase
     {
         $mapper = \test_spot_mapper('SpotTest\Entity\Schema\Test');
         $query = $mapper->where(['index' => 2])->order(['unique' => 'ASC'])->noQuote();
-        $this->assertContains("ORDER BY spot_test.test_schema_test.unique ASC", $query->toSql());
+        $this->assertStringContainsString("ORDER BY spot_test.test_schema_test.unique ASC", $query->toSql());
         $this->assertEquals("SELECT * FROM spot_test.test_schema_test WHERE spot_test.test_schema_test.index = ? ORDER BY spot_test.test_schema_test.unique ASC", $query->toSql());
     }
 

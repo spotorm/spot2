@@ -179,7 +179,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     {
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->order(['date_created' => 'ASC']);
-        $this->assertContains("ORDER BY test_posts.date_created ASC", $query->toSql());
+        $this->assertStringContainsString("ORDER BY test_posts.date_created ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
     
@@ -188,7 +188,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     {
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->select()->noQuote()->where(['status' => 2])->order(['TRIM(body)' => 'ASC']);
-        $this->assertContains("ORDER BY TRIM(test_posts.body) ASC", $query->toSql());
+        $this->assertStringContainsString("ORDER BY TRIM(test_posts.body) ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
     
@@ -200,7 +200,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('This test is not supported with the current driver.');
         }
         $query = $mapper->select()->noQuote()->where(['status' => 2])->order([DriverSpecificTest::getWeekFunction($mapper, 'date_created') => 'ASC']);
-        $this->assertContains("ORDER BY " . DriverSpecificTest::getWeekFunction($mapper, 'test_posts.date_created') . " ASC", $query->toSql());
+        $this->assertStringContainsString("ORDER BY " . DriverSpecificTest::getWeekFunction($mapper, 'test_posts.date_created') . " ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
 
@@ -246,7 +246,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $query = $mapper->where(['status' => []]);
-        $this->assertContains('IS NULL', $query->toSql());
+        $this->assertStringContainsString('IS NULL', $query->toSql());
         $this->assertEquals(0, $query->count());
     }
 
@@ -256,7 +256,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
         // Numeric
         $query = $mapper->where(['status :in' => [2]]);
-        $this->assertContains('IN', $query->toSql());
+        $this->assertStringContainsString('IN', $query->toSql());
         $this->assertEquals(2, $query->first()->status);
     }
 
@@ -265,7 +265,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $query = $mapper->where(['status !=' => []]);
-        $this->assertContains('IS NOT NULL', $query->toSql());
+        $this->assertStringContainsString('IS NOT NULL', $query->toSql());
         $this->assertEquals(10, $query->count());
     }
 
@@ -285,11 +285,11 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->where(['status' => [3,4,5]]);
-        $this->assertContains('IN', $posts->toSql());
+        $this->assertStringContainsString('IN', $posts->toSql());
         $this->assertEquals(3, $posts->count());
 
         $posts = $mapper->where(['status :in' => [3,4,5]]);
-        $this->assertContains('IN', $posts->toSql());
+        $this->assertStringContainsString('IN', $posts->toSql());
         $this->assertEquals(3, $posts->count());
     }
 
@@ -298,11 +298,11 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $posts = $mapper->where(['status !=' => [3,4,5]]);
-        $this->assertContains('NOT IN', $posts->toSql());
+        $this->assertStringContainsString('NOT IN', $posts->toSql());
         $this->assertEquals(7, $posts->count());
 
         $posts = $mapper->where(['status :not' => [3,4,5]]);
-        $this->assertContains('NOT IN', $posts->toSql());
+        $this->assertStringContainsString('NOT IN', $posts->toSql());
         $this->assertEquals(7, $posts->count());
     }
 
@@ -317,7 +317,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
         $posts = $mapper->select('id, MAX(status) as maximus')
             ->having(['maximus' => 10]);
-        $this->assertContains('HAVING', $posts->toSql());
+        $this->assertStringContainsString('HAVING', $posts->toSql());
         $this->assertEquals(1, count($posts->toArray()));
     }
 
@@ -325,7 +325,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
     {
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $posts = $mapper->where(['status' => []]);
-        $this->assertContains('IS NULL', $posts->toSql());
+        $this->assertStringContainsString('IS NULL', $posts->toSql());
         $this->assertEquals(0, count($posts));
     }
 
@@ -336,7 +336,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $postsSub = $mapper->where(['status !=' => [3,4,5]]);
         $posts = $mapper->select()->whereSql('id IN(' . $postsSub->toSql() . ')');
 
-        $this->assertContains('IN', $posts->toSql());
+        $this->assertStringContainsString('IN', $posts->toSql());
     }
 
     public function testWhereFieldSqlSubqueryInClause()
@@ -347,7 +347,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
         $postsSub = $mapper->where(['status !=' => $params]);
         $posts = $mapper->select()->whereFieldSql('id', 'IN(' . $postsSub->toSql() . ')', [$params]);
 
-        $this->assertContains('IN', $posts->toSql());
+        $this->assertStringContainsString('IN', $posts->toSql());
     }
 
     public function testWhereFieldSqlWithMultipleParams()
@@ -528,7 +528,7 @@ class QuerySqlTest extends \PHPUnit\Framework\TestCase
 
         $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $query = $mapper->where(['data :json_exists' => 'author']);
-        $this->assertContains('jsonb_exists(', $query->toSql());
+        $this->assertStringContainsString('jsonb_exists(', $query->toSql());
     }
 
     public function testInvalidQueryOperatorThrowsException()

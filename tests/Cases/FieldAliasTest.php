@@ -72,7 +72,7 @@ class FieldAliasTest extends \PHPUnit\Framework\TestCase
     {
         $mapper = \test_spot_mapper('SpotTest\Entity\Legacy');
         $query = $mapper->where(['number' => 2])->order(['TRIM(name)' => 'ASC'])->noQuote();
-        $this->assertContains("ORDER BY TRIM(test_legacy." . self::$legacyTable->getNameFieldColumnName() . ") ASC", $query->toSql());
+        $this->assertStringContainsString("ORDER BY TRIM(test_legacy." . self::$legacyTable->getNameFieldColumnName() . ") ASC", $query->toSql());
     }
     
     // Ordering by complex function
@@ -83,7 +83,7 @@ class FieldAliasTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('This test is not supported with the current driver.');
         }
         $query = $mapper->where(['number' => 2])->order([DriverSpecificTest::getWeekFunction($mapper, 'date_created') => 'ASC'])->noQuote();
-        $this->assertContains("ORDER BY " . DriverSpecificTest::getWeekFunction($mapper, 'test_legacy.' . self::$legacyTable->getDateCreatedColumnName()) . " ASC", $query->toSql());
+        $this->assertStringContainsString("ORDER BY " . DriverSpecificTest::getWeekFunction($mapper, 'test_legacy.' . self::$legacyTable->getDateCreatedColumnName()) . " ASC", $query->toSql());
     }
 
     // Grouping
