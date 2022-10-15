@@ -162,7 +162,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->toArray();
     }
@@ -232,7 +232,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function count()
+    public function count(): int
     {
         return count($this->results);
     }
@@ -242,7 +242,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function current()
+    public function current(): mixed
     {
         return current($this->results);
     }
@@ -252,7 +252,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function key()
+    public function key(): mixed
     {
         return key($this->results);
     }
@@ -262,7 +262,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function next()
+    public function next(): void
     {
         next($this->results);
     }
@@ -272,7 +272,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->results);
     }
@@ -282,7 +282,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function valid()
+    public function valid(): bool
     {
         return (current($this->results) !== false);
     }
@@ -292,9 +292,9 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function offsetExists($key)
+    public function offsetExists(mixed $offset): bool
     {
-        return isset($this->results[$key]);
+        return isset($this->results[$offset]);
     }
 
     /**
@@ -302,9 +302,9 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function offsetGet($key)
+    public function offsetGet(mixed $offset): mixed
     {
-        return $this->results[$key];
+        return $this->results[$offset];
     }
 
     /**
@@ -312,12 +312,12 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function offsetSet($key, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
-        if ($key === null) {
-            return $this->results[] = $value;
+        if ($offset === null) {
+            $this->results[] = $value;
         } else {
-            return $this->results[$key] = $value;
+            $this->results[$offset] = $value;
         }
     }
 
@@ -326,12 +326,12 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
-    public function offsetUnset($key)
+    public function offsetUnset(mixed $offset): void
     {
-        if (is_int($key)) {
-            array_splice($this->results, $key, 1);
+        if (is_int($offset)) {
+            array_splice($this->results, $offset, 1);
         } else {
-            unset($this->results[$key]);
+            unset($this->results[$offset]);
         }
     }
 }

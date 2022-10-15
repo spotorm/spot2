@@ -8,3 +8,4 @@ tests/spot_test.sqlite
 /tests/.phpunit.result.cache
 /.phpunit.result.cache
 /error.log
+/rector.php

@@ -610,7 +610,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      *
      * @inheritdoc
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->toArray();
     }

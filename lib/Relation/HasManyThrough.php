@@ -178,7 +178,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
      *
      * @return integer
      */
-    public function count()
+    public function count(): int
     {
         if ($this->result === null) {
             $count = $this->query()->count();
@@ -194,7 +194,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
      *
      * @return \Spot\Entity\Collection
      */
-    public function getIterator()
+    public function getIterator(): \Traversable
     {
         // Load related records for current row
         $data = $this->execute();
@@ -204,34 +204,34 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
 
     // SPL - ArrayAccess functions
     // ----------------------------------------------
-    public function offsetExists($key)
+    public function offsetExists(mixed $offset): bool
     {
         $this->execute();
 
-        return isset($this->result[$key]);
+        return isset($this->result[$offset]);
     }
 
-    public function offsetGet($key)
+    public function offsetGet(mixed $key): mixed
     {
         $this->execute();
 
         return $this->result[$key];
     }
 
-    public function offsetSet($key, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->execute();
 
-        if ($key === null) {
-            return $this->result[] = $value;
+        if ($offset === null) {
+            $this->result[] = $value;
         } else {
-            return $this->result[$key] = $value;
+            $this->result[$offset] = $value;
         }
     }
 
-    public function offsetUnset($key)
+    public function offsetUnset(mixed $offset): void
     {
         $this->execute();
-        unset($this->result[$key]);
+        unset($this->result[$offset]);
     }
 }
