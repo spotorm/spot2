@@ -1,6 +1,8 @@
 <?php
 namespace Spot;
 
+use Spot\Relation\RelationAbstract;
+
 /**
  * Base DataMapper Interface
  *
