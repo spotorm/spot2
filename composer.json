@@ -4,7 +4,7 @@
     "description": "Simple DataMapper built on top of Doctrine DBAL",
     "keywords": ["orm", "datamapper", "dbal", "doctrine", "database", "model", "mapper", "entity"],
     "homepage": "https://github.com/vlucas/spot2",
-    "license" : "BSD",
+    "license" : "BSD-3-Clause",
     "authors" : [
         {
             "name": "Vance Lucas",
