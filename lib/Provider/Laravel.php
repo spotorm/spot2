@@ -8,6 +8,7 @@ use Spot\Locator;
 class Laravel extends ServiceProvider
 {
     protected $config = [];
+    protected $app = [];
 
     public function __construct($app)
     {

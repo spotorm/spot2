@@ -14,6 +14,7 @@ use Spot\Entity\Collection;
 class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAggregate, \ArrayAccess
 {
     protected $throughCollection;
+    protected $throughEntityName;
 
     /**
      * Constructor function
@@ -24,7 +25,7 @@ class HasManyThrough extends RelationAbstract implements \Countable, \IteratorAg
 
         $this->entityName = $entityName;
         $this->throughEntityName = $throughEntityName;
-        $this->foreignKey = $foreignKey; // selecht
+        $this->foreignKey = $foreignKey; // select
         $this->localKey = $localKey; // where
 
         $this->identityValue = $identityValue;
