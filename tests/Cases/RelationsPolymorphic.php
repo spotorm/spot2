@@ -1,23 +1,23 @@
 <?php
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class RelationsPolymorphic extends \PHPUnit_Framework_TestCase
+class RelationsPolymorphic extends \PHPUnit\Framework\TestCase
 {
     private static $entities = ['PolymorphicComment', 'Post', 'Author', 'Event\Search', 'Event'];
 
-    public static function setupBeforeClass()
+    public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         // Fixtures for this test suite
 
         // Author
-        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
         $author = $authorMapper->create([
             'email'    => 'chester@tester.com',
             'password' => 'password',
@@ -27,7 +27,7 @@ class RelationsPolymorphic extends \PHPUnit_Framework_TestCase
         // Posts
         $posts = [];
         $postsCount = 3;
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         for ($i = 1; $i <= $postsCount; $i++) {
             $posts[] = $mapper->create([
                 'title'     => "Eager Loading Test Post $i",
@@ -37,7 +37,7 @@ class RelationsPolymorphic extends \PHPUnit_Framework_TestCase
         }
 
         // 3 polymorphic comments for each post
-        $commentMapper = test_spot_mapper('SpotTest\Entity\PolymorphicComment');
+        $commentMapper = \test_spot_mapper('SpotTest\Entity\PolymorphicComment');
         foreach ($posts as $post) {
             $comments = [];
             $commentCount = 3;
@@ -55,7 +55,7 @@ class RelationsPolymorphic extends \PHPUnit_Framework_TestCase
         // Event
         $events = [];
         $eventsCount = 3;
-        $eventMapper = test_spot_mapper('SpotTest\Entity\Event');
+        $eventMapper = \test_spot_mapper('SpotTest\Entity\Event');
         $events[] = $eventMapper->create([
             'title'         => 'Eager Load Test Event',
             'description'   => 'some test eager loading description',
@@ -85,16 +85,16 @@ class RelationsPolymorphic extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testEventHasManyPolymorphicComments()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Event');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Event');
         $event = $mapper->first();
         $this->assertInstanceOf('SpotTest\Entity\Event', $event);
 
@@ -105,9 +105,9 @@ class RelationsPolymorphic extends \PHPUnit_Framework_TestCase
 
     public function testPostHasManyPolymorphicComments()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = $mapper->first();
-        $this->assertInstanceOf('SpotTest\Entity\Post', $post);
+        $this->assertInstanceOf('\SpotTest\Entity\Post', $post);
 
         $query = $post->polymorphic_comments->query();
 

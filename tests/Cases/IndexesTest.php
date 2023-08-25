@@ -1,30 +1,30 @@
 <?php
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class Indexes extends \PHPUnit_Framework_TestCase
+class IndexesTest extends \PHPUnit\Framework\TestCase
 {
     private static $entities = ['Zip'];
 
-    public static function setupBeforeClass()
+    public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testUniqueCompoundIndexDuplicateCausesValidationError()
     {
-        $zipMapper = test_spot_mapper('\SpotTest\Entity\Zip');
+        $zipMapper = \test_spot_mapper('\SpotTest\Entity\Zip');
 
         $data = [
             'code'  => '12345',
@@ -44,7 +44,7 @@ class Indexes extends \PHPUnit_Framework_TestCase
 
     public function testUniqueCompoundIndexNoValidationErrorWhenDataDifferent()
     {
-        $zipMapper = test_spot_mapper('\SpotTest\Entity\Zip');
+        $zipMapper = \test_spot_mapper('\SpotTest\Entity\Zip');
 
         $data = [
             'code'  => '23456',

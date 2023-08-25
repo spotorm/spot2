@@ -1,24 +1,24 @@
 <?php
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class Collection extends \PHPUnit_Framework_TestCase
+class CollectionTest extends \PHPUnit\Framework\TestCase
 {
     private static $entities = ['Tag'];
 
-    public static function setupBeforeClass()
+    public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         $tagCount = 3;
 
         // Create some tags
         $tags = array();
-        $tagMapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $tagMapper = \test_spot_mapper('SpotTest\Entity\Tag');
         for ($i = 1; $i <= $tagCount; $i++) {
             $tags[] = $tagMapper->create([
                 'name'  => "Title {$i}"
@@ -26,16 +26,16 @@ class Collection extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testMergeIntersecting()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Tag');
 
         // Fetch 3 entries
         $tags = $mapper->all()->execute();
@@ -54,7 +54,7 @@ class Collection extends \PHPUnit_Framework_TestCase
 
     public function testCollectionJsonSerialize()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Tag');
 
         $tags = $mapper->all()->execute();
 
@@ -66,7 +66,7 @@ class Collection extends \PHPUnit_Framework_TestCase
 
     public function testQueryCallsCollectionMethods()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Tag');
 
         // Method on Spot\Entity\Collection being called through Spot\Query object
         $tagsArray = $mapper->all()->resultsIdentities();
@@ -76,7 +76,7 @@ class Collection extends \PHPUnit_Framework_TestCase
 
     public function testQueryCallsCollectionMethodsWithArguments()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Tag');
 
         // Method on Spot\Entity\Collection being called through Spot\Query object
         $matchingTag = $mapper->all()->filter(function ($tag) {

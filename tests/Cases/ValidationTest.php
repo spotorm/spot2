@@ -1,36 +1,37 @@
 <?php
+namespace SpotTest\Cases;
 /**
  * @package Spot
  */
-class Test_Validation extends PHPUnit_Framework_TestCase
+class ValidationTest extends \PHPUnit\Framework\TestCase
 {
     private static $entities = ['Author', 'Report'];
 
-    public static function setupBeforeClass()
+    public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Author');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Author');
         $mapper->truncateTable();
     }
 
     public function testRequiredField()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Author');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Author');
 
-        $entity = new SpotTest\Entity\Author([
+        $entity = new \SpotTest\Entity\Author([
             'is_admin' => true
         ]);
         $mapper->save($entity);
@@ -41,10 +42,10 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testUniqueField()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Author');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Author');
 
         // Setup new user
-        $user1 = new SpotTest\Entity\Author([
+        $user1 = new \SpotTest\Entity\Author([
             'email' => 'test@test.com',
             'password' => 'test',
             'is_admin' => true
@@ -52,7 +53,7 @@ class Test_Validation extends PHPUnit_Framework_TestCase
         $mapper->save($user1);
 
         // Setup new user (identical, expecting a validation error)
-        $user2 = new SpotTest\Entity\Author([
+        $user2 = new \SpotTest\Entity\Author([
             'email' => 'test@test.com',
             'password' => 'test',
             'is_admin' => false
@@ -66,17 +67,17 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testUniqueFieldConvertToDb()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Report');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Report');
 
         // Setup new report
-        $report1 = new SpotTest\Entity\Report([
+        $report1 = new \SpotTest\Entity\Report([
             'date' => new \DateTime('2016-05-04'),
             'result' => ['a' => 1, 'b' => 2],
         ]);
         $mapper->save($report1);
 
         // Setup new report (same date, expecting error)
-        $report2 = new SpotTest\Entity\Report([
+        $report2 = new \SpotTest\Entity\Report([
             'date' => new \DateTime('2016-05-04'),
             'result' => ['a' => 2, 'b' => 1],
         ]);
@@ -89,9 +90,9 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testEmail()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Author');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Author');
 
-        $entity = new SpotTest\Entity\Author([
+        $entity = new \SpotTest\Entity\Author([
             'email' => 'test',
             'password' => 'test'
         ]);
@@ -103,9 +104,9 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testLength()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Author');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Author');
 
-        $entity = new SpotTest\Entity\Author([
+        $entity = new \SpotTest\Entity\Author([
             'email' => 't@t',
             'password' => 'test'
         ]);
@@ -117,9 +118,9 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testDisabledValidation()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Author');
+        $mapper = \test_spot_mapper('SpotTest\Entity\Author');
 
-        $entity = new SpotTest\Entity\Author([
+        $entity = new \SpotTest\Entity\Author([
             'email' => 't@t',
             'password' => 'test'
         ]);
@@ -130,8 +131,8 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testHasOneRelationValidation()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Event');
-        $search = new SpotTest\Entity\Event\Search();
+        $mapper = \test_spot_mapper('SpotTest\Entity\Event');
+        $search = new \SpotTest\Entity\Event\Search();
         $event = $mapper->build([]);
         $event->relation('search', $search);
         $mapper->validate($event, ['relations' => true]);
@@ -141,8 +142,8 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testBelongsToRelationValidation()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $author = new SpotTest\Entity\Author();
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
+        $author = new \SpotTest\Entity\Author();
         $post = $mapper->build([]);
         $post->relation('author', $author);
         $mapper->validate($post, ['relations' => true]);
@@ -152,8 +153,8 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testHasManyRelationValidation()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $comment = new SpotTest\Entity\Post\Comment();
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
+        $comment = new \SpotTest\Entity\Post\Comment();
         $post = $mapper->build([]);
         $post->relation('comments', new \Spot\Entity\Collection([$comment]));
         $mapper->validate($post, ['relations' => true]);
@@ -163,8 +164,8 @@ class Test_Validation extends PHPUnit_Framework_TestCase
 
     public function testHasManyThroughRelationValidation()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $tag = new SpotTest\Entity\Tag();
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
+        $tag = new \SpotTest\Entity\Tag();
         $post = $mapper->build([]);
         $post->relation('tags', new \Spot\Entity\Collection([$tag]));
         $mapper->validate($post, ['relations' => true]);

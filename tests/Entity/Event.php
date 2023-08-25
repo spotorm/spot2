@@ -56,7 +56,7 @@ class Event extends \Spot\Entity
         });
 
         $eventEmitter->on('afterInsert', function ($entity, $mapper) {
-            $mapper = test_spot_mapper('SpotTest\Entity\Event\Search');
+            $mapper = \test_spot_mapper('SpotTest\Entity\Event\Search');
             $result = $mapper->create([
                 'event_id' => $entity->id,
                 'body'     => $entity->title . ' ' . $entity->description

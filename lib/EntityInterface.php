@@ -154,7 +154,7 @@ interface EntityInterface
     /**
      * Return array for json_encode()
      */
-    public function jsonSerialize();
+    public function jsonSerialize(): mixed;
 
     /**
      * String representation of the class (JSON)

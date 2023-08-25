@@ -76,6 +76,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
         '=~' => 'Spot\Query\Operator\RegExp',
         ':regex' => 'Spot\Query\Operator\RegExp',
         ':like' => 'Spot\Query\Operator\Like',
+        ':notlike' => 'Spot\Query\Operator\NotLike',
         ':fulltext' => 'Spot\Query\Operator\FullText',
         ':fulltext_boolean' => 'Spot\Query\Operator\FullTextBoolean',
         'in' => 'Spot\Query\Operator\In',
@@ -562,7 +563,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         $countCopy = clone $this->builder();
         $stmt = $countCopy->select('COUNT(*)')->resetQueryPart('orderBy')->execute();
@@ -576,7 +577,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @return \Spot\Entity\Collection
      */
-    public function getIterator()
+    public function getIterator(): \Traversable
     {
         // Execute query and return result set for iteration
         $result = $this->execute();
@@ -603,7 +604,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->toArray();
     }
@@ -749,11 +750,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
-    public function offsetExists($key)
+    public function offsetExists(mixed $offset): bool
     {
         $results = $this->getIterator();
 
-        return isset($results[$key]);
+        return isset($results[$offset]);
     }
 
     /**
@@ -761,11 +762,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
-    public function offsetGet($key)
+    public function offsetGet(mixed $offset): mixed
     {
         $results = $this->getIterator();
 
-        return $results[$key];
+        return $results[$offset];
     }
 
     /**
@@ -773,13 +774,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
-    public function offsetSet($key, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $results = $this->getIterator();
-        if ($key === null) {
-            return $results[] = $value;
+        if ($offset === null) {
+            $results[] = $value;
         } else {
-            return $results[$key] = $value;
+            $results[$offset] = $value;
         }
     }
 
@@ -788,10 +789,10 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
-    public function offsetUnset($key)
+    public function offsetUnset(mixed $offset): void
     {
         $results = $this->getIterator();
-        unset($results[$key]);
+        unset($results[$offset]);
     }
 
     /**

@@ -1,11 +1,11 @@
 <?php
 
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class ArrayObjectTypes extends \PHPUnit_Framework_TestCase
+class ArrayObjectTypesTest extends \PHPUnit\Framework\TestCase
 {
 
     /**

@@ -1,20 +1,20 @@
 <?php
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class Transactions extends \PHPUnit_Framework_TestCase
+class TransactionsTest extends \PHPUnit\Framework\TestCase
 {
     private static $entities = ['Post', 'Author'];
 
-    public static function setupBeforeClass()
+    public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
-        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
         $author = $authorMapper->build([
             'id' => 1,
             'email' => 'example@example.com',
@@ -28,17 +28,17 @@ class Transactions extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testInsertWithTransaction()
     {
         $post = new \SpotTest\Entity\Post();
-        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post->title = "Test Post with Transaction";
         $post->body = "<p>This is a really awesome super-duper post -- in a TRANSACTION!.</p>";
         $post->date_created = new \DateTime();
@@ -56,7 +56,7 @@ class Transactions extends \PHPUnit_Framework_TestCase
     public function testInsertWithTransactionRollbackOnException()
     {
         $post = new \SpotTest\Entity\Post();
-        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post->title = "Rolledback";
         $post->body = "<p>This is a really awesome super-duper post -- in a TRANSACTION!.</p>";
         $post->date_created = new \DateTime();
@@ -81,7 +81,7 @@ class Transactions extends \PHPUnit_Framework_TestCase
     public function testInsertWithTransactionRollbackOnReturnFalse()
     {
         $post = new \SpotTest\Entity\Post();
-        $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post->title = "Rolledback";
         $post->body = "<p>This is a really awesome super-duper post -- in a TRANSACTION!.</p>";
         $post->date_created = new \DateTime();

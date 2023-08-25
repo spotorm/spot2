@@ -326,6 +326,22 @@ a single loaded entity object, or boolean `false`.
 
 ### Conditional Queries
 
+Conditional queries allow you to alter the way the database selects your data.
+Supported conditions are:
+
+* Less than `<`, `:lt`
+* Less than or equal `<=`, `:lte`
+* Greater than `>`, `:gt`
+* Greater than or equal `>=`, `:gte`
+* RegExp `~=`, `=~`, `:regex`
+* Like `:like`
+* Not Like `:notlike`
+* Full Text `:fulltext`
+* Full Text Boolean `:fulltext_boolean`
+* In `in`, `:in`
+* Not `<>`, `!=`, `:ne`, `:not`
+* Equals `=`, `:eq`
+
 ```php
 # All posts with a 'published' status, descending by date_created
 $posts = $mapper->all()
@@ -343,6 +359,12 @@ $posts = $mapper->all()
 # Posts with 'id' of 1, 2, 5, 12, or 15 - Array value = automatic "IN" clause
 $posts = $mapper->all()
     ->where(['id' => [1, 2, 5, 12, 15]]);
+```
+
+For custom query operators you may add your own operator. See `\Spot\Query\Operator\Like` for an simple example.
+
+```php
+\Spot\Query::addWhereOperator(':youroperator', YourOperator::class);
 ```
 
 ### Joins

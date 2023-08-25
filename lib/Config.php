@@ -6,7 +6,7 @@ use Doctrine\DBAL;
 /**
  * @package Spot
  */
-class Config implements \Serializable
+class Config
 {
     protected $_defaultConnection;
     protected $_connections = [];
@@ -273,16 +273,12 @@ class Config implements \Serializable
         return $parsed;
     }
 
-    /**
-     * Default serialization behavior is to not attempt to serialize stored
-     * adapter connections at all (thanks @TheSavior re: Issue #7)
-     */
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize([]);
+        return [];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $serialized): void
     {
     }
 }

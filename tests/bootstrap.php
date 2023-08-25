@@ -1,22 +1,23 @@
 <?php
 /**
-* @package Spot
-*/
+ * @package Spot
+ */
 
 error_reporting(-1);
 ini_set('display_errors', 1);
 
 /**
-* Autoload test fixtures
-*/
-$autoload = require dirname(dirname(__FILE__)) . '/vendor/autoload.php';
+ * Autoload dependencies and test namespace
+ */
+require dirname(dirname(__FILE__)) . '/vendor/autoload.php';
+require dirname(dirname(__FILE__)) . '/tests/autoload.php';
 
 // Date setup
 date_default_timezone_set('America/Chicago');
 
 // Setup available adapters for testing
 $cfg = new \Spot\Config();
-$dbDsn  = getenv('SPOT_DB_DSN');
+$dbDsn = getenv('SPOT_DB_DSN');
 
 if (!empty($dbDsn)) {
     $cfg->addConnection('test', $dbDsn);
@@ -25,8 +26,8 @@ if (!empty($dbDsn)) {
 }
 
 /**
-* Return Spot mapper for use
-*/
+ * Return Spot mapper for use
+ */
 $spot = new Spot\Locator($cfg);
 function test_spot_mapper($entityName)
 {
