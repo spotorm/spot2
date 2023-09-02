@@ -285,4 +285,13 @@ class Config implements \Serializable
     public function unserialize($serialized)
     {
     }
+
+    public function __serialize()
+    {
+        return serialize([]);
+    }
+
+    public function __unserialize($serialized)
+    {
+    }
 }

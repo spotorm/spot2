@@ -613,6 +613,7 @@ abstract class Entity implements EntityInterface, \JsonSerializable
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->toArray();

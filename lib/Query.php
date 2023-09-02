@@ -562,6 +562,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         $countCopy = clone $this->builder();
@@ -576,6 +577,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @return \Spot\Entity\Collection
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         // Execute query and return result set for iteration
@@ -603,6 +605,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->toArray();
@@ -749,6 +752,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($key)
     {
         $results = $this->getIterator();
@@ -761,6 +765,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($key)
     {
         $results = $this->getIterator();
@@ -773,6 +778,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($key, $value)
     {
         $results = $this->getIterator();
@@ -788,6 +794,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($key)
     {
         $results = $this->getIterator();

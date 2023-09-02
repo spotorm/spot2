@@ -140,6 +140,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
      *
      * @return integer
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         if ($this->result === null) {
@@ -156,6 +157,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
      *
      * @return \Spot\Entity\Collection
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         // Load related records for current row
@@ -166,6 +168,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
 
     // SPL - ArrayAccess functions
     // ----------------------------------------------
+    #[\ReturnTypeWillChange]
     public function offsetExists($key)
     {
         $this->execute();
@@ -173,6 +176,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
         return isset($this->result[$key]);
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($key)
     {
         $this->execute();
@@ -180,6 +184,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
         return $this->result[$key];
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetSet($key, $value)
     {
         $this->execute();
@@ -191,6 +196,7 @@ class HasMany extends RelationAbstract implements \Countable, \IteratorAggregate
         }
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetUnset($key)
     {
         $this->execute();
