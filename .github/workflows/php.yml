@@ -54,19 +54,19 @@ jobs:
 
     - name: Set up common environment variables
       run: |
-        echo "TYPE=${{ matrix.type }}" >> $GITHUB_ENV
+        echo "SPOT_DB_TYPE=${{ matrix.type }}" >> $GITHUB_ENV
 
     # Has to be a different step othwerwise $TYPE is not yet available
     - name: Set up database specific environment variables
       run: |
-        if [[ "$TYPE" == "mysql" ]]; then
+        if [[ "$SPOT_DB_TYPE" == "mysql" ]]; then
           mysql -e "create database IF NOT EXISTS ${{ env.SPOT_DB_NAME }};" -uroot -h ${{ env.SPOT_DB_HOSTNAME }};
-          echo "DSN=mysql://root:${{ env.MYSQL_PWD }}@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
-        elif [[ "$TYPE" == "pgsql" ]]; then
+          echo "SPOT_DB_DSN=mysql://root:${{ env.MYSQL_PWD }}@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
+        elif [[ "$SPOT_DB_TYPE" == "pgsql" ]]; then
           psql -c 'create database ${{ env.SPOT_DB_NAME }};' -U postgres -h ${{ env.SPOT_DB_HOSTNAME }};
-          echo "DSN=pgsql://postgres:${{ env.PGPASSWORD }}@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
-        elif [[ "$TYPE" == "sqlite" ]]; then
-          echo "DSN=sqlite::memory" >> $GITHUB_ENV
+          echo "SPOT_DB_DSN=pgsql://postgres:${{ env.PGPASSWORD }}@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
+        elif [[ "$SPOT_DB_TYPE" == "sqlite" ]]; then
+          echo "SPOT_DB_DSN=sqlite::memory" >> $GITHUB_ENV
         fi
 
     - uses: actions/checkout@v4
@@ -96,5 +96,5 @@ jobs:
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
-    - name: Run test suite
-      run: composer run-script test_$TYPE
+    - name: Run ${{ matrix.type }} test suite
+      run: composer run-script test_$SPOT_DB_TYPE
