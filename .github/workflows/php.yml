@@ -11,7 +11,8 @@ permissions:
 
 env:
   SPOT_DB_NAME: spot_test
-  SPOT_DB_PASSWORD: ${{ secrets.SPOT_DB_PASSWORD }}
+  MYSQL_PWD: ${{ secrets.SPOT_DB_PASSWORD }}
+  PGPASSWORD: ${{ secrets.SPOT_DB_PASSWORD }}
   SPOT_DB_HOSTNAME: 127.0.0.1
 
 jobs:
@@ -32,7 +33,7 @@ jobs:
           # so we can create and migrate the test database.
           # See: https://hub.docker.com/_/mysql
           MYSQL_DATABASE: ${{ env.SPOT_DB_NAME }}
-          MYSQL_ROOT_PASSWORD: ${{ env.SPOT_DB_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_PWD }}
         ports:
           # Opens port 3306 on service container and host
           # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
@@ -43,7 +44,7 @@ jobs:
         image: postgres
         env:
           # Provide the password for postgres
-          POSTGRES_PASSWORD: ${{ env.SPOT_DB_PASSWORD }}
+          POSTGRES_PASSWORD: ${{ env.PGPASSWORD }}
         ports:
           - 5432:5432
           # Set health checks to wait until postgres has started
@@ -59,13 +60,11 @@ jobs:
     - name: Set up database specific environment variables
       run: |
         if [[ "$TYPE" == "mysql" ]]; then
-          echo "MYSQL_PWD=${{ env.SPOT_DB_PASSWORD }}" >> $GITHUB_ENV
           mysql -e "create database IF NOT EXISTS ${{ env.SPOT_DB_NAME }};" -uroot -h ${{ env.SPOT_DB_HOSTNAME }};
-          echo "DSN=mysql://root:$MYSQL_PWD@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
+          echo "DSN=mysql://root:${{ env.MYSQL_PWD }}@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
         elif [[ "$TYPE" == "pgsql" ]]; then
-          echo "PGPASSWORD=${{ env.SPOT_DB_PASSWORD }}" >> $GITHUB_ENV
           psql -c 'create database ${{ env.SPOT_DB_NAME }};' -U postgres -h ${{ env.SPOT_DB_HOSTNAME }};
-          echo "DSN=pgsql://postgres:$PGPASSWORD@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
+          echo "DSN=pgsql://postgres:${{ env.PGPASSWORD }}@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
         elif [[ "$TYPE" == "sqlite" ]]; then
           echo "DSN=sqlite::memory" >> $GITHUB_ENV
         fi
