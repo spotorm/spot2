@@ -60,11 +60,11 @@ jobs:
       run: |
         if [[ "$TYPE" == "mysql" ]]; then
           echo "MYSQL_PWD=${{ env.SPOT_DB_PASSWORD }}" >> $GITHUB_ENV
-          mysql -e "create database IF NOT EXISTS ${{ env.SPOT_DB_NAME }};" -uroot;
+          mysql -e "create database IF NOT EXISTS ${{ env.SPOT_DB_NAME }};" -uroot -h ${{ env.SPOT_DB_HOSTNAME }};
           echo "DSN=mysql://root:$MYSQL_PWD@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
         elif [[ "$TYPE" == "pgsql" ]]; then
           echo "PGPASSWORD=${{ env.SPOT_DB_PASSWORD }}" >> $GITHUB_ENV
-          psql -c 'create database ${{ env.SPOT_DB_NAME }};' -U postgres;
+          psql -c 'create database ${{ env.SPOT_DB_NAME }};' -U postgres -h ${{ env.SPOT_DB_HOSTNAME }};
           echo "DSN=pgsql://postgres:$PGPASSWORD@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
         elif [[ "$TYPE" == "sqlite" ]]; then
           echo "DSN=sqlite::memory" >> $GITHUB_ENV
