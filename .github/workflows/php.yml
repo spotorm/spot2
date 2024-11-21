@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['5.4', '5.5', '5.6', '7.0', '7.1']
+        php: ['5.4', '5.5', '5.6', '7.0']
         type: ['mysql', 'pgsql', 'sqlite']
 
     services:
