@@ -22,12 +22,12 @@ jobs:
 
     strategy:
       matrix:
-        php: [5.4, 5.5, 5.6, 7.0, 7.1]
-        type: [mysql, pgsql, sqlite]
+        php: ['5.4', '5.5', '5.6', '7.0', '7.1']
+        type: ['mysql', 'pgsql', 'sqlite']
 
     services:
       mysql:
-        image: mysql
+        image: ${{ (matrix.type == 'mysql') && 'mysql:5.7' || '' }}
         env:
           # The MySQL docker container requires these environment variables to be set
           # so we can create and migrate the test database.
@@ -41,7 +41,7 @@ jobs:
           # Before continuing, verify the mysql container is reachable from the ubuntu host
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       postgres:
-        image: postgres
+        image: ${{ (matrix.type == 'postgres') && 'postgres' || '' }}
         env:
           # Provide the password for postgres
           POSTGRES_PASSWORD: ${{ env.PGPASSWORD }}
