@@ -39,7 +39,7 @@ jobs:
           - 3306:3306
           # Before continuing, verify the mysql container is reachable from the ubuntu host
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-       postgres:
+      postgres:
         image: postgres
         env:
           # Provide the password for postgres
