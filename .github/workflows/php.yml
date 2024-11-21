@@ -55,8 +55,8 @@ jobs:
       run: |
         echo "TYPE=${{ matrix.type }}" >> $GITHUB_ENV
 
-     # Has to be a different step othwerwise $TYPE is not yet available
-     - name: Set up database specific environment variables
+    # Has to be a different step othwerwise $TYPE is not yet available
+    - name: Set up database specific environment variables
       run: |
         if [[ "$TYPE" == "mysql" ]]; then
           echo "MYSQL_PWD=${{ env.SPOT_DB_PASSWORD }}" >> $GITHUB_ENV
