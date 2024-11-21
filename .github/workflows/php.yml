@@ -41,7 +41,7 @@ jobs:
           # Before continuing, verify the mysql container is reachable from the ubuntu host
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       postgres:
-        image: ${{ (matrix.type == 'postgres') && 'postgres:latest' || '' }}
+        image: ${{ (matrix.type == 'pgsql') && 'postgres' || '' }}
         env:
           # Provide the password for postgres
           POSTGRES_PASSWORD: ${{ env.PGPASSWORD }}
