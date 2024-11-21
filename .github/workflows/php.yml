@@ -1,0 +1,98 @@
+name: PHP Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+env:
+  SPOT_DB_NAME: spot_test
+  SPOT_DB_PASSWORD: ${{ secrets.SPOT_DB_PASSWORD }}
+  SPOT_DB_HOSTNAME: 127.0.0.1
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: [5.4, 5.5, 5.6, 7.0, 7.1]
+        type: [mysql, pgsql, sqlite]
+
+    services:
+      mysql:
+        image: mysql
+        env:
+          # The MySQL docker container requires these environment variables to be set
+          # so we can create and migrate the test database.
+          # See: https://hub.docker.com/_/mysql
+          MYSQL_DATABASE: ${{ env.SPOT_DB_NAME }}
+          MYSQL_ROOT_PASSWORD: ${{ env.SPOT_DB_PASSWORD }}
+        ports:
+          # Opens port 3306 on service container and host
+          # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
+          - 3306:3306
+          # Before continuing, verify the mysql container is reachable from the ubuntu host
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+       postgres:
+        image: postgres
+        env:
+          # Provide the password for postgres
+          POSTGRES_PASSWORD: ${{ env.SPOT_DB_PASSWORD }}
+        ports:
+          - 5432:5432
+          # Set health checks to wait until postgres has started
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    
+    steps:
+
+    - name: Set up environment
+      run: |
+        echo "TYPE=${{ matrix.type }}" >> $GITHUB_ENV
+        if [[ "$TYPE" == "mysql" ]]; then
+          echo "MYSQL_PWD=${{ env.SPOT_DB_PASSWORD }}" >> $GITHUB_ENV
+          mysql -e "create database IF NOT EXISTS ${{ env.SPOT_DB_NAME }};" -uroot;
+          echo "DSN=mysql://root:$MYSQL_PWD@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
+        elif [[ "$TYPE" == "pgsql" ]]; then
+          echo "PGPASSWORD=${{ env.SPOT_DB_PASSWORD }}" >> $GITHUB_ENV
+          psql -c 'create database ${{ env.SPOT_DB_NAME }};' -U postgres;
+          echo "DSN=pgsql://postgres:$PGPASSWORD@${{ env.SPOT_DB_HOSTNAME }}/${{ env.SPOT_DB_NAME }}" >> $GITHUB_ENV
+        elif [[ "$TYPE" == "sqlite" ]]; then
+          echo "DSN=sqlite::memory" >> $GITHUB_ENV
+        fi
+
+    - uses: actions/checkout@v4
+
+    - name: Install PHP ${{ matrix.php }}
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+
+    - name: Check PHP ${{ matrix.php }}
+      run: php -v
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --no-progress
+
+    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
+    # Docs: https://getcomposer.org/doc/articles/scripts.md
+    - name: Run test suite
+      run: composer run-script test_$TYPE
+    
