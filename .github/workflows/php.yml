@@ -51,9 +51,13 @@ jobs:
     
     steps:
 
-    - name: Set up environment
+    - name: Set up common environment variables
       run: |
         echo "TYPE=${{ matrix.type }}" >> $GITHUB_ENV
+
+     # Has to be a different step othwerwise $TYPE is not yet available
+     - name: Set up database specific environment variables
+      run: |
         if [[ "$TYPE" == "mysql" ]]; then
           echo "MYSQL_PWD=${{ env.SPOT_DB_PASSWORD }}" >> $GITHUB_ENV
           mysql -e "create database IF NOT EXISTS ${{ env.SPOT_DB_NAME }};" -uroot;
@@ -95,4 +99,3 @@ jobs:
     # Docs: https://getcomposer.org/doc/articles/scripts.md
     - name: Run test suite
       run: composer run-script test_$TYPE
-    
