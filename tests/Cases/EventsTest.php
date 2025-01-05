@@ -1,33 +1,33 @@
 <?php
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class Events extends \PHPUnit_Framework_TestCase
+class EventsTest extends \PHPUnit\Framework\TestCase
 {
     private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author'];
 
-    public static function setupBeforeClass()
+    public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
         // Insert blog dummy data
         for ($i = 1; $i <= 3; $i++) {
-            $tag_id = test_spot_mapper('SpotTest\Entity\Tag')->insert([
+            $tag_id = \test_spot_mapper('SpotTest\Entity\Tag')->insert([
                 'name' => "Title {$i}"
             ]);
         }
         for ($i = 1; $i <= 4; $i++) {
-            $author_id = test_spot_mapper('SpotTest\Entity\Author')->insert([
+            $author_id = \test_spot_mapper('SpotTest\Entity\Author')->insert([
                 'email' => $i.'user@somewhere.com',
                 'password' => 'securepassword'
             ]);
         }
 
-        $postMapper = test_spot_mapper('SpotTest\Entity\Post');
+        $postMapper = \test_spot_mapper('\SpotTest\Entity\Post');
         for ($i = 1; $i <= 10; $i++) {
             $post = $postMapper->build([
                 'title' => ($i % 2 ? 'odd' : 'even' ). '_title',
@@ -43,7 +43,7 @@ class Events extends \PHPUnit_Framework_TestCase
             }
 
             for ($j = 1; $j <= 2; $j++) {
-                test_spot_mapper('SpotTest\Entity\Post\Comment')->insert([
+                \test_spot_mapper('SpotTest\Entity\Post\Comment')->insert([
                     'post_id' => $post->id,
                     'name' => ($j % 2 ? 'odd' : 'even' ). '_title',
                     'email' => 'bob@somewhere.com',
@@ -51,7 +51,7 @@ class Events extends \PHPUnit_Framework_TestCase
                 ]);
             }
             for ($j = 1; $j <= $i % 3; $j++) {
-                $posttag_id = test_spot_mapper('SpotTest\Entity\PostTag')->insert([
+                $posttag_id = \test_spot_mapper('SpotTest\Entity\PostTag')->insert([
                     'post_id' => $post->id,
                     'tag_id' => $j
                 ]);
@@ -59,21 +59,21 @@ class Events extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
-        Entity\Post::$events = [];
+        \SpotTest\Entity\Post::$events = [];
     }
 
     public function testSaveHooks()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $testcase = $this;
 
         $post = new \SpotTest\Entity\Post([
@@ -93,7 +93,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
         $eventEmitter->on('afterSave', function ($post, $mapper, $result) use (&$hooks, &$testcase) {
             $testcase->assertEquals($hooks, ['called beforeSave']);
-            $testcase->assertInstanceOf('SpotTest\Entity\Post', $post);
+            $testcase->assertInstanceOf('\SpotTest\Entity\Post', $post);
             $testcase->assertInstanceOf('Spot\Mapper', $mapper);
             $hooks[] = 'called afterSave';
         });
@@ -115,7 +115,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testInsertHooks()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $testcase = $this;
 
         $post = new \SpotTest\Entity\Post([
@@ -151,7 +151,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testInsertHooksUpdatesProperty()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
@@ -173,7 +173,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testUpdateHooks()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $testcase = $this;
 
         $post = new \SpotTest\Entity\Post([
@@ -189,7 +189,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
         $eventEmitter = $mapper->eventEmitter();
         $eventEmitter->on('beforeInsert', function ($post, $mapper) use (&$testcase) {
-            $testcase->assertTrue(false);
+            $testcase->fail();
         });
 
         $eventEmitter->on('beforeUpdate', function ($post, $mapper) use (&$hooks, &$testcase) {
@@ -216,13 +216,13 @@ class Events extends \PHPUnit_Framework_TestCase
     public function testUpdateHookUpdatesProperly()
     {
         $author_id = __LINE__;
-        $author = test_spot_mapper('SpotTest\Entity\Author')->insert([
+        $author = \test_spot_mapper('SpotTest\Entity\Author')->insert([
             'id' => $author_id,
             'email' => $author_id.'user@somewhere.com',
             'password' => 'securepassword'
         ]);
 
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $testcase = $this;
 
         $post = new \SpotTest\Entity\Post([
@@ -248,7 +248,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testDeleteHooks()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $testcase = $this;
 
         $post = new \SpotTest\Entity\Post([
@@ -285,7 +285,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testDeleteHooksForArrayConditions()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $testcase = $this;
 
         $post = new \SpotTest\Entity\Post([
@@ -335,7 +335,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testEntityHooks()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
         $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
@@ -373,14 +373,14 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testWithHooks()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
         $testcase = $this;
 
         $hooks = [];
 
         $eventEmitter->on('beforeWith', function ($mapper, $collection, $with) use (&$hooks, &$testcase) {
-            $testcase->assertEquals('SpotTest\Entity\Post', $mapper->entity());
+            $testcase->assertEquals('\SpotTest\Entity\Post', $mapper->entity());
             $testcase->assertInstanceOf('Spot\Entity\Collection', $collection);
             $testcase->assertEquals(['comments'], $with);
             $testcase->assertInstanceOf('Spot\Mapper', $mapper);
@@ -388,7 +388,7 @@ class Events extends \PHPUnit_Framework_TestCase
         });
 
         $eventEmitter->on('loadWith', function ($mapper, $collection, $relationName) use (&$hooks, &$testcase) {
-            $testcase->assertEquals('SpotTest\Entity\Post', $mapper->entity());
+            $testcase->assertEquals('\SpotTest\Entity\Post', $mapper->entity());
             $testcase->assertInstanceOf('Spot\Entity\Collection', $collection);
             $testcase->assertInstanceOf('Spot\Mapper', $mapper);
             $testcase->assertEquals('comments', $relationName);
@@ -396,7 +396,7 @@ class Events extends \PHPUnit_Framework_TestCase
         });
 
         $eventEmitter->on('afterWith', function ($mapper, $collection, $with) use (&$hooks, &$testcase) {
-            $testcase->assertEquals('SpotTest\Entity\Post', $mapper->entity());
+            $testcase->assertEquals('\SpotTest\Entity\Post', $mapper->entity());
             $testcase->assertInstanceOf('Spot\Entity\Collection', $collection);
             $testcase->assertEquals(['comments'], $with);
             $testcase->assertInstanceOf('Spot\Mapper', $mapper);
@@ -411,7 +411,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testWithAssignmentHooks()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
 
         $eventEmitter->on('loadWith', function ($mapper, $collection, $relationName) {
@@ -440,7 +440,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testHookReturnsFalse()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
             'body' => '<p>body</p>',
@@ -471,7 +471,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testAfterSaveEvent()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
         $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
@@ -496,7 +496,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testValidationEvents()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
         $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
@@ -524,7 +524,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testBeforeValidateEventStopsValidation()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
         $post = new \SpotTest\Entity\Post([
             'title' => 'A title',
@@ -554,7 +554,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testSaveEventsTriggeredOnCreate()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $hooks = [];
         $eventEmitter = $mapper->eventEmitter();
@@ -579,7 +579,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testLoadEventCallOnGet()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
 
         $hooks = [];
         $eventEmitter = $mapper->eventEmitter();
@@ -602,7 +602,7 @@ class Events extends \PHPUnit_Framework_TestCase
 
     public function testSaveEventsTriggeredOnUpdate()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $eventEmitter = $mapper->eventEmitter();
 
         $hooks = [];

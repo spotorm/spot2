@@ -4,3 +4,8 @@ composer.lock
 vendor
 tests/spot_test.sqlite
 .idea
+/phpunit.phar
+/tests/.phpunit.result.cache
+/.phpunit.result.cache
+/error.log
+/rector.php

@@ -1,10 +1,11 @@
 <?php
-namespace SpotTest;
+
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class Config extends \PHPUnit_Framework_TestCase
+class ConfigTest extends \PHPUnit\Framework\TestCase
 {
     public function testAddConnectionSqlite()
     {
@@ -35,7 +36,7 @@ class Config extends \PHPUnit_Framework_TestCase
         $cfg = new \Spot\Config();
         $adapter = $cfg->addConnection('test_mysql', 'mysql://test:password@localhost/test');
 
-        $this->assertInternalType('string', serialize($cfg));
+        $this->assertIsString(serialize($cfg));
     }
 
     public function testConfigCanUnserialize()

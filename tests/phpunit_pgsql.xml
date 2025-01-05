@@ -8,11 +8,11 @@
          processIsolation="false"
          stopOnFailure="false"
          syntaxCheck="false"
-         bootstrap="./tests/init.php"
+         bootstrap="./bootstrap.php"
 >
   <php>
-    <env name="SPOT_DB_TYPE" value="mysql" />
-    <env name="SPOT_DB_DSN" value="mysql://root@localhost/spot_test" />
+    <env name="SPOT_DB_TYPE" value="pgsql" />
+    <env name="SPOT_DB_DSN" value="pgsql://postgres@localhost/spot_test" />
   </php>
 
   <testsuites>

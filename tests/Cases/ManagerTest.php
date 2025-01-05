@@ -1,14 +1,14 @@
 <?php
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class Manager extends \PHPUnit_Framework_TestCase
+class ManagerTest extends \PHPUnit\Framework\TestCase
 {
     public function testNotnullOverride()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\NotNullOverride');
+        $mapper = \test_spot_mapper('SpotTest\Entity\NotNullOverride');
         $manager = $mapper->entityManager();
         $fields = $manager->fields();
 
@@ -19,7 +19,7 @@ class Manager extends \PHPUnit_Framework_TestCase
 
     public function testMultipleIndexedField()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\MultipleIndexedField');
+        $mapper = \test_spot_mapper('SpotTest\Entity\MultipleIndexedField');
         $manager = $mapper->entityManager();
         $fieldKeys = $manager->fieldKeys();
 

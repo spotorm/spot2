@@ -27,7 +27,7 @@ class PostTag extends Entity
     public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
         return [
-            'post' => $mapper->belongsTo($entity, 'SpotTest\Entity\Post', 'post_id'),
+            'post' => $mapper->belongsTo($entity, '\SpotTest\Entity\Post', 'post_id'),
             'tag'  => $mapper->belongsTo($entity, 'SpotTest\Entity\Tag', 'tag_id')
         ];
     }

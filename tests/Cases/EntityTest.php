@@ -1,20 +1,20 @@
 <?php
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class Entity extends \PHPUnit_Framework_TestCase
+class EntityTest extends \PHPUnit\Framework\TestCase
 {
     private static $entities = ['Post', 'Author', 'CustomMethods'];
 
-    public static function setupBeforeClass()
+    public static function setupBeforeClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->migrate();
         }
 
-        $authorMapper = test_spot_mapper('SpotTest\Entity\Author');
+        $authorMapper = \test_spot_mapper('SpotTest\Entity\Author');
         $author = $authorMapper->build([
             'id' => 1,
             'email' => 'example@example.com',
@@ -28,16 +28,16 @@ class Entity extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         foreach (self::$entities as $entity) {
-            test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
+            \test_spot_mapper('\SpotTest\Entity\\' . $entity)->dropTable();
         }
     }
 
     public function testEntitySetDataProperties()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post();
 
         // Set data
@@ -53,7 +53,7 @@ class Entity extends \PHPUnit_Framework_TestCase
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'status' => 0,
-            'date_created' => new \DateTime(),
+            'date_created' => $data['date_created'],
             'data' => null,
             'author_id' => 1
         ];
@@ -66,7 +66,7 @@ class Entity extends \PHPUnit_Framework_TestCase
 
     public function testEntitySetDataConstruct()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post([
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
@@ -85,7 +85,7 @@ class Entity extends \PHPUnit_Framework_TestCase
             'date_created' => null,
             'data' => null,
             'author_id' => 1,
-            'date_created' => new \DateTime()
+            'date_created' => $data['date_created']
         ];
         ksort($testData);
 
@@ -198,7 +198,7 @@ class Entity extends \PHPUnit_Framework_TestCase
         $post = new \SpotTest\Entity\Post($data);
         $this->assertEquals($post->data, ['posts' => 'are cool', 'another field' => 'to serialize']);
 
-        $mapper = test_spot_mapper('SpotTest\Entity\Post');
+        $mapper = \test_spot_mapper('\SpotTest\Entity\Post');
         $mapper->save($post);
 
         $post = $mapper->get($post->id);
@@ -308,7 +308,7 @@ class Entity extends \PHPUnit_Framework_TestCase
 
     public function testCustomSetterShouldNotTriggerModified()
     {
-        $mapper = test_spot_mapper('SpotTest\Entity\CustomMethods');
+        $mapper = \test_spot_mapper('SpotTest\Entity\CustomMethods');
 
         $entity = new \SpotTest\Entity\CustomMethods([
             'test1' => 'test',

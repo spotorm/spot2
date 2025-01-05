@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="tests-sqlite" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
+    <TestRunner class="SpotTest\ArrayObjectTypes" configuration_file="$PROJECT_DIR$/tests/phpunit_sqlite.xml" directory="$PROJECT_DIR$/tests" file="$PROJECT_DIR$/tests/Cases/ArrayObjectTypesTest.php" use_alternative_configuration_file="true" />
+    <method v="2" />
+  </configuration>
+</component>

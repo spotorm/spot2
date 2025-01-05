@@ -1,10 +1,10 @@
 <?php
-namespace SpotTest;
+namespace SpotTest\Cases;
 
 /**
  * @package Spot
  */
-class DriverSpecific
+class DriverSpecificTest
 {
     public static function getWeekFunction($mapper, $field = null) {
         if ($mapper->connectionIs('mysql')) {
