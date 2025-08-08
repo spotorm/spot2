@@ -162,6 +162,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->toArray();
@@ -232,6 +233,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return count($this->results);
@@ -242,6 +244,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->results);
@@ -252,6 +255,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->results);
@@ -262,6 +266,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function next()
     {
         next($this->results);
@@ -272,6 +277,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         reset($this->results);
@@ -282,6 +288,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function valid()
     {
         return (current($this->results) !== false);
@@ -292,6 +299,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($key)
     {
         return isset($this->results[$key]);
@@ -302,6 +310,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($key)
     {
         return $this->results[$key];
@@ -312,6 +321,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($key, $value)
     {
         if ($key === null) {
@@ -326,6 +336,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess, \JsonSerializab
      *
      * @inheritdoc
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($key)
     {
         if (is_int($key)) {

@@ -143,6 +143,7 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
 
     // SPL - ArrayAccess functions
     // ----------------------------------------------
+    #[\ReturnTypeWillChange]
     public function offsetExists($key)
     {
         $entity = $this->execute();
@@ -150,6 +151,7 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
         return isset($entity->$key);
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($key)
     {
         $entity = $this->execute();
@@ -157,6 +159,7 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
         return $entity->$key;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetSet($key, $value)
     {
         $entity = $this->execute();
@@ -168,6 +171,7 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
         }
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetUnset($key)
     {
         $entity = $this->execute();
