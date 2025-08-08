@@ -66,6 +66,6 @@ class Scopes extends \PHPUnit_Framework_TestCase
             ]);
         $query = $mapper->get(1)->comments->yesterday()->query();
         $sql = str_replace(['`', '"'], '', $query->toSql());
-        $this->assertEquals("SELECT * FROM test_post_comments WHERE (test_post_comments.post_id = ?) AND (test_post_comments.date_created > ? AND test_post_comments.date_created < ?) ORDER BY test_post_comments.date_created ASC", $sql);
+        $this->assertEquals("SELECT * FROM test_post_comments WHERE (test_post_comments.post_id = ?) AND (test_post_comments.date_created >= ? AND test_post_comments.date_created < ?) ORDER BY test_post_comments.date_created ASC", $sql);
     }
 }
