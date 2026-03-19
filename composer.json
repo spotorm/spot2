@@ -30,5 +30,10 @@
         "psr-4": {
           "SpotTest\\": "tests/"
         }
+    },
+    "scripts": {
+        "test_mysql": "vendor/bin/phpunit --configuration phpunit_mysql.xml --coverage-text",
+        "test_pgsql": "vendor/bin/phpunit --configuration phpunit_pgsql.xml --coverage-text",
+        "test_sqlite": "vendor/bin/phpunit --configuration phpunit_sqlite.xml --coverage-text"
     }
 }
