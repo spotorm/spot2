@@ -6,6 +6,7 @@ use Spot\EntityInterface;
 use Spot\MapperInterface;
 use Spot\EventEmitter;
 use Spot\Query;
+use SpotTest\Entity\Post\UserComment;
 
 /**
  * Post
@@ -38,6 +39,7 @@ class Post extends Entity
             'tags' => $mapper->hasManyThrough($entity, 'SpotTest\Entity\Tag', 'SpotTest\Entity\PostTag', 'tag_id', 'post_id'),
             'comments' => $mapper->hasMany($entity, 'SpotTest\Entity\Post\Comment', 'post_id')->order(['date_created' => 'ASC']),
             'polymorphic_comments' => $mapper->hasMany($entity, 'SpotTest\Entity\PolymorphicComment', 'item_id')->where(['item_type' => 'post']),
+            'user_comments' => $mapper->hasMany($entity, 'SpotTest\Entity\Post\UserComment', 'post_id'),
             'author' => $mapper->belongsTo($entity, 'SpotTest\Entity\Author', 'author_id')
         ];
     }
