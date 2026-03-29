@@ -560,10 +560,11 @@ class Mapper implements MapperInterface
      *
      * @param string         $sql        Raw query or SQL to run against the datastore
      * @param array Optional $conditions Array of binds in column => value pairs to use for prepared statement
+     * @param array Optional $types      Array of DBAL column types (e.g. to specify custom type for IN () condition)
      */
-    public function query($sql, array $params = [])
+    public function query($sql, array $params = [], array $types = [])
     {
-        $result = $this->connection()->executeQuery($sql, $params);
+        $result = $this->connection()->executeQuery($sql, $params, $types);
         if ($result) {
             return $this->collection($result);
         }

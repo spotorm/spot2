@@ -444,6 +444,29 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertSame($postCount, $i);
     }
 
+    public function testCustomQueryWithSqlAndIndexedParamTypes()
+    {
+        $mapper = test_spot_mapper('SpotTest\Entity\Tag');
+        $names = ['Tag 1', 'Tag 2'];
+
+        $tags = $mapper->query(
+            "SELECT * FROM " . $mapper->table() . " WHERE name IN (?)",
+            [$names],
+            [\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
+        $this->assertInstanceOf('Spot\Entity\Collection', $tags);
+        $tagCount = count($tags);
+
+        $i = 0;
+        foreach ($tags as $tag) {
+            $i++;
+            $this->assertInstanceOf('SpotTest\Entity\Tag', $tag);
+            $this->assertContains($tag->getName(), $names);
+        }
+
+        $this->assertSame($tagCount, $i);
+    }
+
     /**
      * @dataProvider identifierProvider
      */
