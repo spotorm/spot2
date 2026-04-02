@@ -19,7 +19,7 @@ class Comment extends Entity
     public static function fields()
     {
         return [
-            'id'            => ['type' => 'integer', 'primary' => true, 'autoincrement' => true],
+            'comment_id'    => ['type' => 'integer', 'primary' => true, 'autoincrement' => true],
             'post_id'       => ['type' => 'integer', 'index' => true, 'required' => true],
             'name'          => ['type' => 'string', 'required' => true],
             'email'         => ['type' => 'string', 'required' => true],
@@ -32,11 +32,10 @@ class Comment extends Entity
     {
         return [
             'yesterday' => function (Query $query) {
-                return $query->where(['date_created :gt' => new DateTime('yesterday'), 'date_created :lt' => new DateTime('today')]);
+                return $query->where(['date_created :gte' => new DateTime('yesterday'), 'date_created :lt' => new DateTime('today')]);
             }
         ];
     }
-
 
     public static function relations(MapperInterface $mapper, EntityInterface $entity)
     {
